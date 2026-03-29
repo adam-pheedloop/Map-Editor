@@ -3,6 +3,7 @@ import type { FloorPlanElement } from "../../../types";
 import { RectShape } from "./elements/RectShape";
 import { EllipseShape } from "./elements/EllipseShape";
 import { LineShape } from "./elements/LineShape";
+import { BoothShape } from "./elements/BoothShape";
 
 interface ElementShapeProps {
   element: FloorPlanElement;
@@ -50,7 +51,16 @@ export function ElementShape({
         onDragEnd(element.id, e.target.x(), e.target.y());
       }}
     >
-      {geo.shape === "rect" && (
+      {element.type === "booth" && geo.shape === "rect" && (
+        <BoothShape
+          geo={geo}
+          color={color}
+          strokeColor={strokeColor}
+          strokeWidth={strokeWidth}
+          boothCode={element.properties.boothCode || element.id.slice(0, 6)}
+        />
+      )}
+      {element.type !== "booth" && geo.shape === "rect" && (
         <RectShape geo={geo} color={color} strokeColor={strokeColor} strokeWidth={strokeWidth} label={label} />
       )}
       {geo.shape === "ellipse" && (

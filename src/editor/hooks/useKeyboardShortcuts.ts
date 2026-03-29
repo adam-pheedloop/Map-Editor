@@ -33,6 +33,9 @@ export function useKeyboardShortcuts({
         case "l":
           setActiveTool("line");
           break;
+        case "b":
+          setActiveTool("booth");
+          break;
         case "escape":
           onDeselect();
           setActiveTool("select");

@@ -10,6 +10,7 @@ import { ElementShape } from "./ElementShape";
 import { SelectionTransformer } from "./SelectionTransformer";
 import { LineEndpointHandles } from "./LineEndpointHandles";
 import { DrawingPreview } from "./DrawingPreview";
+import { BackgroundImage } from "./BackgroundImage";
 
 interface CanvasProps {
   data: FloorPlanData;
@@ -153,6 +154,9 @@ export function Canvas({
             stroke="#d1d5db"
             strokeWidth={1}
           />
+          {data.backgroundImage && (
+            <BackgroundImage config={data.backgroundImage} />
+          )}
         </Layer>
 
         <Layer>

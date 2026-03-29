@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import type { FloorPlanData, FloorPlanElement, Geometry, ElementProperties } from "../../types";
+import type { FloorPlanData, FloorPlanElement, ElementType, Geometry, ElementProperties, BackgroundImage, Dimensions } from "../../types";
 
 export function useEditorState(initialData: FloorPlanData) {
   const [data, setData] = useState<FloorPlanData>(initialData);
@@ -46,5 +46,34 @@ export function useEditorState(initialData: FloorPlanData) {
     }));
   }, []);
 
-  return { data, addElement, updateElement, updateProperties, deleteElement };
+  const updateElementType = useCallback((id: string, newType: ElementType) => {
+    setData((prev) => ({
+      ...prev,
+      elements: prev.elements.map((el) =>
+        el.id === id ? { ...el, type: newType } : el
+      ),
+    }));
+  }, []);
+
+  const setBackgroundImage = useCallback((bg: BackgroundImage | undefined) => {
+    setData((prev) => ({ ...prev, backgroundImage: bg }));
+  }, []);
+
+  const updateDimensions = useCallback((dims: Partial<Dimensions>) => {
+    setData((prev) => ({
+      ...prev,
+      dimensions: { ...prev.dimensions, ...dims },
+    }));
+  }, []);
+
+  return {
+    data,
+    addElement,
+    updateElement,
+    updateProperties,
+    deleteElement,
+    updateElementType,
+    setBackgroundImage,
+    updateDimensions,
+  };
 }

@@ -13,6 +13,7 @@ import { StatusBar } from "./components/StatusBar";
 import { PropertiesPanel } from "./components/panels/PropertiesPanel";
 import { getShapeConfig } from "./components/canvas/elements";
 import { MapDebugDialog } from "./components/debug";
+import { BackgroundImageDialog } from "./components/panels/BackgroundImageDialog";
 import type { FloorPlanData } from "../types";
 
 const INITIAL_DEFAULTS: DrawingDefaults = {
@@ -29,12 +30,21 @@ interface MapEditorProps {
 export function MapEditor({ initialData, debug: debugProp }: MapEditorProps) {
   const debug = debugProp || import.meta.env.DEV;
 
-  const { data, addElement, updateElement, updateProperties, deleteElement } =
-    useEditorState(initialData);
+  const {
+    data,
+    addElement,
+    updateElement,
+    updateProperties,
+    deleteElement,
+    updateElementType,
+    setBackgroundImage,
+    updateDimensions,
+  } = useEditorState(initialData);
   const [activeTool, setActiveTool] = useState<ActiveTool>("select");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [defaults, setDefaults] = useState<DrawingDefaults>(INITIAL_DEFAULTS);
   const [showMapDebug, setShowMapDebug] = useState(false);
+  const [showBgDialog, setShowBgDialog] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -117,31 +127,47 @@ export function MapEditor({ initialData, debug: debugProp }: MapEditorProps) {
     (x: number, y: number, width: number, height: number) => {
       const id = uuidv4();
 
-      const geometry =
-        activeTool === "ellipse"
-          ? {
-              shape: "ellipse" as const,
-              x,
-              y,
-              radiusX: width / 2,
-              radiusY: height / 2,
-            }
-          : { shape: "rect" as const, x, y, width, height };
+      if (activeTool === "booth") {
+        addElement({
+          id,
+          type: "booth",
+          geometry: { shape: "rect" as const, x, y, width, height },
+          properties: {
+            name: "Booth",
+            color: defaults.fill,
+            strokeColor: defaults.stroke,
+            strokeWidth: defaults.strokeWidth,
+            zIndex: 1,
+            area: width * height,
+          },
+        });
+      } else {
+        const geometry =
+          activeTool === "ellipse"
+            ? {
+                shape: "ellipse" as const,
+                x,
+                y,
+                radiusX: width / 2,
+                radiusY: height / 2,
+              }
+            : { shape: "rect" as const, x, y, width, height };
 
-      const name = activeTool === "ellipse" ? "Ellipse" : "Rectangle";
+        const name = activeTool === "ellipse" ? "Ellipse" : "Rectangle";
 
-      addElement({
-        id,
-        type: "shape",
-        geometry,
-        properties: {
-          name,
-          color: defaults.fill,
-          strokeColor: defaults.stroke,
-          strokeWidth: defaults.strokeWidth,
-          zIndex: 1,
-        },
-      });
+        addElement({
+          id,
+          type: "shape",
+          geometry,
+          properties: {
+            name,
+            color: defaults.fill,
+            strokeColor: defaults.stroke,
+            strokeWidth: defaults.strokeWidth,
+            zIndex: 1,
+          },
+        });
+      }
       setSelectedId(id);
       setActiveTool("select");
     },
@@ -224,6 +250,29 @@ export function MapEditor({ initialData, debug: debugProp }: MapEditorProps) {
     [data.elements, updateElement]
   );
 
+  const handleBackgroundImage = useCallback(
+    (dataUrl: string, imageWidth: number, imageHeight: number, mode: "resize-canvas" | "fit-image") => {
+      if (mode === "resize-canvas") {
+        updateDimensions({ width: imageWidth, height: imageHeight });
+        setBackgroundImage({
+          url: dataUrl,
+          width: imageWidth,
+          height: imageHeight,
+          opacity: 0.3,
+        });
+      } else {
+        setBackgroundImage({
+          url: dataUrl,
+          width: data.dimensions.width,
+          height: data.dimensions.height,
+          opacity: 0.3,
+        });
+      }
+      setShowBgDialog(false);
+    },
+    [data.dimensions, setBackgroundImage, updateDimensions]
+  );
+
   const handleToolChange = useCallback((tool: ActiveTool) => {
     setActiveTool(tool);
     if (tool !== "select") {
@@ -233,7 +282,11 @@ export function MapEditor({ initialData, debug: debugProp }: MapEditorProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <TopBar debug={debug} onDebugClick={() => setShowMapDebug(true)} />
+      <TopBar
+        debug={debug}
+        onDebugClick={() => setShowMapDebug(true)}
+        onBackgroundImageClick={() => setShowBgDialog(true)}
+      />
       <div className="flex flex-1 overflow-hidden">
         <ToolSidebar activeTool={activeTool} onToolChange={handleToolChange} />
         <div className="flex flex-col flex-1">
@@ -241,7 +294,8 @@ export function MapEditor({ initialData, debug: debugProp }: MapEditorProps) {
             defaults={activeDefaults}
             config={getShapeConfig(
               selectedElement?.geometry.shape
-                ?? (activeTool === "line" ? "line" : activeTool === "ellipse" ? "ellipse" : "rect")
+                ?? (activeTool === "line" ? "line" : activeTool === "ellipse" ? "ellipse" : "rect"),
+              selectedElement?.type ?? (activeTool === "booth" ? "booth" : undefined)
             )}
             onDefaultsChange={handleDefaultsChange}
           />
@@ -269,6 +323,7 @@ export function MapEditor({ initialData, debug: debugProp }: MapEditorProps) {
             </div>
             <PropertiesPanel
               element={selectedElement}
+              backgroundImage={data.backgroundImage}
               debug={debug}
               onUpdateProperties={updateProperties}
               onUpdateGeometry={updateElement}
@@ -276,12 +331,26 @@ export function MapEditor({ initialData, debug: debugProp }: MapEditorProps) {
                 deleteElement(id);
                 setSelectedId(null);
               }}
+              onConvertToBooth={(id) => updateElementType(id, "booth")}
+              onBackgroundOpacityChange={(opacity) =>
+                data.backgroundImage &&
+                setBackgroundImage({ ...data.backgroundImage, opacity })
+              }
+              onRemoveBackground={() => setBackgroundImage(undefined)}
             />
           </div>
         </div>
       </div>
       {showMapDebug && (
         <MapDebugDialog data={data} onClose={() => setShowMapDebug(false)} />
+      )}
+      {showBgDialog && (
+        <BackgroundImageDialog
+          canvasWidth={data.dimensions.width}
+          canvasHeight={data.dimensions.height}
+          onConfirm={handleBackgroundImage}
+          onClose={() => setShowBgDialog(false)}
+        />
       )}
     </div>
   );

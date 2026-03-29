@@ -1,4 +1,5 @@
 import type { FloorPlanData } from "../types";
+import bgImage from "./Empty Exhibit Hall.png";
 
 export const sampleMap: FloorPlanData = {
   version: "1.0",
@@ -14,7 +15,7 @@ export const sampleMap: FloorPlanData = {
     {
       id: "elem-001",
       type: "booth",
-      geometry: { shape: "rect", x: 50, y: 50, width: 100, height: 80 },
+      geometry: { shape: "rect", x: 500, y: 86, width: 100, height: 80 },
       properties: {
         boothCode: "A101",
         name: "Booth A101",
@@ -26,7 +27,7 @@ export const sampleMap: FloorPlanData = {
     {
       id: "elem-002",
       type: "booth",
-      geometry: { shape: "rect", x: 170, y: 50, width: 100, height: 80 },
+      geometry: { shape: "rect", x: 620, y: 86, width: 100, height: 80 },
       properties: {
         boothCode: "A102",
         name: "Booth A102",
@@ -38,7 +39,7 @@ export const sampleMap: FloorPlanData = {
     {
       id: "elem-003",
       type: "booth",
-      geometry: { shape: "rect", x: 290, y: 50, width: 100, height: 80 },
+      geometry: { shape: "rect", x: 740, y: 86, width: 100, height: 80 },
       properties: {
         boothCode: "A103",
         name: "Booth A103",
@@ -50,7 +51,7 @@ export const sampleMap: FloorPlanData = {
     {
       id: "elem-004",
       type: "booth",
-      geometry: { shape: "rect", x: 50, y: 180, width: 100, height: 80 },
+      geometry: { shape: "rect", x: 160, y: 210, width: 100, height: 80 },
       properties: {
         boothCode: "B101",
         name: "Booth B101",
@@ -62,7 +63,7 @@ export const sampleMap: FloorPlanData = {
     {
       id: "elem-005",
       type: "booth",
-      geometry: { shape: "rect", x: 170, y: 180, width: 100, height: 80 },
+      geometry: { shape: "rect", x: 280, y: 210, width: 100, height: 80 },
       properties: {
         boothCode: "B102",
         name: "Booth B102",
@@ -74,7 +75,7 @@ export const sampleMap: FloorPlanData = {
     {
       id: "elem-006",
       type: "session_area",
-      geometry: { shape: "rect", x: 500, y: 50, width: 250, height: 200 },
+      geometry: { shape: "rect", x: 100, y: 500, width: 326, height: 202, rotation: 0 },
       properties: {
         name: "Keynote Stage",
         color: "#27AE60",
@@ -86,7 +87,7 @@ export const sampleMap: FloorPlanData = {
     {
       id: "elem-007",
       type: "meeting_room",
-      geometry: { shape: "rect", x: 500, y: 300, width: 150, height: 120 },
+      geometry: { shape: "rect", x: 510, y: 374, width: 273, height: 106, rotation: 0 },
       properties: {
         name: "Meeting Room 1",
         color: "#F39C12",
@@ -98,7 +99,7 @@ export const sampleMap: FloorPlanData = {
     {
       id: "elem-008",
       type: "walkway",
-      geometry: { shape: "rect", x: 410, y: 50, width: 40, height: 400 },
+      geometry: { shape: "rect", x: 430, y: 300, width: 68, height: 400, rotation: 0 },
       properties: {
         name: "Main Aisle",
         color: "#ECF0F1",
@@ -115,6 +116,12 @@ export const sampleMap: FloorPlanData = {
     ],
     position: "bottom-right",
     visible: true,
+  },
+  backgroundImage: {
+    url: bgImage,
+    width: 1200,
+    height: 800,
+    opacity: 0.42,
   },
   metadata: {
     createdAt: "2026-03-29T12:00:00Z",

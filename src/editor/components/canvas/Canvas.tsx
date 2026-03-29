@@ -36,6 +36,7 @@ interface CanvasProps {
     rotation: number
   ) => void;
   onEndpointMove: (id: string, pointIndex: 0 | 1, x: number, y: number) => void;
+  onElementContextMenu: (id: string, screenX: number, screenY: number) => void;
 }
 
 export function Canvas({
@@ -55,6 +56,7 @@ export function Canvas({
   onElementMove,
   onElementResize,
   onEndpointMove,
+  onElementContextMenu,
 }: CanvasProps) {
   const isSelectMode = activeTool === "select";
   const isDrawing = !isSelectMode;
@@ -167,6 +169,7 @@ export function Canvas({
               isSelectMode={isSelectMode}
               onSelect={onSelect}
               onDragEnd={handleElementDragEnd}
+              onContextMenu={onElementContextMenu}
             />
           ))}
           <SelectionTransformer

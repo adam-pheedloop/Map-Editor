@@ -12,6 +12,7 @@ import { OptionsBar } from "./components/panels/OptionsBar";
 import { StatusBar } from "./components/StatusBar";
 import { PropertiesPanel } from "./components/panels/PropertiesPanel";
 import { getShapeConfig } from "./components/canvas/elements";
+import { ContextMenu, type ContextMenuItem } from "./components/canvas/ContextMenu";
 import { MapDebugDialog } from "./components/debug";
 import { BackgroundImageDialog } from "./components/panels/BackgroundImageDialog";
 import type { FloorPlanData } from "../types";
@@ -45,6 +46,11 @@ export function MapEditor({ initialData, debug: debugProp }: MapEditorProps) {
   const [defaults, setDefaults] = useState<DrawingDefaults>(INITIAL_DEFAULTS);
   const [showMapDebug, setShowMapDebug] = useState(false);
   const [showBgDialog, setShowBgDialog] = useState(false);
+  const [contextMenu, setContextMenu] = useState<{
+    elementId: string;
+    x: number;
+    y: number;
+  } | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -273,6 +279,45 @@ export function MapEditor({ initialData, debug: debugProp }: MapEditorProps) {
     [data.dimensions, setBackgroundImage, updateDimensions]
   );
 
+  const handleElementContextMenu = useCallback(
+    (elementId: string, screenX: number, screenY: number) => {
+      setSelectedId(elementId);
+      setContextMenu({ elementId, x: screenX, y: screenY });
+    },
+    []
+  );
+
+  const contextMenuItems: ContextMenuItem[] = (() => {
+    if (!contextMenu) return [];
+    const element = data.elements.find((el) => el.id === contextMenu.elementId);
+    if (!element) return [];
+
+    const config = getShapeConfig(element.geometry.shape, element.type);
+    const items: ContextMenuItem[] = [];
+
+    for (const action of config.contextMenu) {
+      switch (action) {
+        case "convertToBooth":
+          items.push({
+            label: "Convert to Booth",
+            onClick: () => updateElementType(contextMenu.elementId, "booth"),
+          });
+          break;
+        case "delete":
+          items.push({
+            label: "Delete",
+            danger: true,
+            onClick: () => {
+              deleteElement(contextMenu.elementId);
+              setSelectedId(null);
+            },
+          });
+          break;
+      }
+    }
+    return items;
+  })();
+
   const handleToolChange = useCallback((tool: ActiveTool) => {
     setActiveTool(tool);
     if (tool !== "select") {
@@ -318,6 +363,7 @@ export function MapEditor({ initialData, debug: debugProp }: MapEditorProps) {
                 onElementMove={handleElementMove}
                 onEndpointMove={handleEndpointMove}
                 onElementResize={handleElementResize}
+                onElementContextMenu={handleElementContextMenu}
               />
               <StatusBar scale={scale} onZoomReset={zoomReset} />
             </div>
@@ -350,6 +396,14 @@ export function MapEditor({ initialData, debug: debugProp }: MapEditorProps) {
           canvasHeight={data.dimensions.height}
           onConfirm={handleBackgroundImage}
           onClose={() => setShowBgDialog(false)}
+        />
+      )}
+      {contextMenu && contextMenuItems.length > 0 && (
+        <ContextMenu
+          x={contextMenu.x}
+          y={contextMenu.y}
+          items={contextMenuItems}
+          onClose={() => setContextMenu(null)}
         />
       )}
     </div>

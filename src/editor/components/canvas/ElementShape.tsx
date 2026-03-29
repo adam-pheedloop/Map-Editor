@@ -10,6 +10,7 @@ interface ElementShapeProps {
   isSelectMode: boolean;
   onSelect: (id: string) => void;
   onDragEnd: (id: string, x: number, y: number) => void;
+  onContextMenu: (elementId: string, screenX: number, screenY: number) => void;
 }
 
 function getLabel(element: FloorPlanElement): string {
@@ -24,6 +25,7 @@ export function ElementShape({
   isSelectMode,
   onSelect,
   onDragEnd,
+  onContextMenu,
 }: ElementShapeProps) {
   const geo = element.geometry;
   const label = getLabel(element);
@@ -49,6 +51,11 @@ export function ElementShape({
       }}
       onDragEnd={(e) => {
         onDragEnd(element.id, e.target.x(), e.target.y());
+      }}
+      onContextMenu={(e) => {
+        e.evt.preventDefault();
+        e.cancelBubble = true;
+        onContextMenu(element.id, e.evt.clientX, e.evt.clientY);
       }}
     >
       {element.type === "booth" && geo.shape === "rect" && (

@@ -5,6 +5,7 @@ import type { ShapeConfig } from "./types";
 export const lineConfig: ShapeConfig = {
   optionsBar: ["stroke", "strokeWidth"],
   propertiesPanel: ["name", "length"],
+  contextMenu: ["delete"],
 };
 
 interface LineShapeProps {

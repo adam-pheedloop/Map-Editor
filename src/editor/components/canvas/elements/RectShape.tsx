@@ -5,6 +5,7 @@ import type { ShapeConfig } from "./types";
 export const rectConfig: ShapeConfig = {
   optionsBar: ["fill", "stroke", "strokeWidth"],
   propertiesPanel: ["name", "width", "height", "rotation"],
+  contextMenu: ["convertToBooth", "delete"],
 };
 
 interface RectShapeProps {

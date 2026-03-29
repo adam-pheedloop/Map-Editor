@@ -2,7 +2,7 @@ export { RectShape, rectConfig } from "./RectShape";
 export { EllipseShape, ellipseConfig } from "./EllipseShape";
 export { LineShape, lineConfig } from "./LineShape";
 export { BoothShape, boothConfig } from "./BoothShape";
-export type { ShapeConfig, OptionsBarField, PropertiesPanelField } from "./types";
+export type { ShapeConfig, OptionsBarField, PropertiesPanelField, ContextMenuAction } from "./types";
 
 import type { ShapeConfig } from "./types";
 import { rectConfig } from "./RectShape";

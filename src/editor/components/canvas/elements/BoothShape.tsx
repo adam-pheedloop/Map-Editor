@@ -5,6 +5,7 @@ import type { ShapeConfig } from "./types";
 export const boothConfig: ShapeConfig = {
   optionsBar: ["fill", "stroke", "strokeWidth"],
   propertiesPanel: ["name", "boothCode", "width", "height", "rotation", "area"],
+  contextMenu: ["delete"],
 };
 
 interface BoothShapeProps {

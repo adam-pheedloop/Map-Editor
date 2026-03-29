@@ -1,11 +1,11 @@
 import { useCallback } from "react";
 import { Stage, Layer, Rect } from "react-konva";
 import type Konva from "konva";
-import type { FloorPlanData, LineGeometry } from "../../types";
-import type { ActiveTool } from "../types";
-import { isEmptySpaceClick } from "../utils/canvas";
-import { useDrawingTool } from "../hooks/useDrawingTool";
-import { useLineTool } from "../hooks/useLineTool";
+import type { FloorPlanData, LineGeometry } from "../../../types";
+import type { ActiveTool } from "../../types";
+import { isEmptySpaceClick } from "../../utils/canvas";
+import { useDrawingTool } from "../../hooks/useDrawingTool";
+import { useLineTool } from "../../hooks/useLineTool";
 import { ElementShape } from "./ElementShape";
 import { SelectionTransformer } from "./SelectionTransformer";
 import { LineEndpointHandles } from "./LineEndpointHandles";

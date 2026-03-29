@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { PiCursorFill, PiRectangle, PiCircle, PiLineSegment } from "react-icons/pi";
-import type { ActiveTool } from "../types";
+import type { ActiveTool } from "../../types";
 
 interface ToolSidebarProps {
   activeTool: ActiveTool;
@@ -38,7 +38,7 @@ function ToolButton({
         onMouseLeave={() => setShowTooltip(false)}
         className={`flex items-center justify-center w-9 h-9 rounded-lg cursor-pointer transition-colors ${
           isActive
-            ? "bg-blue-600 text-white"
+            ? "bg-primary-600 text-white"
             : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
         }`}
       >

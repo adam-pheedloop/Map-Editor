@@ -65,6 +65,7 @@ export interface ElementProperties {
   name?: string;
   color: string;
   strokeColor?: string;
+  strokeWidth?: number;
   zIndex: number;
   // Booth-specific
   boothCode?: string;

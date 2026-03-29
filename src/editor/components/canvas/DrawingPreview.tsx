@@ -1,7 +1,7 @@
 import { Rect, Ellipse, Line } from "react-konva";
-import type { DrawingRect } from "../hooks/useDrawingTool";
-import type { LinePreview } from "../hooks/useLineTool";
-import type { ActiveTool } from "../types";
+import type { DrawingRect } from "../../hooks/useDrawingTool";
+import type { LinePreview } from "../../hooks/useLineTool";
+import type { ActiveTool } from "../../types";
 
 interface DrawingPreviewProps {
   rectPreview: DrawingRect | null;

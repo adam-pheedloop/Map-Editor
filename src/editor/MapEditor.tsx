@@ -1,15 +1,24 @@
 import { useRef, useState, useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 import type { ActiveTool } from "./types";
+import type { DrawingDefaults } from "./components/panels/OptionsBar";
 import { useCanvasControls } from "./hooks/useCanvasControls";
 import { useEditorState } from "./hooks/useEditorState";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
-import { Canvas } from "./components/Canvas";
-import { ToolSidebar } from "./components/ToolSidebar";
+import { Canvas } from "./components/canvas/Canvas";
+import { ToolSidebar } from "./components/panels/ToolSidebar";
 import { TopBar } from "./components/TopBar";
+import { OptionsBar } from "./components/panels/OptionsBar";
 import { StatusBar } from "./components/StatusBar";
-import { PropertiesPanel } from "./components/PropertiesPanel";
+import { PropertiesPanel } from "./components/panels/PropertiesPanel";
+import { getShapeConfig } from "./components/canvas/elements";
 import type { FloorPlanData } from "../types";
+
+const INITIAL_DEFAULTS: DrawingDefaults = {
+  fill: "#94a3b8",
+  stroke: "#888888",
+  strokeWidth: 1,
+};
 
 interface MapEditorProps {
   initialData: FloorPlanData;
@@ -20,6 +29,7 @@ export function MapEditor({ initialData }: MapEditorProps) {
     useEditorState(initialData);
   const [activeTool, setActiveTool] = useState<ActiveTool>("select");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [defaults, setDefaults] = useState<DrawingDefaults>(INITIAL_DEFAULTS);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -31,6 +41,10 @@ export function MapEditor({ initialData }: MapEditorProps) {
     handleDragEnd,
     zoomReset,
   } = useCanvasControls(containerRef);
+
+  const selectedElement = selectedId
+    ? data.elements.find((el) => el.id === selectedId) ?? null
+    : null;
 
   const handleDeselect = useCallback(() => {
     setSelectedId(null);
@@ -48,6 +62,51 @@ export function MapEditor({ initialData }: MapEditorProps) {
     onDeselect: handleDeselect,
     onDelete: handleDelete,
   });
+
+  // The colors shown in the options bar: selected element's colors or defaults
+  const activeDefaults: DrawingDefaults = selectedElement
+    ? {
+        fill: selectedElement.properties.color,
+        stroke:
+          selectedElement.geometry.shape === "line"
+            ? selectedElement.properties.color
+            : selectedElement.properties.strokeColor || "#888888",
+        strokeWidth:
+          selectedElement.properties.strokeWidth ??
+          (selectedElement.geometry.shape === "line" ? 2 : 1),
+      }
+    : defaults;
+
+  const handleDefaultsChange = useCallback(
+    (updates: Partial<DrawingDefaults>) => {
+      // Always update defaults
+      setDefaults((prev) => ({ ...prev, ...updates }));
+
+      // If something is selected, also update the element
+      if (selectedId && selectedElement) {
+        const isLine = selectedElement.geometry.shape === "line";
+        if (updates.fill !== undefined) {
+          if (isLine) {
+            // Lines use color as their stroke
+            updateProperties(selectedId, { color: updates.fill });
+          } else {
+            updateProperties(selectedId, { color: updates.fill });
+          }
+        }
+        if (updates.stroke !== undefined) {
+          if (isLine) {
+            updateProperties(selectedId, { color: updates.stroke });
+          } else {
+            updateProperties(selectedId, { strokeColor: updates.stroke });
+          }
+        }
+        if (updates.strokeWidth !== undefined) {
+          updateProperties(selectedId, { strokeWidth: updates.strokeWidth });
+        }
+      }
+    },
+    [selectedId, selectedElement, updateProperties]
+  );
 
   const handleDrawEnd = useCallback(
     (x: number, y: number, width: number, height: number) => {
@@ -72,21 +131,22 @@ export function MapEditor({ initialData }: MapEditorProps) {
         geometry,
         properties: {
           name,
-          color: "#94a3b8",
+          color: defaults.fill,
+          strokeColor: defaults.stroke,
+          strokeWidth: defaults.strokeWidth,
           zIndex: 1,
         },
       });
       setSelectedId(id);
       setActiveTool("select");
     },
-    [activeTool, addElement]
+    [activeTool, addElement, defaults]
   );
 
   const handleLineDrawEnd = useCallback(
     (x1: number, y1: number, x2: number, y2: number) => {
       const id = uuidv4();
 
-      // Use the midpoint as the anchor, store points relative to it
       const anchorX = (x1 + x2) / 2;
       const anchorY = (y1 + y2) / 2;
 
@@ -106,14 +166,15 @@ export function MapEditor({ initialData }: MapEditorProps) {
         },
         properties: {
           name: "Line",
-          color: "#94a3b8",
+          color: defaults.stroke,
+          strokeWidth: defaults.strokeWidth,
           zIndex: 1,
         },
       });
       setSelectedId(id);
       setActiveTool("select");
     },
-    [addElement]
+    [addElement, defaults]
   );
 
   const handleEndpointMove = useCallback(
@@ -122,7 +183,6 @@ export function MapEditor({ initialData }: MapEditorProps) {
       if (!element || element.geometry.shape !== "line") return;
 
       const geo = element.geometry;
-      // The handle is dragged in stage coordinates; convert to relative
       const relX = x - geo.x;
       const relY = y - geo.y;
 
@@ -159,10 +219,6 @@ export function MapEditor({ initialData }: MapEditorProps) {
     [data.elements, updateElement]
   );
 
-  const selectedElement = selectedId
-    ? data.elements.find((el) => el.id === selectedId) ?? null
-    : null;
-
   const handleToolChange = useCallback((tool: ActiveTool) => {
     setActiveTool(tool);
     if (tool !== "select") {
@@ -176,35 +232,47 @@ export function MapEditor({ initialData }: MapEditorProps) {
       <div className="flex flex-1 overflow-hidden">
         <ToolSidebar activeTool={activeTool} onToolChange={handleToolChange} />
         <div className="flex flex-col flex-1">
-          <Canvas
-            data={data}
-            activeTool={activeTool}
-            selectedId={selectedId}
-            scale={scale}
-            position={position}
-            stageSize={stageSize}
-            stageRef={stageRef}
-            containerRef={containerRef}
-            onWheel={handleWheel}
-            onDragEnd={handleDragEnd}
-            onDrawEnd={handleDrawEnd}
-            onLineDrawEnd={handleLineDrawEnd}
-            onSelect={setSelectedId}
-            onElementMove={handleElementMove}
-            onEndpointMove={handleEndpointMove}
-            onElementResize={handleElementResize}
+          <OptionsBar
+            defaults={activeDefaults}
+            config={getShapeConfig(
+              selectedElement?.geometry.shape
+                ?? (activeTool === "line" ? "line" : activeTool === "ellipse" ? "ellipse" : "rect")
+            )}
+            onDefaultsChange={handleDefaultsChange}
           />
-          <StatusBar scale={scale} onZoomReset={zoomReset} />
+          <div className="flex flex-1 overflow-hidden">
+            <div className="flex flex-col flex-1">
+              <Canvas
+                data={data}
+                activeTool={activeTool}
+                selectedId={selectedId}
+                scale={scale}
+                position={position}
+                stageSize={stageSize}
+                stageRef={stageRef}
+                containerRef={containerRef}
+                onWheel={handleWheel}
+                onDragEnd={handleDragEnd}
+                onDrawEnd={handleDrawEnd}
+                onLineDrawEnd={handleLineDrawEnd}
+                onSelect={setSelectedId}
+                onElementMove={handleElementMove}
+                onEndpointMove={handleEndpointMove}
+                onElementResize={handleElementResize}
+              />
+              <StatusBar scale={scale} onZoomReset={zoomReset} />
+            </div>
+            <PropertiesPanel
+              element={selectedElement}
+              onUpdateProperties={updateProperties}
+              onUpdateGeometry={updateElement}
+              onDelete={(id) => {
+                deleteElement(id);
+                setSelectedId(null);
+              }}
+            />
+          </div>
         </div>
-        <PropertiesPanel
-          element={selectedElement}
-          onUpdateProperties={updateProperties}
-          onUpdateGeometry={updateElement}
-          onDelete={(id) => {
-            deleteElement(id);
-            setSelectedId(null);
-          }}
-        />
       </div>
     </div>
   );

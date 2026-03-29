@@ -1,7 +1,7 @@
 import { useRef, useEffect, useCallback } from "react";
 import { Transformer } from "react-konva";
 import type Konva from "konva";
-import type { FloorPlanElement } from "../../types";
+import type { FloorPlanElement } from "../../../types";
 
 interface SelectionTransformerProps {
   selectedId: string | null;
@@ -122,10 +122,10 @@ export function SelectionTransformer({
     <Transformer
       ref={trRef}
       rotateEnabled={false}
-      borderStroke="#3b82f6"
+      borderStroke="#007bff"
       borderStrokeWidth={1.5}
       anchorFill="#fff"
-      anchorStroke="#3b82f6"
+      anchorStroke="#007bff"
       anchorSize={8}
       anchorCornerRadius={2}
       boundBoxFunc={(_oldBox, newBox) => {

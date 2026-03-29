@@ -1,7 +1,7 @@
 import { Circle } from "react-konva";
 import type Konva from "konva";
-import type { LineGeometry } from "../../types";
-import { snapToAngle } from "../utils/canvas";
+import type { LineGeometry } from "../../../types";
+import { snapToAngle } from "../../utils/canvas";
 
 interface LineEndpointHandlesProps {
   elementId: string;
@@ -54,7 +54,7 @@ export function LineEndpointHandles({
         y={abs1.y}
         radius={HANDLE_RADIUS}
         fill="#fff"
-        stroke="#3b82f6"
+        stroke="#007bff"
         strokeWidth={1.5}
         draggable
         onDragMove={(e) => handleDrag(0, e)}
@@ -64,7 +64,7 @@ export function LineEndpointHandles({
         y={abs2.y}
         radius={HANDLE_RADIUS}
         fill="#fff"
-        stroke="#3b82f6"
+        stroke="#007bff"
         strokeWidth={1.5}
         draggable
         onDragMove={(e) => handleDrag(1, e)}

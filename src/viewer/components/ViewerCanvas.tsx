@@ -9,9 +9,12 @@ import type {
 } from "../../types";
 import { useCanvasControls } from "../../editor/hooks/useCanvasControls";
 import { BackgroundImage } from "../../editor/components/canvas/BackgroundImage";
+import type { ViewerMode } from "../types";
 
 interface ViewerCanvasProps {
   data: FloorPlanData;
+  mode: ViewerMode;
+  occupiedBoothCodes: Set<string>;
   highlightedBoothCode: string | null;
   searchMatchCodes: Set<string> | null;
   onBoothClick: (boothCode: string, screenX: number, screenY: number) => void;
@@ -29,6 +32,7 @@ function ViewerElement({
   isHighlighted,
   isDimmed,
   isHovered,
+  overrideColor,
   onMouseEnter,
   onMouseLeave,
   onClick,
@@ -37,13 +41,14 @@ function ViewerElement({
   isHighlighted: boolean;
   isDimmed: boolean;
   isHovered: boolean;
+  overrideColor?: string;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
   onClick?: (e: { screenX: number; screenY: number }) => void;
 }) {
   const geo = element.geometry;
   const label = getLabel(element);
-  const color = element.properties.color;
+  const color = overrideColor || element.properties.color;
   const active = isHighlighted || isHovered;
   const strokeColor = active ? "#007bff" : (element.properties.strokeColor || "#888888");
   const strokeWidth = active
@@ -147,7 +152,7 @@ function ViewerElement({
   );
 }
 
-export function ViewerCanvas({ data, highlightedBoothCode, searchMatchCodes, onBoothClick }: ViewerCanvasProps) {
+export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedBoothCode, searchMatchCodes, onBoothClick }: ViewerCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredBoothCode, setHoveredBoothCode] = useState<string | null>(null);
   const isSearching = searchMatchCodes !== null && searchMatchCodes.size > 0;
@@ -167,7 +172,7 @@ export function ViewerCanvas({ data, highlightedBoothCode, searchMatchCodes, onB
   const hasHighlight = highlightedBoothCode !== null;
 
   return (
-    <div ref={containerRef} className="flex-1 bg-gray-200 overflow-hidden">
+    <div ref={containerRef} className="flex-1 min-w-0 bg-gray-200 overflow-hidden">
       <Stage
         ref={stageRef}
         width={stageSize.width}
@@ -199,23 +204,37 @@ export function ViewerCanvas({ data, highlightedBoothCode, searchMatchCodes, onB
           {sortedElements.map((element) => {
             const isBooth = element.type === "booth";
             const boothCode = element.properties.boothCode;
+            const isOccupied = isBooth && boothCode ? occupiedBoothCodes.has(boothCode) : false;
+
+            // In attendee mode, unoccupied booths are faded and non-interactive
+            const isInert = mode === "attendee" && isBooth && !isOccupied;
+
             const isSelected = isBooth && boothCode === highlightedBoothCode;
             const isSearchMatch = isBooth && boothCode && isSearching && searchMatchCodes!.has(boothCode);
             const isHovered = isBooth && boothCode === hoveredBoothCode;
             const highlighted = isSelected || !!isSearchMatch;
             const dimmed =
+              isInert ||
               (hasHighlight && !isSelected) ||
               (isSearching && !isSearchMatch && !isSelected);
+
+            // In exhibitor mode, occupied booths get a muted treatment when not highlighted
+            const overrideColor =
+              mode === "exhibitor" && isBooth && isOccupied && !highlighted
+                ? "#6B7280"
+                : undefined;
+
             return (
               <ViewerElement
                 key={element.id}
                 element={element}
                 isHighlighted={highlighted}
                 isDimmed={dimmed}
-                isHovered={isHovered && !highlighted}
-                onMouseEnter={isBooth && boothCode ? () => setHoveredBoothCode(boothCode) : undefined}
-                onMouseLeave={isBooth ? () => setHoveredBoothCode(null) : undefined}
-                onClick={isBooth && boothCode ? (e) => onBoothClick(boothCode, e.screenX, e.screenY) : undefined}
+                isHovered={isHovered && !highlighted && !isInert}
+                overrideColor={overrideColor}
+                onMouseEnter={!isInert && isBooth && boothCode ? () => setHoveredBoothCode(boothCode) : undefined}
+                onMouseLeave={!isInert && isBooth ? () => setHoveredBoothCode(null) : undefined}
+                onClick={!isInert && isBooth && boothCode ? (e) => onBoothClick(boothCode, e.screenX, e.screenY) : undefined}
               />
             );
           })}

@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import type { FloorPlanData } from "../types";
-import type { Exhibitor } from "./types";
+import type { Exhibitor, ViewerMode } from "./types";
 import { useSearch } from "./hooks/useSearch";
 import { ViewerCanvas } from "./components/ViewerCanvas";
 import { SearchBar } from "./components/SearchBar";
@@ -11,11 +11,12 @@ import { BoothPopover } from "./components/BoothPopover";
 interface MapViewerProps {
   data: FloorPlanData;
   exhibitors: Exhibitor[];
+  mode?: ViewerMode;
 }
 
 const MOBILE_BREAKPOINT = 640;
 
-export function MapViewer({ data, exhibitors }: MapViewerProps) {
+export function MapViewer({ data, exhibitors, mode = "attendee" }: MapViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
   const [selectedBoothCode, setSelectedBoothCode] = useState<string | null>(null);
@@ -36,6 +37,11 @@ export function MapViewer({ data, exhibitors }: MapViewerProps) {
     observer.observe(el);
     return () => observer.disconnect();
   }, []);
+
+  const occupiedBoothCodes = useMemo(
+    () => new Set(exhibitors.map((ex) => ex.boothCode)),
+    [exhibitors]
+  );
 
   const exhibitorsByBooth = useMemo(() => {
     const map = new Map<string, Exhibitor>();
@@ -87,6 +93,8 @@ export function MapViewer({ data, exhibitors }: MapViewerProps) {
       <div className="flex flex-1 overflow-hidden relative">
         <ViewerCanvas
           data={data}
+          mode={mode}
+          occupiedBoothCodes={occupiedBoothCodes}
           highlightedBoothCode={selectedBoothCode}
           searchMatchCodes={isSearching ? matchedBoothCodes : null}
           onBoothClick={handleBoothClick}

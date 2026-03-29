@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { PiDesktop, PiDeviceMobile } from "react-icons/pi";
+import { PiDesktop, PiDeviceMobile, PiUser, PiStorefront } from "react-icons/pi";
 import { MapEditor } from "./editor";
 import { MapViewer } from "./viewer";
 import { sampleMap } from "./sample-data/sample-map";
 import { sampleExhibitors } from "./sample-data/sample-exhibitors";
 import type { FloorPlanData } from "./types";
+import type { ViewerMode } from "./viewer/types";
 
 type Route = "editor" | "viewer";
 type Viewport = "desktop" | "mobile";
@@ -24,13 +25,13 @@ function loadViewerData(): FloorPlanData | null {
   }
 }
 
-function ViewerRoute({ viewport }: { viewport: Viewport }) {
+function ViewerRoute({ viewport, mode }: { viewport: Viewport; mode: ViewerMode }) {
   const data = loadViewerData() ?? sampleMap;
-  const viewer = <MapViewer data={data} exhibitors={sampleExhibitors} />;
+  const viewer = <MapViewer data={data} exhibitors={sampleExhibitors} mode={mode} />;
 
   if (viewport === "mobile") {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-800 overflow-hidden">
+      <div className="h-full flex items-center justify-center bg-gray-800 overflow-hidden">
         <div
           className="bg-white rounded-xl shadow-2xl overflow-hidden border-4 border-gray-700"
           style={{ width: 390, height: 844 }}
@@ -47,6 +48,7 @@ function ViewerRoute({ viewport }: { viewport: Viewport }) {
 function App() {
   const [route, setRoute] = useState<Route>(getRoute);
   const [viewport, setViewport] = useState<Viewport>("desktop");
+  const [viewerMode, setViewerMode] = useState<ViewerMode>("attendee");
 
   useEffect(() => {
     const onHashChange = () => setRoute(getRoute());
@@ -99,14 +101,35 @@ function App() {
             >
               <PiDeviceMobile size={16} />
             </button>
+            <div className="w-px h-4 bg-gray-700 mx-1" />
+            <button
+              onClick={() => setViewerMode("attendee")}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
+                viewerMode === "attendee" ? "bg-white/15 text-white" : "text-gray-500 hover:text-gray-300"
+              }`}
+              title="Attendee view"
+            >
+              <PiUser size={14} />
+              <span>Attendee</span>
+            </button>
+            <button
+              onClick={() => setViewerMode("exhibitor")}
+              className={`flex items-center gap-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
+                viewerMode === "exhibitor" ? "bg-white/15 text-white" : "text-gray-500 hover:text-gray-300"
+              }`}
+              title="Exhibitor view"
+            >
+              <PiStorefront size={14} />
+              <span>Exhibitor</span>
+            </button>
           </>
         )}
       </nav>
-      <div className="flex-1 overflow-hidden flex">
+      <div className="flex-1 overflow-hidden">
         {route === "editor" && (
           <MapEditor initialData={sampleMap} persist />
         )}
-        {route === "viewer" && <ViewerRoute viewport={viewport} />}
+        {route === "viewer" && <ViewerRoute viewport={viewport} mode={viewerMode} />}
       </div>
     </div>
   );

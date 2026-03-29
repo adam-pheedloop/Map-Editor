@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { MapEditor } from "./editor";
 import { MapViewer } from "./viewer";
 import { sampleMap } from "./sample-data/sample-map";
+import { sampleExhibitors } from "./sample-data/sample-exhibitors";
 import type { FloorPlanData } from "./types";
 
 type Route = "editor" | "viewer";
@@ -23,7 +24,7 @@ function loadViewerData(): FloorPlanData | null {
 
 function ViewerRoute() {
   const data = loadViewerData() ?? sampleMap;
-  return <MapViewer data={data} />;
+  return <MapViewer data={data} exhibitors={sampleExhibitors} />;
 }
 
 function App() {

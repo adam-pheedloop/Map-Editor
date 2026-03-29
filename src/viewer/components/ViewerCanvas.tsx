@@ -12,6 +12,7 @@ import { BackgroundImage } from "../../editor/components/canvas/BackgroundImage"
 
 interface ViewerCanvasProps {
   data: FloorPlanData;
+  highlightedBoothCode: string | null;
 }
 
 function getLabel(element: FloorPlanElement): string {
@@ -21,19 +22,30 @@ function getLabel(element: FloorPlanElement): string {
   return element.properties.name || "";
 }
 
-function ViewerElement({ element }: { element: FloorPlanElement }) {
+function ViewerElement({
+  element,
+  isHighlighted,
+  isDimmed,
+}: {
+  element: FloorPlanElement;
+  isHighlighted: boolean;
+  isDimmed: boolean;
+}) {
   const geo = element.geometry;
   const label = getLabel(element);
   const color = element.properties.color;
-  const strokeColor = element.properties.strokeColor || "#888888";
-  const strokeWidth = element.properties.strokeWidth ?? (geo.shape === "line" ? 2 : 1);
+  const strokeColor = isHighlighted ? "#007bff" : (element.properties.strokeColor || "#888888");
+  const strokeWidth = isHighlighted
+    ? Math.max((element.properties.strokeWidth ?? 1) * 2, 3)
+    : (element.properties.strokeWidth ?? (geo.shape === "line" ? 2 : 1));
+  const opacity = isDimmed ? 0.4 : 0.9;
 
   const x = "x" in geo ? geo.x : 0;
   const y = "y" in geo ? geo.y : 0;
   const rotation = "rotation" in geo ? (geo.rotation ?? 0) : 0;
 
   return (
-    <Group x={x} y={y} rotation={rotation}>
+    <Group x={x} y={y} rotation={rotation} opacity={opacity}>
       {geo.shape === "rect" && (
         <>
           <Rect
@@ -99,7 +111,7 @@ function ViewerElement({ element }: { element: FloorPlanElement }) {
   );
 }
 
-export function ViewerCanvas({ data }: ViewerCanvasProps) {
+export function ViewerCanvas({ data, highlightedBoothCode }: ViewerCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const {
     stageRef,
@@ -113,6 +125,8 @@ export function ViewerCanvas({ data }: ViewerCanvasProps) {
   const sortedElements = [...data.elements].sort(
     (a, b) => (a.properties.zIndex ?? 0) - (b.properties.zIndex ?? 0)
   );
+
+  const hasHighlight = highlightedBoothCode !== null;
 
   return (
     <div ref={containerRef} className="flex-1 bg-gray-200 overflow-hidden">
@@ -144,9 +158,18 @@ export function ViewerCanvas({ data }: ViewerCanvasProps) {
         </Layer>
 
         <Layer>
-          {sortedElements.map((element) => (
-            <ViewerElement key={element.id} element={element} />
-          ))}
+          {sortedElements.map((element) => {
+            const isBooth = element.type === "booth";
+            const isThisBooth = isBooth && element.properties.boothCode === highlightedBoothCode;
+            return (
+              <ViewerElement
+                key={element.id}
+                element={element}
+                isHighlighted={isThisBooth}
+                isDimmed={hasHighlight && !isThisBooth}
+              />
+            );
+          })}
         </Layer>
       </Stage>
     </div>

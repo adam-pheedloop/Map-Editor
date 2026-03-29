@@ -5,12 +5,18 @@ interface KeyboardShortcutActions {
   setActiveTool: (tool: ActiveTool) => void;
   onDeselect: () => void;
   onDelete: () => void;
+  onCopy: () => void;
+  onPaste: () => void;
+  onDuplicate: () => void;
 }
 
 export function useKeyboardShortcuts({
   setActiveTool,
   onDeselect,
   onDelete,
+  onCopy,
+  onPaste,
+  onDuplicate,
 }: KeyboardShortcutActions) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -19,6 +25,25 @@ export function useKeyboardShortcuts({
         e.target instanceof HTMLTextAreaElement
       )
         return;
+
+      const mod = e.metaKey || e.ctrlKey;
+
+      if (mod) {
+        switch (e.key.toLowerCase()) {
+          case "c":
+            e.preventDefault();
+            onCopy();
+            return;
+          case "v":
+            e.preventDefault();
+            onPaste();
+            return;
+          case "d":
+            e.preventDefault();
+            onDuplicate();
+            return;
+        }
+      }
 
       switch (e.key.toLowerCase()) {
         case "v":
@@ -49,5 +74,5 @@ export function useKeyboardShortcuts({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [setActiveTool, onDeselect, onDelete]);
+  }, [setActiveTool, onDeselect, onDelete, onCopy, onPaste, onDuplicate]);
 }

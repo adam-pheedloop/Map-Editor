@@ -5,6 +5,7 @@ import type { DrawingDefaults } from "./components/panels/OptionsBar";
 import { useCanvasControls } from "./hooks/useCanvasControls";
 import { useEditorState } from "./hooks/useEditorState";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
+import { useClipboard } from "./hooks/useClipboard";
 import { Canvas } from "./components/canvas/Canvas";
 import { ToolSidebar } from "./components/panels/ToolSidebar";
 import { TopBar } from "./components/TopBar";
@@ -68,6 +69,31 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     ? data.elements.find((el) => el.id === selectedId) ?? null
     : null;
 
+  const { copy, paste } = useClipboard();
+
+  const handleCopy = useCallback(() => {
+    if (selectedElement) copy(selectedElement);
+  }, [selectedElement, copy]);
+
+  const handlePaste = useCallback(() => {
+    const newElement = paste();
+    if (newElement) {
+      addElement(newElement);
+      setSelectedId(newElement.id);
+    }
+  }, [paste, addElement]);
+
+  const handleDuplicate = useCallback(() => {
+    if (selectedElement) {
+      copy(selectedElement);
+      const newElement = paste();
+      if (newElement) {
+        addElement(newElement);
+        setSelectedId(newElement.id);
+      }
+    }
+  }, [selectedElement, copy, paste, addElement]);
+
   const handleDeselect = useCallback(() => {
     setSelectedId(null);
   }, []);
@@ -83,6 +109,9 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     setActiveTool,
     onDeselect: handleDeselect,
     onDelete: handleDelete,
+    onCopy: handleCopy,
+    onPaste: handlePaste,
+    onDuplicate: handleDuplicate,
   });
 
   // The colors shown in the options bar: selected element's colors or defaults

@@ -1,12 +1,29 @@
 import { useState, useEffect } from "react";
 import { MapEditor } from "./editor";
+import { MapViewer } from "./viewer";
 import { sampleMap } from "./sample-data/sample-map";
+import type { FloorPlanData } from "./types";
 
 type Route = "editor" | "viewer";
 
 function getRoute(): Route {
   const hash = window.location.hash.replace("#", "");
   return hash === "viewer" ? "viewer" : "editor";
+}
+
+function loadViewerData(): FloorPlanData | null {
+  try {
+    const raw = localStorage.getItem("map-editor:floorplan");
+    if (!raw) return null;
+    return JSON.parse(raw) as FloorPlanData;
+  } catch {
+    return null;
+  }
+}
+
+function ViewerRoute() {
+  const data = loadViewerData() ?? sampleMap;
+  return <MapViewer data={data} />;
 }
 
 function App() {
@@ -46,11 +63,7 @@ function App() {
         {route === "editor" && (
           <MapEditor initialData={sampleMap} persist />
         )}
-        {route === "viewer" && (
-          <div className="flex items-center justify-center h-full text-gray-400">
-            Viewer goes here
-          </div>
-        )}
+        {route === "viewer" && <ViewerRoute />}
       </div>
     </div>
   );

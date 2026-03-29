@@ -1,1 +1,1 @@
-// Viewer package entry point
+export { MapViewer } from "./MapViewer";

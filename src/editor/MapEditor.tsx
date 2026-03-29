@@ -5,7 +5,8 @@ import { useCanvasControls } from "./hooks/useCanvasControls";
 import { useEditorState } from "./hooks/useEditorState";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { Canvas } from "./components/Canvas";
-import { Toolbar } from "./components/Toolbar";
+import { ToolSidebar } from "./components/ToolSidebar";
+import { TopBar } from "./components/TopBar";
 import { StatusBar } from "./components/StatusBar";
 import type { FloorPlanData } from "../types";
 
@@ -89,24 +90,29 @@ export function MapEditor({ initialData }: MapEditorProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <Toolbar activeTool={activeTool} onToolChange={handleToolChange} />
-      <Canvas
-        data={data}
-        activeTool={activeTool}
-        selectedId={selectedId}
-        scale={scale}
-        position={position}
-        stageSize={stageSize}
-        stageRef={stageRef}
-        containerRef={containerRef}
-        onWheel={handleWheel}
-        onDragEnd={handleDragEnd}
-        onDrawEnd={handleDrawEnd}
-        onSelect={setSelectedId}
-        onElementMove={handleElementMove}
-        onElementResize={handleElementResize}
-      />
-      <StatusBar scale={scale} onZoomReset={zoomReset} />
+      <TopBar />
+      <div className="flex flex-1 overflow-hidden">
+        <ToolSidebar activeTool={activeTool} onToolChange={handleToolChange} />
+        <div className="flex flex-col flex-1">
+          <Canvas
+            data={data}
+            activeTool={activeTool}
+            selectedId={selectedId}
+            scale={scale}
+            position={position}
+            stageSize={stageSize}
+            stageRef={stageRef}
+            containerRef={containerRef}
+            onWheel={handleWheel}
+            onDragEnd={handleDragEnd}
+            onDrawEnd={handleDrawEnd}
+            onSelect={setSelectedId}
+            onElementMove={handleElementMove}
+            onElementResize={handleElementResize}
+          />
+          <StatusBar scale={scale} onZoomReset={zoomReset} />
+        </div>
+      </div>
     </div>
   );
 }

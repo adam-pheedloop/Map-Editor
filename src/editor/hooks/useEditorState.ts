@@ -1,8 +1,39 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import type { FloorPlanData, FloorPlanElement, ElementType, Geometry, ElementProperties, BackgroundImage, Dimensions } from "../../types";
 
-export function useEditorState(initialData: FloorPlanData) {
-  const [data, setData] = useState<FloorPlanData>(initialData);
+const STORAGE_KEY = "map-editor:floorplan";
+
+function loadFromStorage(): FloorPlanData | null {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as FloorPlanData;
+  } catch {
+    return null;
+  }
+}
+
+interface UseEditorStateOptions {
+  persist?: boolean;
+}
+
+export function useEditorState(
+  initialData: FloorPlanData,
+  { persist = false }: UseEditorStateOptions = {}
+) {
+  const [data, setData] = useState<FloorPlanData>(() => {
+    if (persist) {
+      const stored = loadFromStorage();
+      if (stored) return stored;
+    }
+    return initialData;
+  });
+
+  // Auto-save to localStorage
+  useEffect(() => {
+    if (!persist) return;
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }, [data, persist]);
 
   const addElement = useCallback((element: FloorPlanElement) => {
     setData((prev) => ({
@@ -66,6 +97,10 @@ export function useEditorState(initialData: FloorPlanData) {
     }));
   }, []);
 
+  const clearStorage = useCallback(() => {
+    localStorage.removeItem(STORAGE_KEY);
+  }, []);
+
   return {
     data,
     addElement,
@@ -75,5 +110,6 @@ export function useEditorState(initialData: FloorPlanData) {
     updateElementType,
     setBackgroundImage,
     updateDimensions,
+    clearStorage,
   };
 }

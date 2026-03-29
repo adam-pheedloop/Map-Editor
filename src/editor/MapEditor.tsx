@@ -26,9 +26,10 @@ const INITIAL_DEFAULTS: DrawingDefaults = {
 interface MapEditorProps {
   initialData: FloorPlanData;
   debug?: boolean;
+  persist?: boolean;
 }
 
-export function MapEditor({ initialData, debug: debugProp }: MapEditorProps) {
+export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorProps) {
   const debug = debugProp || import.meta.env.DEV;
 
   const {
@@ -40,7 +41,7 @@ export function MapEditor({ initialData, debug: debugProp }: MapEditorProps) {
     updateElementType,
     setBackgroundImage,
     updateDimensions,
-  } = useEditorState(initialData);
+  } = useEditorState(initialData, { persist });
   const [activeTool, setActiveTool] = useState<ActiveTool>("select");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [defaults, setDefaults] = useState<DrawingDefaults>(INITIAL_DEFAULTS);

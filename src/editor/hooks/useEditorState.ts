@@ -1,5 +1,5 @@
 import { useState, useCallback } from "react";
-import type { FloorPlanData, FloorPlanElement, Geometry } from "../../types";
+import type { FloorPlanData, FloorPlanElement, Geometry, ElementProperties } from "../../types";
 
 export function useEditorState(initialData: FloorPlanData) {
   const [data, setData] = useState<FloorPlanData>(initialData);
@@ -25,6 +25,20 @@ export function useEditorState(initialData: FloorPlanData) {
     []
   );
 
+  const updateProperties = useCallback(
+    (id: string, properties: Partial<ElementProperties>) => {
+      setData((prev) => ({
+        ...prev,
+        elements: prev.elements.map((el) =>
+          el.id === id
+            ? { ...el, properties: { ...el.properties, ...properties } }
+            : el
+        ),
+      }));
+    },
+    []
+  );
+
   const deleteElement = useCallback((id: string) => {
     setData((prev) => ({
       ...prev,
@@ -32,5 +46,5 @@ export function useEditorState(initialData: FloorPlanData) {
     }));
   }, []);
 
-  return { data, addElement, updateElement, deleteElement };
+  return { data, addElement, updateElement, updateProperties, deleteElement };
 }

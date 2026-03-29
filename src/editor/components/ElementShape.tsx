@@ -23,10 +23,12 @@ function getLabel(element: FloorPlanElement): string {
 function RectShape({
   geo,
   color,
+  strokeColor,
   label,
 }: {
   geo: RectGeometry;
   color: string;
+  strokeColor: string;
   label: string;
 }) {
   return (
@@ -35,7 +37,7 @@ function RectShape({
         width={geo.width}
         height={geo.height}
         fill={color}
-        stroke="#888"
+        stroke={strokeColor}
         strokeWidth={0.5}
         cornerRadius={2}
         opacity={0.9}
@@ -60,10 +62,12 @@ function RectShape({
 function EllipseShape({
   geo,
   color,
+  strokeColor,
   label,
 }: {
   geo: EllipseGeometry;
   color: string;
+  strokeColor: string;
   label: string;
 }) {
   return (
@@ -74,7 +78,7 @@ function EllipseShape({
         radiusX={geo.radiusX}
         radiusY={geo.radiusY}
         fill={color}
-        stroke="#888"
+        stroke={strokeColor}
         strokeWidth={0.5}
         opacity={0.9}
       />
@@ -118,6 +122,7 @@ export function ElementShape({
   const geo = element.geometry;
   const label = getLabel(element);
   const color = element.properties.color;
+  const strokeColor = element.properties.strokeColor || "#888888";
 
   // All supported shapes have x/y except polygon (not yet supported)
   const x = "x" in geo ? geo.x : 0;
@@ -139,10 +144,10 @@ export function ElementShape({
       }}
     >
       {geo.shape === "rect" && (
-        <RectShape geo={geo} color={color} label={label} />
+        <RectShape geo={geo} color={color} strokeColor={strokeColor} label={label} />
       )}
       {geo.shape === "ellipse" && (
-        <EllipseShape geo={geo} color={color} label={label} />
+        <EllipseShape geo={geo} color={color} strokeColor={strokeColor} label={label} />
       )}
       {geo.shape === "line" && (
         <LineShape geo={geo} color={color} />

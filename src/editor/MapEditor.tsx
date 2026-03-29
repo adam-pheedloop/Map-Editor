@@ -8,6 +8,7 @@ import { Canvas } from "./components/Canvas";
 import { ToolSidebar } from "./components/ToolSidebar";
 import { TopBar } from "./components/TopBar";
 import { StatusBar } from "./components/StatusBar";
+import { PropertiesPanel } from "./components/PropertiesPanel";
 import type { FloorPlanData } from "../types";
 
 interface MapEditorProps {
@@ -15,7 +16,7 @@ interface MapEditorProps {
 }
 
 export function MapEditor({ initialData }: MapEditorProps) {
-  const { data, addElement, updateElement, deleteElement } =
+  const { data, addElement, updateElement, updateProperties, deleteElement } =
     useEditorState(initialData);
   const [activeTool, setActiveTool] = useState<ActiveTool>("select");
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -158,6 +159,10 @@ export function MapEditor({ initialData }: MapEditorProps) {
     [data.elements, updateElement]
   );
 
+  const selectedElement = selectedId
+    ? data.elements.find((el) => el.id === selectedId) ?? null
+    : null;
+
   const handleToolChange = useCallback((tool: ActiveTool) => {
     setActiveTool(tool);
     if (tool !== "select") {
@@ -191,6 +196,15 @@ export function MapEditor({ initialData }: MapEditorProps) {
           />
           <StatusBar scale={scale} onZoomReset={zoomReset} />
         </div>
+        <PropertiesPanel
+          element={selectedElement}
+          onUpdateProperties={updateProperties}
+          onUpdateGeometry={updateElement}
+          onDelete={(id) => {
+            deleteElement(id);
+            setSelectedId(null);
+          }}
+        />
       </div>
     </div>
   );

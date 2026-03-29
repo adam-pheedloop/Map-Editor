@@ -64,6 +64,7 @@ export type Geometry =
 export interface ElementProperties {
   name?: string;
   color: string;
+  strokeColor?: string;
   zIndex: number;
   // Booth-specific
   boothCode?: string;

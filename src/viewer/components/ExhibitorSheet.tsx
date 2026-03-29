@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { PiCaretUp, PiCaretDown } from "react-icons/pi";
 import type { Exhibitor } from "../types";
 
@@ -10,6 +10,10 @@ interface ExhibitorSheetProps {
 
 export function ExhibitorSheet({ exhibitors, selectedId, onSelect }: ExhibitorSheetProps) {
   const [expanded, setExpanded] = useState(false);
+  const sorted = useMemo(
+    () => [...exhibitors].sort((a, b) => a.name.localeCompare(b.name)),
+    [exhibitors]
+  );
 
   return (
     <div
@@ -32,7 +36,7 @@ export function ExhibitorSheet({ exhibitors, selectedId, onSelect }: ExhibitorSh
 
       {expanded && (
         <div className="overflow-y-auto" style={{ maxHeight: "calc(60vh - 48px)" }}>
-          {exhibitors.map((exhibitor) => (
+          {sorted.map((exhibitor) => (
             <button
               key={exhibitor.id}
               onClick={() => onSelect(exhibitor)}

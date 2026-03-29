@@ -13,6 +13,7 @@ import { BackgroundImage } from "../../editor/components/canvas/BackgroundImage"
 interface ViewerCanvasProps {
   data: FloorPlanData;
   highlightedBoothCode: string | null;
+  searchMatchCodes: Set<string> | null;
   onBoothClick: (boothCode: string, screenX: number, screenY: number) => void;
 }
 
@@ -146,9 +147,10 @@ function ViewerElement({
   );
 }
 
-export function ViewerCanvas({ data, highlightedBoothCode, onBoothClick }: ViewerCanvasProps) {
+export function ViewerCanvas({ data, highlightedBoothCode, searchMatchCodes, onBoothClick }: ViewerCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredBoothCode, setHoveredBoothCode] = useState<string | null>(null);
+  const isSearching = searchMatchCodes !== null && searchMatchCodes.size > 0;
   const {
     stageRef,
     scale,
@@ -197,15 +199,20 @@ export function ViewerCanvas({ data, highlightedBoothCode, onBoothClick }: Viewe
           {sortedElements.map((element) => {
             const isBooth = element.type === "booth";
             const boothCode = element.properties.boothCode;
-            const isThisBooth = isBooth && boothCode === highlightedBoothCode;
+            const isSelected = isBooth && boothCode === highlightedBoothCode;
+            const isSearchMatch = isBooth && boothCode && isSearching && searchMatchCodes!.has(boothCode);
             const isHovered = isBooth && boothCode === hoveredBoothCode;
+            const highlighted = isSelected || !!isSearchMatch;
+            const dimmed =
+              (hasHighlight && !isSelected) ||
+              (isSearching && !isSearchMatch && !isSelected);
             return (
               <ViewerElement
                 key={element.id}
                 element={element}
-                isHighlighted={isThisBooth}
-                isDimmed={hasHighlight && !isThisBooth}
-                isHovered={isHovered && !isThisBooth}
+                isHighlighted={highlighted}
+                isDimmed={dimmed}
+                isHovered={isHovered && !highlighted}
                 onMouseEnter={isBooth && boothCode ? () => setHoveredBoothCode(boothCode) : undefined}
                 onMouseLeave={isBooth ? () => setHoveredBoothCode(null) : undefined}
                 onClick={isBooth && boothCode ? (e) => onBoothClick(boothCode, e.screenX, e.screenY) : undefined}

@@ -1,7 +1,9 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import type { FloorPlanData } from "../types";
 import type { Exhibitor } from "./types";
+import { useSearch } from "./hooks/useSearch";
 import { ViewerCanvas } from "./components/ViewerCanvas";
+import { SearchBar } from "./components/SearchBar";
 import { ExhibitorList } from "./components/ExhibitorList";
 import { ExhibitorSheet } from "./components/ExhibitorSheet";
 import { BoothPopover } from "./components/BoothPopover";
@@ -19,7 +21,11 @@ export function MapViewer({ data, exhibitors }: MapViewerProps) {
   const [selectedBoothCode, setSelectedBoothCode] = useState<string | null>(null);
   const [popover, setPopover] = useState<{ boothCode: string; x: number; y: number } | null>(null);
 
-  // Track container width for responsive layout
+  const { query, setQuery, results, matchedBoothCodes, isSearching } = useSearch(
+    data.elements,
+    exhibitors
+  );
+
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -60,41 +66,55 @@ export function MapViewer({ data, exhibitors }: MapViewerProps) {
     []
   );
 
+  const handleResultSelect = useCallback((boothCode: string) => {
+    setSelectedBoothCode(boothCode);
+    setPopover(null);
+  }, []);
+
   const handlePopoverClose = useCallback(() => {
     setPopover(null);
     setSelectedBoothCode(null);
   }, []);
 
   return (
-    <div ref={containerRef} className="flex h-full relative">
-      <ViewerCanvas
-        data={data}
-        highlightedBoothCode={selectedBoothCode}
-        onBoothClick={handleBoothClick}
+    <div ref={containerRef} className="flex flex-col h-full relative">
+      <SearchBar
+        query={query}
+        results={results}
+        onQueryChange={setQuery}
+        onResultSelect={handleResultSelect}
       />
-      {!isMobile && (
-        <ExhibitorList
-          exhibitors={exhibitors}
-          selectedId={selectedExhibitor?.id ?? null}
-          onSelect={handleExhibitorSelect}
+      <div className="flex flex-1 overflow-hidden relative">
+        <ViewerCanvas
+          data={data}
+          highlightedBoothCode={selectedBoothCode}
+          searchMatchCodes={isSearching ? matchedBoothCodes : null}
+          onBoothClick={handleBoothClick}
         />
-      )}
-      {isMobile && (
-        <ExhibitorSheet
-          exhibitors={exhibitors}
-          selectedId={selectedExhibitor?.id ?? null}
-          onSelect={handleExhibitorSelect}
-        />
-      )}
-      {popover && !isMobile && (
-        <BoothPopover
-          boothCode={popover.boothCode}
-          exhibitor={exhibitorsByBooth.get(popover.boothCode) ?? null}
-          x={popover.x}
-          y={popover.y}
-          onClose={handlePopoverClose}
-        />
-      )}
+        {!isMobile && (
+          <ExhibitorList
+            exhibitors={exhibitors}
+            selectedId={selectedExhibitor?.id ?? null}
+            onSelect={handleExhibitorSelect}
+          />
+        )}
+        {isMobile && (
+          <ExhibitorSheet
+            exhibitors={exhibitors}
+            selectedId={selectedExhibitor?.id ?? null}
+            onSelect={handleExhibitorSelect}
+          />
+        )}
+        {popover && !isMobile && (
+          <BoothPopover
+            boothCode={popover.boothCode}
+            exhibitor={exhibitorsByBooth.get(popover.boothCode) ?? null}
+            x={popover.x}
+            y={popover.y}
+            onClose={handlePopoverClose}
+          />
+        )}
+      </div>
     </div>
   );
 }

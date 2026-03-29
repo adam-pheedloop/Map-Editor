@@ -48,12 +48,15 @@ export function SelectionTransformer({
     ? JSON.stringify(selectedElement.geometry)
     : null;
 
+  const isLine = selectedElement?.geometry.shape === "line";
+
   useEffect(() => {
     const tr = trRef.current;
     const stage = stageRef.current;
     if (!tr || !stage) return;
 
-    if (!selectedId) {
+    // Lines use endpoint handles, not the Transformer
+    if (!selectedId || isLine) {
       tr.nodes([]);
       tr.getLayer()?.batchDraw();
       return;
@@ -64,7 +67,7 @@ export function SelectionTransformer({
       tr.nodes([node]);
       tr.getLayer()?.batchDraw();
     }
-  }, [selectedId, stageRef, geoKey]);
+  }, [selectedId, stageRef, geoKey, isLine]);
 
   const handleTransformEnd = useCallback(() => {
     const tr = trRef.current;

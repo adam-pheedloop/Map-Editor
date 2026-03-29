@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PiCursorFill, PiRectangle, PiCircle } from "react-icons/pi";
+import { PiCursorFill, PiRectangle, PiCircle, PiLineSegment } from "react-icons/pi";
 import type { ActiveTool } from "../types";
 
 interface ToolSidebarProps {
@@ -16,6 +16,7 @@ const tools: {
   { id: "select", label: "Select", shortcut: "V", icon: <PiCursorFill size={20} /> },
   { id: "rectangle", label: "Rectangle", shortcut: "R", icon: <PiRectangle size={20} /> },
   { id: "ellipse", label: "Ellipse", shortcut: "O", icon: <PiCircle size={20} /> },
+  { id: "line", label: "Line", shortcut: "L", icon: <PiLineSegment size={20} /> },
 ];
 
 function ToolButton({

@@ -1,12 +1,14 @@
 import { useCallback } from "react";
 import { Stage, Layer, Rect } from "react-konva";
 import type Konva from "konva";
-import type { FloorPlanData } from "../../types";
+import type { FloorPlanData, LineGeometry } from "../../types";
 import type { ActiveTool } from "../types";
 import { isEmptySpaceClick } from "../utils/canvas";
 import { useDrawingTool } from "../hooks/useDrawingTool";
+import { useLineTool } from "../hooks/useLineTool";
 import { ElementShape } from "./ElementShape";
 import { SelectionTransformer } from "./SelectionTransformer";
+import { LineEndpointHandles } from "./LineEndpointHandles";
 import { DrawingPreview } from "./DrawingPreview";
 
 interface CanvasProps {
@@ -21,6 +23,7 @@ interface CanvasProps {
   onWheel: (e: Konva.KonvaEventObject<WheelEvent>) => void;
   onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => void;
   onDrawEnd: (x: number, y: number, width: number, height: number) => void;
+  onLineDrawEnd: (x1: number, y1: number, x2: number, y2: number) => void;
   onSelect: (id: string | null) => void;
   onElementMove: (id: string, x: number, y: number) => void;
   onElementResize: (
@@ -30,6 +33,7 @@ interface CanvasProps {
     width: number,
     height: number
   ) => void;
+  onEndpointMove: (id: string, pointIndex: 0 | 1, x: number, y: number) => void;
 }
 
 export function Canvas({
@@ -44,24 +48,40 @@ export function Canvas({
   onWheel,
   onDragEnd,
   onDrawEnd,
+  onLineDrawEnd,
   onSelect,
   onElementMove,
   onElementResize,
+  onEndpointMove,
 }: CanvasProps) {
   const isSelectMode = activeTool === "select";
   const isDrawing = !isSelectMode;
+  const isLineTool = activeTool === "line";
 
-  const drawing = useDrawingTool(
+  const shapeDrawing = useDrawingTool(
     stageRef,
     position,
     scale,
-    isDrawing,
+    isDrawing && !isLineTool,
     onDrawEnd
+  );
+
+  const lineDrawing = useLineTool(
+    stageRef,
+    position,
+    scale,
+    isLineTool,
+    onLineDrawEnd
   );
 
   const sortedElements = [...data.elements].sort(
     (a, b) => (a.properties.zIndex ?? 0) - (b.properties.zIndex ?? 0)
   );
+
+  const selectedElement = selectedId
+    ? data.elements.find((el) => el.id === selectedId)
+    : null;
+  const isSelectedLine = selectedElement?.geometry.shape === "line";
 
   const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
     if (isSelectMode) {
@@ -70,7 +90,27 @@ export function Canvas({
       }
       return;
     }
-    drawing.handleMouseDown(e);
+    if (isLineTool) {
+      lineDrawing.handleMouseDown(e);
+    } else {
+      shapeDrawing.handleMouseDown(e);
+    }
+  };
+
+  const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    if (isLineTool) {
+      lineDrawing.handleMouseMove(e);
+    } else {
+      shapeDrawing.handleMouseMove(e);
+    }
+  };
+
+  const handleMouseUp = () => {
+    if (isLineTool) {
+      lineDrawing.handleMouseUp();
+    } else {
+      shapeDrawing.handleMouseUp();
+    }
   };
 
   const handleElementDragEnd = useCallback(
@@ -98,8 +138,8 @@ export function Canvas({
         onWheel={onWheel}
         onDragEnd={onDragEnd}
         onMouseDown={handleMouseDown}
-        onMouseMove={drawing.handleMouseMove}
-        onMouseUp={drawing.handleMouseUp}
+        onMouseMove={handleMouseMove}
+        onMouseUp={handleMouseUp}
       >
         <Layer>
           <Rect
@@ -130,10 +170,21 @@ export function Canvas({
             elements={data.elements}
             onTransformEnd={onElementResize}
           />
+          {isSelectedLine && selectedElement && (
+            <LineEndpointHandles
+              elementId={selectedElement.id}
+              geometry={selectedElement.geometry as LineGeometry}
+              onEndpointMove={onEndpointMove}
+            />
+          )}
         </Layer>
 
         <Layer>
-          <DrawingPreview preview={drawing.preview} activeTool={activeTool} />
+          <DrawingPreview
+            rectPreview={shapeDrawing.preview}
+            linePreview={lineDrawing.preview}
+            activeTool={activeTool}
+          />
         </Layer>
       </Stage>
     </div>

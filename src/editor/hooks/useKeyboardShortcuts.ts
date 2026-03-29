@@ -30,6 +30,9 @@ export function useKeyboardShortcuts({
         case "o":
           setActiveTool("ellipse");
           break;
+        case "l":
+          setActiveTool("line");
+          break;
         case "escape":
           onDeselect();
           setActiveTool("select");

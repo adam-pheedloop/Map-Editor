@@ -1,8 +1,9 @@
-import { Group, Rect, Ellipse, Text } from "react-konva";
+import { Group, Rect, Ellipse, Line, Text } from "react-konva";
 import type {
   FloorPlanElement,
   RectGeometry,
   EllipseGeometry,
+  LineGeometry,
 } from "../../types";
 
 interface ElementShapeProps {
@@ -96,6 +97,18 @@ function EllipseShape({
   );
 }
 
+function LineShape({ geo, color }: { geo: LineGeometry; color: string }) {
+  return (
+    <Line
+      points={[...geo.points]}
+      stroke={color}
+      strokeWidth={2}
+      hitStrokeWidth={12}
+      lineCap="round"
+    />
+  );
+}
+
 export function ElementShape({
   element,
   isSelectMode,
@@ -130,6 +143,9 @@ export function ElementShape({
       )}
       {geo.shape === "ellipse" && (
         <EllipseShape geo={geo} color={color} label={label} />
+      )}
+      {geo.shape === "line" && (
+        <LineShape geo={geo} color={color} />
       )}
     </Group>
   );

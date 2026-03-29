@@ -47,11 +47,19 @@ export interface EllipseGeometry {
   rotation?: number;
 }
 
+export interface LineGeometry {
+  shape: "line";
+  x: number;
+  y: number;
+  points: [number, number, number, number]; // [x1, y1, x2, y2] relative to anchor
+}
+
 export type Geometry =
   | RectGeometry
   | PolygonGeometry
   | CircleGeometry
-  | EllipseGeometry;
+  | EllipseGeometry
+  | LineGeometry;
 
 export interface ElementProperties {
   name?: string;

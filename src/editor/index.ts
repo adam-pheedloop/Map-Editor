@@ -1,1 +1,1 @@
-// Editor package entry point
+export { MapEditor } from "./MapEditor";

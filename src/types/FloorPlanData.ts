@@ -7,7 +7,8 @@ export type ElementType =
   | "stage"
   | "walkway"
   | "wall"
-  | "label";
+  | "label"
+  | "shape";
 
 export type ShapeType = "rect" | "polygon" | "circle" | "ellipse";
 

@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { Stage, Layer, Rect, Group, Text, Ellipse, Line } from "react-konva";
 import type {
   FloorPlanData,
@@ -13,6 +13,7 @@ import { BackgroundImage } from "../../editor/components/canvas/BackgroundImage"
 interface ViewerCanvasProps {
   data: FloorPlanData;
   highlightedBoothCode: string | null;
+  onBoothClick: (boothCode: string, screenX: number, screenY: number) => void;
 }
 
 function getLabel(element: FloorPlanElement): string {
@@ -26,16 +27,25 @@ function ViewerElement({
   element,
   isHighlighted,
   isDimmed,
+  isHovered,
+  onMouseEnter,
+  onMouseLeave,
+  onClick,
 }: {
   element: FloorPlanElement;
   isHighlighted: boolean;
   isDimmed: boolean;
+  isHovered: boolean;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
+  onClick?: (e: { screenX: number; screenY: number }) => void;
 }) {
   const geo = element.geometry;
   const label = getLabel(element);
   const color = element.properties.color;
-  const strokeColor = isHighlighted ? "#007bff" : (element.properties.strokeColor || "#888888");
-  const strokeWidth = isHighlighted
+  const active = isHighlighted || isHovered;
+  const strokeColor = active ? "#007bff" : (element.properties.strokeColor || "#888888");
+  const strokeWidth = active
     ? Math.max((element.properties.strokeWidth ?? 1) * 2, 3)
     : (element.properties.strokeWidth ?? (geo.shape === "line" ? 2 : 1));
   const opacity = isDimmed ? 0.4 : 0.9;
@@ -45,7 +55,32 @@ function ViewerElement({
   const rotation = "rotation" in geo ? (geo.rotation ?? 0) : 0;
 
   return (
-    <Group x={x} y={y} rotation={rotation} opacity={opacity}>
+    <Group
+      x={x}
+      y={y}
+      rotation={rotation}
+      opacity={opacity}
+      onMouseEnter={(e) => {
+        if (onMouseEnter) {
+          const stage = e.target.getStage();
+          if (stage) stage.container().style.cursor = "pointer";
+          onMouseEnter();
+        }
+      }}
+      onMouseLeave={(e) => {
+        if (onMouseLeave) {
+          const stage = e.target.getStage();
+          if (stage) stage.container().style.cursor = "default";
+          onMouseLeave();
+        }
+      }}
+      onClick={(e) => {
+        if (onClick) {
+          e.cancelBubble = true;
+          onClick({ screenX: e.evt.clientX, screenY: e.evt.clientY });
+        }
+      }}
+    >
       {geo.shape === "rect" && (
         <>
           <Rect
@@ -111,8 +146,9 @@ function ViewerElement({
   );
 }
 
-export function ViewerCanvas({ data, highlightedBoothCode }: ViewerCanvasProps) {
+export function ViewerCanvas({ data, highlightedBoothCode, onBoothClick }: ViewerCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [hoveredBoothCode, setHoveredBoothCode] = useState<string | null>(null);
   const {
     stageRef,
     scale,
@@ -160,13 +196,19 @@ export function ViewerCanvas({ data, highlightedBoothCode }: ViewerCanvasProps) 
         <Layer>
           {sortedElements.map((element) => {
             const isBooth = element.type === "booth";
-            const isThisBooth = isBooth && element.properties.boothCode === highlightedBoothCode;
+            const boothCode = element.properties.boothCode;
+            const isThisBooth = isBooth && boothCode === highlightedBoothCode;
+            const isHovered = isBooth && boothCode === hoveredBoothCode;
             return (
               <ViewerElement
                 key={element.id}
                 element={element}
                 isHighlighted={isThisBooth}
                 isDimmed={hasHighlight && !isThisBooth}
+                isHovered={isHovered && !isThisBooth}
+                onMouseEnter={isBooth && boothCode ? () => setHoveredBoothCode(boothCode) : undefined}
+                onMouseLeave={isBooth ? () => setHoveredBoothCode(null) : undefined}
+                onClick={isBooth && boothCode ? (e) => onBoothClick(boothCode, e.screenX, e.screenY) : undefined}
               />
             );
           })}

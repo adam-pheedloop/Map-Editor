@@ -208,12 +208,12 @@ export function MapEditor({ initialData }: MapEditorProps) {
   );
 
   const handleElementResize = useCallback(
-    (id: string, x: number, y: number, width: number, height: number) => {
+    (id: string, x: number, y: number, width: number, height: number, rotation: number) => {
       const element = data.elements.find((el) => el.id === id);
       if (element?.geometry.shape === "ellipse") {
-        updateElement(id, { x, y, radiusX: width / 2, radiusY: height / 2 });
+        updateElement(id, { x, y, radiusX: width / 2, radiusY: height / 2, rotation });
       } else {
-        updateElement(id, { x, y, width, height });
+        updateElement(id, { x, y, width, height, rotation });
       }
     },
     [data.elements, updateElement]

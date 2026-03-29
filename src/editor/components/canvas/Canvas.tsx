@@ -31,7 +31,8 @@ interface CanvasProps {
     x: number,
     y: number,
     width: number,
-    height: number
+    height: number,
+    rotation: number
   ) => void;
   onEndpointMove: (id: string, pointIndex: 0 | 1, x: number, y: number) => void;
 }

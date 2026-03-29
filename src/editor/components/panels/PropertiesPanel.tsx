@@ -99,6 +99,18 @@ export function PropertiesPanel({
           </div>
         )}
 
+        {fields.has("rotation") && (
+          <div className="flex flex-col gap-1.5">
+            <SectionLabel>Rotation</SectionLabel>
+            <FieldRow label="°">
+              <NumberInput
+                value={"rotation" in geo ? (geo.rotation ?? 0) : 0}
+                onChange={(r) => onUpdateGeometry(element.id, { rotation: r })}
+              />
+            </FieldRow>
+          </div>
+        )}
+
         {fields.has("length") && (
           <div className="flex flex-col gap-1.5">
             <SectionLabel>Length</SectionLabel>

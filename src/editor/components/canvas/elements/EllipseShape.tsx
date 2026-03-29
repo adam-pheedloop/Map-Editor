@@ -4,7 +4,7 @@ import type { ShapeConfig } from "./types";
 
 export const ellipseConfig: ShapeConfig = {
   optionsBar: ["fill", "stroke", "strokeWidth"],
-  propertiesPanel: ["name", "width", "height"],
+  propertiesPanel: ["name", "width", "height", "rotation"],
 };
 
 interface EllipseShapeProps {

@@ -1,4 +1,4 @@
-import { useRef, useEffect, useCallback } from "react";
+import { useRef, useEffect, useCallback, useState } from "react";
 import { Transformer } from "react-konva";
 import type Konva from "konva";
 import type { FloorPlanElement } from "../../../types";
@@ -12,7 +12,8 @@ interface SelectionTransformerProps {
     x: number,
     y: number,
     width: number,
-    height: number
+    height: number,
+    rotation: number
   ) => void;
 }
 
@@ -23,14 +24,15 @@ export function SelectionTransformer({
   onTransformEnd,
 }: SelectionTransformerProps) {
   const trRef = useRef<Konva.Transformer>(null);
-  const shiftHeld = useRef(false);
+  const [shiftHeld, setShiftHeld] = useState(false);
+  const isRotating = useRef(false);
 
   useEffect(() => {
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Shift") shiftHeld.current = true;
+      if (e.key === "Shift") setShiftHeld(true);
     };
     const onKeyUp = (e: KeyboardEvent) => {
-      if (e.key === "Shift") shiftHeld.current = false;
+      if (e.key === "Shift") setShiftHeld(false);
     };
     window.addEventListener("keydown", onKeyDown);
     window.addEventListener("keyup", onKeyUp);
@@ -115,13 +117,18 @@ export function SelectionTransformer({
       text.height(newHeight);
     }
 
-    onTransformEnd(selectedId, node.x(), node.y(), newWidth, newHeight);
+    const rotation = node.rotation();
+
+    onTransformEnd(selectedId, node.x(), node.y(), newWidth, newHeight, rotation);
   }, [selectedId, onTransformEnd]);
 
   return (
     <Transformer
       ref={trRef}
-      rotateEnabled={false}
+      rotateEnabled
+      rotateAnchorOffset={20}
+      rotationSnaps={shiftHeld ? Array.from({ length: 24 }, (_, i) => i * 15) : []}
+      rotationSnapTolerance={shiftHeld ? 10 : 0}
       borderStroke="#007bff"
       borderStrokeWidth={1.5}
       anchorFill="#fff"
@@ -129,10 +136,13 @@ export function SelectionTransformer({
       anchorSize={8}
       anchorCornerRadius={2}
       boundBoxFunc={(_oldBox, newBox) => {
+        // Skip all constraints during rotation
+        if (isRotating.current) return newBox;
+
         if (Math.abs(newBox.width) < 10 || Math.abs(newBox.height) < 10) {
           return _oldBox;
         }
-        if (shiftHeld.current) {
+        if (shiftHeld) {
           const size = Math.max(Math.abs(newBox.width), Math.abs(newBox.height));
           return {
             ...newBox,
@@ -141,6 +151,12 @@ export function SelectionTransformer({
           };
         }
         return newBox;
+      }}
+      onTransformStart={() => {
+        const tr = trRef.current;
+        if (!tr) return;
+        const activeAnchor = tr.getActiveAnchor();
+        isRotating.current = activeAnchor === "rotater";
       }}
       onTransformEnd={handleTransformEnd}
     />

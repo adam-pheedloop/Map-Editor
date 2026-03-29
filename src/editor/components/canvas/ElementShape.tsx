@@ -32,12 +32,14 @@ export function ElementShape({
 
   const x = "x" in geo ? geo.x : 0;
   const y = "y" in geo ? geo.y : 0;
+  const rotation = "rotation" in geo ? (geo.rotation ?? 0) : 0;
 
   return (
     <Group
       name={element.id}
       x={x}
       y={y}
+      rotation={rotation}
       draggable={isSelectMode}
       onClick={(e) => {
         if (!isSelectMode) return;

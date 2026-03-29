@@ -39,7 +39,10 @@ export function BoothPopover({ boothCode, exhibitor, x, y, onClose }: BoothPopov
         Booth {boothCode}
       </div>
       {exhibitor ? (
-        <div className="mt-1.5">
+        <div className="flex items-center gap-2 mt-1.5">
+          {exhibitor.logo && (
+            <img src={exhibitor.logo} alt="" className="w-8 h-8 rounded shrink-0" />
+          )}
           <div className="text-sm font-medium text-gray-900">
             {exhibitor.name}
           </div>

@@ -31,11 +31,18 @@ export function ExhibitorList({ exhibitors, selectedId, onSelect }: ExhibitorLis
                 : "hover:bg-gray-50"
             }`}
           >
-            <div className="text-xs font-medium text-gray-800">
-              {exhibitor.name}
-            </div>
-            <div className="text-[11px] text-gray-400">
-              Booth {exhibitor.boothCode}
+            <div className="flex items-center gap-2">
+              {exhibitor.logo && (
+                <img src={exhibitor.logo} alt="" className="w-7 h-7 rounded shrink-0" />
+              )}
+              <div>
+                <div className="text-xs font-medium text-gray-800">
+                  {exhibitor.name}
+                </div>
+                <div className="text-[11px] text-gray-400">
+                  Booth {exhibitor.boothCode}
+                </div>
+              </div>
             </div>
           </button>
         ))}

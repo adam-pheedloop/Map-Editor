@@ -133,7 +133,7 @@ export function Canvas({
         </Layer>
 
         <Layer>
-          <DrawingPreview preview={drawing.preview} />
+          <DrawingPreview preview={drawing.preview} activeTool={activeTool} />
         </Layer>
       </Stage>
     </div>

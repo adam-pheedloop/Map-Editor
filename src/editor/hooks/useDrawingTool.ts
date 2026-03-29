@@ -20,6 +20,7 @@ export function useDrawingTool(
 ) {
   const [preview, setPreview] = useState<DrawingRect | null>(null);
   const origin = useRef<{ x: number; y: number } | null>(null);
+  const shiftHeld = useRef(false);
 
   const handleMouseDown = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
@@ -38,23 +39,38 @@ export function useDrawingTool(
     [isActive, stageRef, position, scale]
   );
 
-  const handleMouseMove = useCallback(() => {
-    if (!origin.current) return;
+  const handleMouseMove = useCallback(
+    (e: Konva.KonvaEventObject<MouseEvent>) => {
+      if (!origin.current) return;
 
-    const stage = stageRef.current;
-    if (!stage) return;
+      const stage = stageRef.current;
+      if (!stage) return;
 
-    const point = getCanvasPoint(stage, position, scale);
-    if (!point) return;
+      const point = getCanvasPoint(stage, position, scale);
+      if (!point) return;
 
-    const o = origin.current;
-    setPreview({
-      x: Math.min(o.x, point.x),
-      y: Math.min(o.y, point.y),
-      width: Math.abs(point.x - o.x),
-      height: Math.abs(point.y - o.y),
-    });
-  }, [stageRef, position, scale]);
+      shiftHeld.current = e.evt.shiftKey;
+
+      const o = origin.current;
+      let width = Math.abs(point.x - o.x);
+      let height = Math.abs(point.y - o.y);
+
+      // Shift constrains to square/circle
+      if (e.evt.shiftKey) {
+        const size = Math.max(width, height);
+        width = size;
+        height = size;
+      }
+
+      setPreview({
+        x: point.x < o.x ? o.x - width : o.x,
+        y: point.y < o.y ? o.y - height : o.y,
+        width,
+        height,
+      });
+    },
+    [stageRef, position, scale]
+  );
 
   const handleMouseUp = useCallback(() => {
     if (!preview || !origin.current) return;

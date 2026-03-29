@@ -51,12 +51,26 @@ export function MapEditor({ initialData }: MapEditorProps) {
   const handleDrawEnd = useCallback(
     (x: number, y: number, width: number, height: number) => {
       const id = uuidv4();
+
+      const geometry =
+        activeTool === "ellipse"
+          ? {
+              shape: "ellipse" as const,
+              x,
+              y,
+              radiusX: width / 2,
+              radiusY: height / 2,
+            }
+          : { shape: "rect" as const, x, y, width, height };
+
+      const name = activeTool === "ellipse" ? "Ellipse" : "Rectangle";
+
       addElement({
         id,
         type: "shape",
-        geometry: { shape: "rect", x, y, width, height },
+        geometry,
         properties: {
-          name: "Rectangle",
+          name,
           color: "#94a3b8",
           zIndex: 1,
         },
@@ -64,7 +78,7 @@ export function MapEditor({ initialData }: MapEditorProps) {
       setSelectedId(id);
       setActiveTool("select");
     },
-    [addElement]
+    [activeTool, addElement]
   );
 
   const handleElementMove = useCallback(
@@ -76,9 +90,14 @@ export function MapEditor({ initialData }: MapEditorProps) {
 
   const handleElementResize = useCallback(
     (id: string, x: number, y: number, width: number, height: number) => {
-      updateElement(id, { x, y, width, height });
+      const element = data.elements.find((el) => el.id === id);
+      if (element?.geometry.shape === "ellipse") {
+        updateElement(id, { x, y, radiusX: width / 2, radiusY: height / 2 });
+      } else {
+        updateElement(id, { x, y, width, height });
+      }
     },
-    [updateElement]
+    [data.elements, updateElement]
   );
 
   const handleToolChange = useCallback((tool: ActiveTool) => {

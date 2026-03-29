@@ -27,6 +27,9 @@ export function useKeyboardShortcuts({
         case "r":
           setActiveTool("rectangle");
           break;
+        case "o":
+          setActiveTool("ellipse");
+          break;
         case "escape":
           onDeselect();
           setActiveTool("select");

@@ -9,6 +9,8 @@ interface ElementShapeProps {
   element: FloorPlanElement;
   isSelectMode: boolean;
   onSelect: (id: string) => void;
+  onDragStart: (id: string) => void;
+  onDragMove: (id: string, x: number, y: number) => void;
   onDragEnd: (id: string, x: number, y: number) => void;
   onContextMenu: (elementId: string, screenX: number, screenY: number) => void;
 }
@@ -24,6 +26,8 @@ export function ElementShape({
   element,
   isSelectMode,
   onSelect,
+  onDragStart,
+  onDragMove,
   onDragEnd,
   onContextMenu,
 }: ElementShapeProps) {
@@ -48,6 +52,12 @@ export function ElementShape({
         if (!isSelectMode) return;
         e.cancelBubble = true;
         onSelect(element.id);
+      }}
+      onDragStart={() => {
+        onDragStart(element.id);
+      }}
+      onDragMove={(e) => {
+        onDragMove(element.id, e.target.x(), e.target.y());
       }}
       onDragEnd={(e) => {
         onDragEnd(element.id, e.target.x(), e.target.y());

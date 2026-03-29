@@ -11,6 +11,9 @@ import { SelectionTransformer } from "./SelectionTransformer";
 import { LineEndpointHandles } from "./LineEndpointHandles";
 import { DrawingPreview } from "./DrawingPreview";
 import { BackgroundImage } from "./BackgroundImage";
+import { AlignmentGuides } from "./AlignmentGuides";
+import { useAlignmentGuides } from "../../hooks/useAlignmentGuides";
+import { getElementBounds } from "../../utils/bounds";
 
 interface CanvasProps {
   data: FloorPlanData;
@@ -78,6 +81,8 @@ export function Canvas({
     onLineDrawEnd
   );
 
+  const { activeGuides, startDrag, endDrag, snapPosition } = useAlignmentGuides(data.elements);
+
   const sortedElements = [...data.elements].sort(
     (a, b) => (a.properties.zIndex ?? 0) - (b.properties.zIndex ?? 0)
   );
@@ -117,11 +122,46 @@ export function Canvas({
     }
   };
 
+  const handleElementDragStart = useCallback(
+    (id: string) => {
+      startDrag(id);
+    },
+    [startDrag]
+  );
+
+  const handleElementDragMove = useCallback(
+    (id: string, x: number, y: number) => {
+      // Get the element to compute its bounds at the proposed position
+      const element = data.elements.find((el) => el.id === id);
+      if (!element) return;
+
+      const geo = element.geometry;
+      const proposedBounds = getElementBounds({
+        ...element,
+        geometry: { ...geo, x, y } as typeof geo,
+      });
+
+      const snapped = snapPosition(id, proposedBounds);
+
+      // If snapped, update the Konva node position directly
+      const stage = stageRef.current;
+      if (stage) {
+        const node = stage.findOne(`.${id}`);
+        if (node) {
+          node.x(snapped.x);
+          node.y(snapped.y);
+        }
+      }
+    },
+    [data.elements, snapPosition, stageRef]
+  );
+
   const handleElementDragEnd = useCallback(
     (id: string, x: number, y: number) => {
+      endDrag();
       onElementMove(id, x, y);
     },
-    [onElementMove]
+    [endDrag, onElementMove]
   );
 
   return (
@@ -168,6 +208,8 @@ export function Canvas({
               element={element}
               isSelectMode={isSelectMode}
               onSelect={onSelect}
+              onDragStart={handleElementDragStart}
+              onDragMove={handleElementDragMove}
               onDragEnd={handleElementDragEnd}
               onContextMenu={onElementContextMenu}
             />
@@ -192,6 +234,11 @@ export function Canvas({
             rectPreview={shapeDrawing.preview}
             linePreview={lineDrawing.preview}
             activeTool={activeTool}
+          />
+          <AlignmentGuides
+            guides={activeGuides}
+            canvasWidth={data.dimensions.width}
+            canvasHeight={data.dimensions.height}
           />
         </Layer>
       </Stage>

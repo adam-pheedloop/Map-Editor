@@ -12,6 +12,7 @@ import { OptionsBar } from "./components/panels/OptionsBar";
 import { StatusBar } from "./components/StatusBar";
 import { PropertiesPanel } from "./components/panels/PropertiesPanel";
 import { getShapeConfig } from "./components/canvas/elements";
+import { MapDebugDialog } from "./components/debug";
 import type { FloorPlanData } from "../types";
 
 const INITIAL_DEFAULTS: DrawingDefaults = {
@@ -22,14 +23,18 @@ const INITIAL_DEFAULTS: DrawingDefaults = {
 
 interface MapEditorProps {
   initialData: FloorPlanData;
+  debug?: boolean;
 }
 
-export function MapEditor({ initialData }: MapEditorProps) {
+export function MapEditor({ initialData, debug: debugProp }: MapEditorProps) {
+  const debug = debugProp || import.meta.env.DEV;
+
   const { data, addElement, updateElement, updateProperties, deleteElement } =
     useEditorState(initialData);
   const [activeTool, setActiveTool] = useState<ActiveTool>("select");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [defaults, setDefaults] = useState<DrawingDefaults>(INITIAL_DEFAULTS);
+  const [showMapDebug, setShowMapDebug] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -228,7 +233,7 @@ export function MapEditor({ initialData }: MapEditorProps) {
 
   return (
     <div className="flex flex-col h-full">
-      <TopBar />
+      <TopBar debug={debug} onDebugClick={() => setShowMapDebug(true)} />
       <div className="flex flex-1 overflow-hidden">
         <ToolSidebar activeTool={activeTool} onToolChange={handleToolChange} />
         <div className="flex flex-col flex-1">
@@ -264,6 +269,7 @@ export function MapEditor({ initialData }: MapEditorProps) {
             </div>
             <PropertiesPanel
               element={selectedElement}
+              debug={debug}
               onUpdateProperties={updateProperties}
               onUpdateGeometry={updateElement}
               onDelete={(id) => {
@@ -274,6 +280,9 @@ export function MapEditor({ initialData }: MapEditorProps) {
           </div>
         </div>
       </div>
+      {showMapDebug && (
+        <MapDebugDialog data={data} onClose={() => setShowMapDebug(false)} />
+      )}
     </div>
   );
 }

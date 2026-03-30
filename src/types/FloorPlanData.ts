@@ -8,6 +8,7 @@ export type ElementType =
   | "walkway"
   | "wall"
   | "label"
+  | "icon"
   | "shape";
 
 export type ShapeType = "rect" | "polygon" | "circle" | "ellipse";
@@ -80,6 +81,12 @@ export interface ElementProperties {
   // Label-specific
   text?: string;
   fontSize?: number;
+  fontWeight?: "normal" | "bold";
+  fontStyle?: "normal" | "italic";
+  textDecoration?: "none" | "underline";
+  textAlign?: "left" | "center" | "right";
+  // Icon-specific
+  iconName?: string;
 }
 
 export interface FloorPlanElement {

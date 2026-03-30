@@ -4,6 +4,8 @@ import { RectShape } from "./elements/RectShape";
 import { EllipseShape } from "./elements/EllipseShape";
 import { LineShape } from "./elements/LineShape";
 import { BoothShape } from "./elements/BoothShape";
+import { TextShape } from "./elements/TextShape";
+import { IconShape } from "./elements/IconShape";
 
 interface ElementShapeProps {
   element: FloorPlanElement;
@@ -79,7 +81,22 @@ export function ElementShape({
           boothCode={element.properties.boothCode || element.id.slice(0, 6)}
         />
       )}
-      {element.type !== "booth" && geo.shape === "rect" && (
+      {element.type === "label" && geo.shape === "rect" && (
+        <TextShape
+          geo={geo}
+          text={element.properties.text || "Text"}
+          color={color}
+          fontSize={element.properties.fontSize ?? 16}
+          fontWeight={element.properties.fontWeight ?? "normal"}
+          fontStyle={element.properties.fontStyle ?? "normal"}
+          textDecoration={element.properties.textDecoration ?? "none"}
+          textAlign={element.properties.textAlign ?? "left"}
+        />
+      )}
+      {element.type === "icon" && geo.shape === "rect" && element.properties.iconName && (
+        <IconShape geo={geo} iconName={element.properties.iconName} color={color} />
+      )}
+      {element.type !== "booth" && element.type !== "label" && element.type !== "icon" && geo.shape === "rect" && (
         <RectShape geo={geo} color={color} strokeColor={strokeColor} strokeWidth={strokeWidth} label={label} />
       )}
       {geo.shape === "ellipse" && (

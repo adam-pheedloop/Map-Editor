@@ -83,6 +83,12 @@ export function useKeyboardShortcuts({
         case "b":
           setActiveTool("booth");
           break;
+        case "t":
+          setActiveTool("text");
+          break;
+        case "i":
+          setActiveTool("icon");
+          break;
         case "escape":
           onDeselect();
           setActiveTool("select");

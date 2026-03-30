@@ -1,0 +1,94 @@
+import { useState, useRef, useEffect } from "react";
+import { PiMagnifyingGlass } from "react-icons/pi";
+import {
+  iconRegistry,
+  searchIcons,
+  getCategories,
+  type IconEntry,
+} from "../../utils/iconRegistry";
+
+interface IconPickerProps {
+  onSelect: (iconId: string) => void;
+  onClose: () => void;
+}
+
+export function IconPicker({ onSelect, onClose }: IconPickerProps) {
+  const [query, setQuery] = useState("");
+  const ref = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        onClose();
+      }
+    };
+    window.addEventListener("mousedown", handleClick);
+    return () => window.removeEventListener("mousedown", handleClick);
+  }, [onClose]);
+
+  const filtered = query.trim() ? searchIcons(query) : null;
+  const categories = getCategories();
+
+  const renderIcon = (entry: IconEntry) => {
+    const Icon = entry.component;
+    return (
+      <button
+        key={entry.id}
+        onClick={() => onSelect(entry.id)}
+        title={entry.label}
+        className="flex items-center justify-center w-9 h-9 rounded hover:bg-gray-100 cursor-pointer transition-colors"
+      >
+        <Icon size={20} className="text-gray-600" />
+      </button>
+    );
+  };
+
+  return (
+    <div
+      ref={ref}
+      className="absolute left-full ml-2 top-0 bg-white border border-gray-200 rounded-lg shadow-lg z-[9999] w-[280px] max-h-[400px] flex flex-col"
+    >
+      <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200">
+        <PiMagnifyingGlass size={14} className="text-gray-400 shrink-0" />
+        <input
+          ref={inputRef}
+          type="text"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search icons..."
+          className="flex-1 text-xs text-gray-800 placeholder:text-gray-400 outline-none bg-transparent"
+        />
+      </div>
+
+      <div className="flex-1 overflow-y-auto p-2">
+        {filtered ? (
+          filtered.length === 0 ? (
+            <p className="text-xs text-gray-400 p-2">No icons found</p>
+          ) : (
+            <div className="flex flex-wrap gap-0.5">
+              {filtered.map(renderIcon)}
+            </div>
+          )
+        ) : (
+          categories.map((category) => (
+            <div key={category} className="mb-3">
+              <div className="text-[10px] font-medium text-gray-400 uppercase tracking-wide px-1 mb-1">
+                {category}
+              </div>
+              <div className="flex flex-wrap gap-0.5">
+                {iconRegistry
+                  .filter((e) => e.category === category)
+                  .map(renderIcon)}
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}

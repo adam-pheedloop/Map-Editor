@@ -1,5 +1,5 @@
 export type OptionsBarField = "fill" | "stroke" | "strokeWidth";
-export type PropertiesPanelField = "name" | "width" | "height" | "length" | "rotation" | "boothCode" | "area";
+export type PropertiesPanelField = "name" | "width" | "height" | "length" | "rotation" | "boothCode" | "area" | "text" | "fontSize" | "fontWeight" | "fontStyle" | "textDecoration" | "textAlign";
 export type ContextMenuAction = "delete" | "convertToBooth";
 
 export interface ShapeConfig {

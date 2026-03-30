@@ -184,6 +184,122 @@ export function PropertiesPanel({
           </div>
         )}
 
+        {fields.has("boothCode") && (
+          <div className="flex flex-col gap-1.5">
+            <SectionLabel>Booth Code</SectionLabel>
+            <input
+              type="text"
+              value={element.properties.boothCode || ""}
+              placeholder="e.g. A101"
+              onChange={(e) =>
+                onUpdateProperties(element.id, { boothCode: e.target.value || undefined })
+              }
+              className="w-full px-2 py-1 text-xs border border-gray-200 rounded bg-white"
+            />
+          </div>
+        )}
+
+        {fields.has("text") && (
+          <div className="flex flex-col gap-1.5">
+            <SectionLabel>Text</SectionLabel>
+            <textarea
+              value={element.properties.text || ""}
+              onChange={(e) =>
+                onUpdateProperties(element.id, { text: e.target.value })
+              }
+              rows={2}
+              className="w-full px-2 py-1 text-xs border border-gray-200 rounded bg-white resize-none"
+            />
+          </div>
+        )}
+
+        {fields.has("fontSize") && (
+          <div className="flex flex-col gap-1.5">
+            <SectionLabel>Font Size</SectionLabel>
+            <NumberInput
+              value={element.properties.fontSize ?? 16}
+              onChange={(v) => onUpdateProperties(element.id, { fontSize: Math.max(1, v) })}
+            />
+          </div>
+        )}
+
+        {(fields.has("fontWeight") || fields.has("fontStyle") || fields.has("textDecoration")) && (
+          <div className="flex flex-col gap-1.5">
+            <SectionLabel>Style</SectionLabel>
+            <div className="flex gap-1">
+              {fields.has("fontWeight") && (
+                <button
+                  onClick={() =>
+                    onUpdateProperties(element.id, {
+                      fontWeight: element.properties.fontWeight === "bold" ? "normal" : "bold",
+                    })
+                  }
+                  className={`w-8 h-8 text-xs font-bold border rounded cursor-pointer transition-colors ${
+                    element.properties.fontWeight === "bold"
+                      ? "bg-gray-700 text-white border-gray-700"
+                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                  }`}
+                >
+                  B
+                </button>
+              )}
+              {fields.has("fontStyle") && (
+                <button
+                  onClick={() =>
+                    onUpdateProperties(element.id, {
+                      fontStyle: element.properties.fontStyle === "italic" ? "normal" : "italic",
+                    })
+                  }
+                  className={`w-8 h-8 text-xs italic border rounded cursor-pointer transition-colors ${
+                    element.properties.fontStyle === "italic"
+                      ? "bg-gray-700 text-white border-gray-700"
+                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                  }`}
+                >
+                  I
+                </button>
+              )}
+              {fields.has("textDecoration") && (
+                <button
+                  onClick={() =>
+                    onUpdateProperties(element.id, {
+                      textDecoration: element.properties.textDecoration === "underline" ? "none" : "underline",
+                    })
+                  }
+                  className={`w-8 h-8 text-xs underline border rounded cursor-pointer transition-colors ${
+                    element.properties.textDecoration === "underline"
+                      ? "bg-gray-700 text-white border-gray-700"
+                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                  }`}
+                >
+                  U
+                </button>
+              )}
+            </div>
+          </div>
+        )}
+
+        {fields.has("textAlign") && (
+          <div className="flex flex-col gap-1.5">
+            <SectionLabel>Alignment</SectionLabel>
+            <div className="flex text-xs">
+              {(["left", "center", "right"] as const).map((align) => (
+                <button
+                  key={align}
+                  onClick={() => onUpdateProperties(element.id, { textAlign: align })}
+                  className={`flex-1 py-1 border cursor-pointer transition-colors capitalize ${
+                    (element.properties.textAlign ?? "left") === align
+                      ? "bg-gray-700 text-white border-gray-700"
+                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
+                  } ${align === "left" ? "rounded-l" : align === "right" ? "rounded-r" : "border-l-0 border-r-0"}`}
+                >
+                  {align}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {(fields.has("width") || fields.has("height")) && (
           <div className="flex flex-col gap-1.5">
             <SectionLabel>Size</SectionLabel>
@@ -212,21 +328,6 @@ export function PropertiesPanel({
           </div>
         )}
 
-        {fields.has("boothCode") && (
-          <div className="flex flex-col gap-1.5">
-            <SectionLabel>Booth Code</SectionLabel>
-            <input
-              type="text"
-              value={element.properties.boothCode || ""}
-              placeholder="e.g. A101"
-              onChange={(e) =>
-                onUpdateProperties(element.id, { boothCode: e.target.value || undefined })
-              }
-              className="w-full px-2 py-1 text-xs border border-gray-200 rounded bg-white"
-            />
-          </div>
-        )}
-
         {fields.has("area") && (
           <div className="flex flex-col gap-1.5">
             <SectionLabel>Area</SectionLabel>
@@ -244,6 +345,7 @@ export function PropertiesPanel({
             </FieldRow>
           </div>
         )}
+
       </div>
       )}
 

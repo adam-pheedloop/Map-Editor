@@ -44,6 +44,7 @@ interface CanvasProps {
   ) => void;
   onEndpointMove: (id: string, pointIndex: 0 | 1, x: number, y: number) => void;
   onElementContextMenu: (id: string, screenX: number, screenY: number) => void;
+  onClickPlace: (x: number, y: number) => void;
 }
 
 export function Canvas({
@@ -66,10 +67,14 @@ export function Canvas({
   onEndpointMove,
   onElementResize,
   onElementContextMenu,
+  onClickPlace,
 }: CanvasProps) {
   const isSelectMode = activeTool === "select";
   const isDrawing = !isSelectMode;
   const isLineTool = activeTool === "line";
+  const isTextTool = activeTool === "text";
+  const isIconTool = activeTool === "icon";
+  const isClickPlaceTool = isTextTool || isIconTool;
 
   // Drag-select rectangle state
   const [dragSelectRect, setDragSelectRect] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
@@ -119,6 +124,14 @@ export function Canvas({
         }
         onSelect(null);
       }
+      return;
+    }
+    if (isClickPlaceTool) {
+      if (!isEmptySpaceClick(e)) return;
+      const stage = stageRef.current;
+      if (!stage) return;
+      const point = getCanvasPoint(stage, position, scale);
+      if (point) onClickPlace(point.x, point.y);
       return;
     }
     if (isLineTool) {

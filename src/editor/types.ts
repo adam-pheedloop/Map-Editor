@@ -1,1 +1,1 @@
-export type ActiveTool = "select" | "rectangle" | "ellipse" | "line" | "booth";
+export type ActiveTool = "select" | "rectangle" | "ellipse" | "line" | "booth" | "text" | "icon";

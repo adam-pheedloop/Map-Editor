@@ -55,6 +55,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   const [defaults, setDefaults] = useState<DrawingDefaults>(INITIAL_DEFAULTS);
   const [showMapDebug, setShowMapDebug] = useState(false);
   const [showBgDialog, setShowBgDialog] = useState(false);
+  const [activeIconName, setActiveIconName] = useState<string | null>(null);
   const [contextMenu, setContextMenu] = useState<{
     elementId: string;
     x: number;
@@ -271,6 +272,47 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     [addElement, defaults, selectOne]
   );
 
+  const handleClickPlace = useCallback(
+    (x: number, y: number) => {
+      if (activeTool === "text") {
+        const id = uuidv4();
+        addElement({
+          id,
+          type: "label",
+          geometry: { shape: "rect" as const, x, y, width: 150, height: 30 },
+          properties: {
+            name: "Text",
+            text: "Text",
+            fontSize: 16,
+            fontWeight: "normal",
+            textAlign: "left",
+            color: defaults.fill,
+            zIndex: 2,
+          },
+        });
+        selectOne(id);
+        setActiveTool("select");
+      } else if (activeTool === "icon" && activeIconName) {
+        const id = uuidv4();
+        addElement({
+          id,
+          type: "icon",
+          geometry: { shape: "rect" as const, x: x - 20, y: y - 20, width: 40, height: 40 },
+          properties: {
+            name: "Icon",
+            iconName: activeIconName,
+            color: defaults.fill,
+            zIndex: 2,
+          },
+        });
+        selectOne(id);
+        setActiveTool("select");
+        setActiveIconName(null);
+      }
+    },
+    [activeTool, activeIconName, addElement, defaults, selectOne]
+  );
+
   const handleEndpointMove = useCallback(
     (id: string, pointIndex: 0 | 1, x: number, y: number) => {
       const element = data.elements.find((el) => el.id === id);
@@ -412,14 +454,18 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
         ]}
       />
       <div className="flex flex-1 overflow-hidden">
-        <ToolSidebar activeTool={activeTool} onToolChange={handleToolChange} />
+        <ToolSidebar
+          activeTool={activeTool}
+          onToolChange={handleToolChange}
+          onIconSelect={(iconId) => setActiveIconName(iconId)}
+        />
         <div className="flex flex-col flex-1">
           <OptionsBar
             defaults={activeDefaults}
             config={getShapeConfig(
               selectedElement?.geometry.shape
                 ?? (activeTool === "line" ? "line" : activeTool === "ellipse" ? "ellipse" : "rect"),
-              selectedElement?.type ?? (activeTool === "booth" ? "booth" : undefined)
+              selectedElement?.type ?? (activeTool === "booth" ? "booth" : activeTool === "text" ? "label" : activeTool === "icon" ? "icon" : undefined)
             )}
             onDefaultsChange={handleDefaultsChange}
           />
@@ -445,6 +491,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                 onEndpointMove={handleEndpointMove}
                 onElementResize={handleElementResize}
                 onElementContextMenu={handleElementContextMenu}
+                onClickPlace={handleClickPlace}
               />
               <StatusBar scale={scale} onZoomReset={zoomReset} />
             </div>

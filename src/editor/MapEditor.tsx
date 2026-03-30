@@ -14,6 +14,7 @@ import { StatusBar } from "./components/StatusBar";
 import { PropertiesPanel } from "./components/panels/PropertiesPanel";
 import { getShapeConfig } from "./components/canvas/elements";
 import { ContextMenu, type ContextMenuItem } from "./components/canvas/ContextMenu";
+import { modKey } from "./components/TopBar";
 import { MapDebugDialog } from "./components/debug";
 import { BackgroundImageDialog } from "./components/panels/BackgroundImageDialog";
 import type { FloorPlanData } from "../types";
@@ -44,6 +45,10 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     updateElementType,
     setBackgroundImage,
     updateDimensions,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   } = useEditorState(initialData, { persist });
   const [activeTool, setActiveTool] = useState<ActiveTool>("select");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
@@ -106,7 +111,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   }, []);
 
   // Clipboard
-  const { copy, paste } = useClipboard();
+  const { copy, paste, hasBuffer } = useClipboard();
 
   const handleCopy = useCallback(() => {
     if (selectedElements.length > 0) copy(selectedElements);
@@ -150,6 +155,8 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     onPaste: handlePaste,
     onDuplicate: handleDuplicate,
     onSelectAll: selectAll,
+    onUndo: undo,
+    onRedo: redo,
   });
 
   // Options bar: show selected element's colors or defaults
@@ -395,6 +402,14 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
         debug={debug}
         onDebugClick={() => setShowMapDebug(true)}
         onBackgroundImageClick={() => setShowBgDialog(true)}
+        editMenuItems={[
+          { label: "Undo", shortcut: `${modKey}Z`, disabled: !canUndo, onClick: undo },
+          { label: "Redo", shortcut: `${modKey}⇧Z`, disabled: !canRedo, onClick: redo },
+          { type: "divider" as const },
+          { label: "Copy", shortcut: `${modKey}C`, disabled: !hasSelection, onClick: handleCopy },
+          { label: "Paste", shortcut: `${modKey}V`, disabled: !hasBuffer, onClick: handlePaste },
+          { label: "Duplicate", shortcut: `${modKey}D`, disabled: !hasSelection, onClick: handleDuplicate },
+        ]}
       />
       <div className="flex flex-1 overflow-hidden">
         <ToolSidebar activeTool={activeTool} onToolChange={handleToolChange} />

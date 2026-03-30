@@ -1,5 +1,6 @@
-import { useState, useCallback, useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import type { FloorPlanData, FloorPlanElement, ElementType, Geometry, ElementProperties, BackgroundImage, Dimensions } from "../../types";
+import { useHistory } from "./useHistory";
 
 const STORAGE_KEY = "map-editor:floorplan";
 
@@ -21,13 +22,8 @@ export function useEditorState(
   initialData: FloorPlanData,
   { persist = false }: UseEditorStateOptions = {}
 ) {
-  const [data, setData] = useState<FloorPlanData>(() => {
-    if (persist) {
-      const stored = loadFromStorage();
-      if (stored) return stored;
-    }
-    return initialData;
-  });
+  const loadedData = persist ? loadFromStorage() ?? initialData : initialData;
+  const { present: data, set: setData, undo, redo, canUndo, canRedo } = useHistory<FloorPlanData>(loadedData);
 
   // Auto-save to localStorage
   useEffect(() => {
@@ -137,5 +133,9 @@ export function useEditorState(
     setBackgroundImage,
     updateDimensions,
     clearStorage,
+    undo,
+    redo,
+    canUndo,
+    canRedo,
   };
 }

@@ -13,6 +13,7 @@ import { DrawingPreview } from "./DrawingPreview";
 import { BackgroundImage } from "./BackgroundImage";
 import { AlignmentGuides } from "./AlignmentGuides";
 import { SelectionRect } from "./SelectionRect";
+import { MultiSelectBounds } from "./MultiSelectBounds";
 import { useAlignmentGuides } from "../../hooks/useAlignmentGuides";
 import { getElementBounds } from "../../utils/bounds";
 
@@ -75,6 +76,7 @@ export function Canvas({
   const dragSelectOrigin = useRef<{ x: number; y: number } | null>(null);
 
   // Multi-drag tracking
+  const [isMultiDragging, setIsMultiDragging] = useState(false);
   const dragStartPositions = useRef<Map<string, { x: number; y: number }>>(new Map());
 
   const shapeDrawing = useDrawingTool(
@@ -155,14 +157,19 @@ export function Canvas({
     if (dragSelectOrigin.current && dragSelectRect) {
       if (dragSelectRect.width > 5 && dragSelectRect.height > 5) {
         const rect = dragSelectRect;
+        const OVERLAP_THRESHOLD = 0.9;
         const enclosed = data.elements.filter((el) => {
-          const bounds = getElementBounds(el);
-          return (
-            bounds.left >= rect.x &&
-            bounds.right <= rect.x + rect.width &&
-            bounds.top >= rect.y &&
-            bounds.bottom <= rect.y + rect.height
-          );
+          const b = getElementBounds(el);
+          const elWidth = b.right - b.left;
+          const elHeight = b.bottom - b.top;
+          if (elWidth <= 0 || elHeight <= 0) return false;
+
+          const overlapX = Math.max(0, Math.min(b.right, rect.x + rect.width) - Math.max(b.left, rect.x));
+          const overlapY = Math.max(0, Math.min(b.bottom, rect.y + rect.height) - Math.max(b.top, rect.y));
+          const overlapArea = overlapX * overlapY;
+          const elArea = elWidth * elHeight;
+
+          return overlapArea / elArea >= OVERLAP_THRESHOLD;
         });
         if (enclosed.length > 0) {
           onDragSelect(enclosed.map((el) => el.id));
@@ -186,6 +193,7 @@ export function Canvas({
 
       // Record start positions for all selected elements (for multi-drag)
       if (selectedIds.has(id) && selectedIds.size > 1) {
+        setIsMultiDragging(true);
         const stage = stageRef.current;
         if (!stage) return;
         const positions = new Map<string, { x: number; y: number }>();
@@ -205,42 +213,44 @@ export function Canvas({
 
   const handleElementDragMove = useCallback(
     (id: string, x: number, y: number) => {
-      const element = data.elements.find((el) => el.id === id);
-      if (!element) return;
-
-      const geo = element.geometry;
-      const proposedBounds = getElementBounds({
-        ...element,
-        geometry: { ...geo, x, y } as typeof geo,
-      });
-
-      const snapped = snapPosition(id, proposedBounds);
-
+      const isMulti = selectedIds.has(id) && selectedIds.size > 1;
       const stage = stageRef.current;
       if (!stage) return;
 
-      const node = stage.findOne(`.${id}`);
-      if (!node) return;
-
-      // Apply snap to the dragged element
-      node.x(snapped.x);
-      node.y(snapped.y);
-
-      // Multi-drag: move other selected elements by the same delta
-      if (selectedIds.has(id) && selectedIds.size > 1 && dragStartPositions.current.size > 0) {
+      if (isMulti) {
+        // Multi-drag: no alignment snapping, just apply raw delta to all
         const startPos = dragStartPositions.current.get(id);
-        if (startPos) {
-          const dx = snapped.x - startPos.x;
-          const dy = snapped.y - startPos.y;
-          for (const sid of selectedIds) {
-            if (sid === id) continue;
-            const sStart = dragStartPositions.current.get(sid);
-            const sNode = stage.findOne(`.${sid}`);
-            if (sStart && sNode) {
-              sNode.x(sStart.x + dx);
-              sNode.y(sStart.y + dy);
-            }
+        if (!startPos) return;
+
+        const dx = x - startPos.x;
+        const dy = y - startPos.y;
+
+        for (const sid of selectedIds) {
+          if (sid === id) continue;
+          const sStart = dragStartPositions.current.get(sid);
+          const sNode = stage.findOne(`.${sid}`);
+          if (sStart && sNode) {
+            sNode.x(sStart.x + dx);
+            sNode.y(sStart.y + dy);
           }
+        }
+      } else {
+        // Single drag: use alignment guides
+        const element = data.elements.find((el) => el.id === id);
+        if (!element) return;
+
+        const geo = element.geometry;
+        const proposedBounds = getElementBounds({
+          ...element,
+          geometry: { ...geo, x, y } as typeof geo,
+        });
+
+        const snapped = snapPosition(id, proposedBounds);
+
+        const node = stage.findOne(`.${id}`);
+        if (node) {
+          node.x(snapped.x);
+          node.y(snapped.y);
         }
       }
     },
@@ -248,10 +258,10 @@ export function Canvas({
   );
 
   const handleElementDragEnd = useCallback(
-    (id: string, x: number, y: number) => {
+    (id: string, _x: number, _y: number) => {
       endDrag();
 
-      // Multi-drag: persist all positions
+      // Multi-drag: persist all positions from node state
       if (selectedIds.has(id) && selectedIds.size > 1) {
         const stage = stageRef.current;
         if (!stage) return;
@@ -264,8 +274,16 @@ export function Canvas({
         }
         onMultiMove(updates);
         dragStartPositions.current = new Map();
+        setIsMultiDragging(false);
       } else {
-        onElementMove(id, x, y);
+        // Single drag: use the node's actual position (may have been snapped)
+        const stage = stageRef.current;
+        const node = stage?.findOne(`.${id}`);
+        if (node) {
+          onElementMove(id, node.x(), node.y());
+        } else {
+          onElementMove(id, _x, _y);
+        }
       }
     },
     [endDrag, selectedIds, stageRef, onMultiMove, onElementMove]
@@ -328,6 +346,12 @@ export function Canvas({
             elements={data.elements}
             onTransformEnd={onElementResize}
           />
+          {!isMultiDragging && (
+            <MultiSelectBounds
+              elements={data.elements}
+              selectedIds={selectedIds}
+            />
+          )}
           {isSelectedLine && selectedElement && (
             <LineEndpointHandles
               elementId={selectedElement.id}

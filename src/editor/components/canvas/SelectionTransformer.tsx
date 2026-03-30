@@ -59,23 +59,19 @@ export function SelectionTransformer({
     const stage = stageRef.current;
     if (!tr || !stage) return;
 
-    if (selectedIds.size === 0 || (isSingle && isLine)) {
+    // Only attach transformer for single selection (not lines)
+    // Multi-select uses manual drag handling without transformer
+    if (!isSingle || isLine) {
       tr.nodes([]);
       tr.getLayer()?.batchDraw();
       return;
     }
 
-    const nodes: Konva.Node[] = [];
-    for (const id of selectedIds) {
-      // Skip lines in multi-select transformer
-      const el = elements.find((e) => e.id === id);
-      if (el?.geometry.shape === "line") continue;
-      const node = stage.findOne(`.${id}`);
-      if (node) nodes.push(node);
+    const node = stage.findOne(`.${selectedId}`);
+    if (node) {
+      tr.nodes([node]);
+      tr.getLayer()?.batchDraw();
     }
-
-    tr.nodes(nodes);
-    tr.getLayer()?.batchDraw();
   }, [selectedIds, stageRef, geoKey, isLine, isSingle, elements]);
 
   const handleTransformEnd = useCallback(() => {

@@ -7,6 +7,7 @@ import { JsonDebugView } from "../debug";
 
 interface PropertiesPanelProps {
   element: FloorPlanElement | null;
+  selectedCount: number;
   backgroundImage?: BackgroundImage;
   debug: boolean;
   onUpdateProperties: (id: string, updates: Partial<ElementProperties>) => void;
@@ -32,6 +33,7 @@ function getDimensions(element: FloorPlanElement): { width: number; height: numb
 
 export function PropertiesPanel({
   element,
+  selectedCount,
   backgroundImage,
   debug,
   onUpdateProperties,
@@ -42,6 +44,31 @@ export function PropertiesPanel({
   onRemoveBackground,
 }: PropertiesPanelProps) {
   const [tab, setTab] = useState<"properties" | "debug">("properties");
+
+  if (!element && selectedCount > 1) {
+    return (
+      <div className="w-60 shrink-0 border-l border-gray-200 bg-white flex flex-col">
+        <div className="px-3 py-2 border-b border-gray-200">
+          <span className="text-xs font-medium text-gray-600">
+            {selectedCount} elements selected
+          </span>
+        </div>
+        <div className="flex-1 p-3">
+          <p className="text-xs text-gray-400">
+            Use the options bar to change shared properties.
+          </p>
+        </div>
+        <div className="p-3 border-t border-gray-200">
+          <button
+            onClick={() => onDelete("")}
+            className="w-full px-3 py-1.5 text-xs text-red-600 border border-red-200 rounded hover:bg-red-50 cursor-pointer transition-colors"
+          >
+            Delete All ({selectedCount})
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (!element) {
     return (

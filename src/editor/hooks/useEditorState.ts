@@ -77,6 +77,30 @@ export function useEditorState(
     }));
   }, []);
 
+  const deleteElements = useCallback((ids: Set<string>) => {
+    setData((prev) => ({
+      ...prev,
+      elements: prev.elements.filter((el) => !ids.has(el.id)),
+    }));
+  }, []);
+
+  const moveElements = useCallback(
+    (updates: Array<{ id: string; x: number; y: number }>) => {
+      setData((prev) => {
+        const updateMap = new Map(updates.map((u) => [u.id, u]));
+        return {
+          ...prev,
+          elements: prev.elements.map((el) => {
+            const update = updateMap.get(el.id);
+            if (!update) return el;
+            return { ...el, geometry: { ...el.geometry, x: update.x, y: update.y } as Geometry };
+          }),
+        };
+      });
+    },
+    []
+  );
+
   const updateElementType = useCallback((id: string, newType: ElementType) => {
     setData((prev) => ({
       ...prev,
@@ -107,6 +131,8 @@ export function useEditorState(
     updateElement,
     updateProperties,
     deleteElement,
+    deleteElements,
+    moveElements,
     updateElementType,
     setBackgroundImage,
     updateDimensions,

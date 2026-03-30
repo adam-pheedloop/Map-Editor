@@ -1,0 +1,23 @@
+import { Rect } from "react-konva";
+
+interface SelectionRectProps {
+  rect: { x: number; y: number; width: number; height: number } | null;
+}
+
+export function SelectionRect({ rect }: SelectionRectProps) {
+  if (!rect) return null;
+
+  return (
+    <Rect
+      x={rect.x}
+      y={rect.y}
+      width={rect.width}
+      height={rect.height}
+      fill="rgba(0, 123, 255, 0.08)"
+      stroke="#007bff"
+      strokeWidth={1}
+      dash={[4, 4]}
+      listening={false}
+    />
+  );
+}

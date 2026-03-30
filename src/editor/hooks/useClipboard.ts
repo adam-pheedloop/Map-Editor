@@ -5,39 +5,41 @@ import type { FloorPlanElement } from "../../types";
 const PASTE_OFFSET = 20;
 
 export function useClipboard() {
-  const [buffer, setBuffer] = useState<FloorPlanElement | null>(null);
+  const [buffer, setBuffer] = useState<FloorPlanElement[]>([]);
   const pasteCount = useRef(0);
 
-  const copy = useCallback((element: FloorPlanElement) => {
-    setBuffer(structuredClone(element));
+  const copy = useCallback((elements: FloorPlanElement[]) => {
+    setBuffer(structuredClone(elements));
     pasteCount.current = 0;
   }, []);
 
-  const paste = useCallback((): FloorPlanElement | null => {
-    if (!buffer) return null;
+  const paste = useCallback((): FloorPlanElement[] => {
+    if (buffer.length === 0) return [];
 
     pasteCount.current += 1;
     const offset = PASTE_OFFSET * pasteCount.current;
 
-    const newElement = structuredClone(buffer);
-    newElement.id = uuidv4();
+    return buffer.map((el) => {
+      const newElement = structuredClone(el);
+      newElement.id = uuidv4();
 
-    // Offset position
-    const geo = newElement.geometry;
-    if ("x" in geo) {
-      (geo as { x: number }).x += offset;
-    }
-    if ("y" in geo) {
-      (geo as { y: number }).y += offset;
-    }
+      // Offset position
+      const geo = newElement.geometry;
+      if ("x" in geo) {
+        (geo as { x: number }).x += offset;
+      }
+      if ("y" in geo) {
+        (geo as { y: number }).y += offset;
+      }
 
-    // Clear booth code for copied booths (new booth, needs code)
-    if (newElement.type === "booth") {
-      newElement.properties.boothCode = undefined;
-    }
+      // Clear booth code for copied booths
+      if (newElement.type === "booth") {
+        newElement.properties.boothCode = undefined;
+      }
 
-    return newElement;
+      return newElement;
+    });
   }, [buffer]);
 
-  return { copy, paste, hasBuffer: buffer !== null };
+  return { copy, paste, hasBuffer: buffer.length > 0 };
 }

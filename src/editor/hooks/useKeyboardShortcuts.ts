@@ -8,6 +8,7 @@ interface KeyboardShortcutActions {
   onCopy: () => void;
   onPaste: () => void;
   onDuplicate: () => void;
+  onSelectAll: () => void;
 }
 
 export function useKeyboardShortcuts({
@@ -17,6 +18,7 @@ export function useKeyboardShortcuts({
   onCopy,
   onPaste,
   onDuplicate,
+  onSelectAll,
 }: KeyboardShortcutActions) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -41,6 +43,10 @@ export function useKeyboardShortcuts({
           case "d":
             e.preventDefault();
             onDuplicate();
+            return;
+          case "a":
+            e.preventDefault();
+            onSelectAll();
             return;
         }
       }
@@ -74,5 +80,5 @@ export function useKeyboardShortcuts({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [setActiveTool, onDeselect, onDelete, onCopy, onPaste, onDuplicate]);
+  }, [setActiveTool, onDeselect, onDelete, onCopy, onPaste, onDuplicate, onSelectAll]);
 }

@@ -8,7 +8,8 @@ import { BoothShape } from "./elements/BoothShape";
 interface ElementShapeProps {
   element: FloorPlanElement;
   isSelectMode: boolean;
-  onSelect: (id: string) => void;
+  isSelected: boolean;
+  onSelect: (id: string, shiftKey?: boolean) => void;
   onDragStart: (id: string) => void;
   onDragMove: (id: string, x: number, y: number) => void;
   onDragEnd: (id: string, x: number, y: number) => void;
@@ -25,6 +26,7 @@ function getLabel(element: FloorPlanElement): string {
 export function ElementShape({
   element,
   isSelectMode,
+  isSelected: _isSelected,
   onSelect,
   onDragStart,
   onDragMove,
@@ -51,7 +53,7 @@ export function ElementShape({
       onClick={(e) => {
         if (!isSelectMode) return;
         e.cancelBubble = true;
-        onSelect(element.id);
+        onSelect(element.id, e.evt.shiftKey);
       }}
       onDragStart={() => {
         onDragStart(element.id);

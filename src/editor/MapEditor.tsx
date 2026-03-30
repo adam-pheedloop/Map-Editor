@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback } from "react";
+import { useRef, useState, useCallback, useMemo } from "react";
 import { v4 as uuidv4 } from "uuid";
 import type { ActiveTool } from "./types";
 import type { DrawingDefaults } from "./components/panels/OptionsBar";
@@ -39,12 +39,14 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     updateElement,
     updateProperties,
     deleteElement,
+    deleteElements,
+    moveElements,
     updateElementType,
     setBackgroundImage,
     updateDimensions,
   } = useEditorState(initialData, { persist });
   const [activeTool, setActiveTool] = useState<ActiveTool>("select");
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [defaults, setDefaults] = useState<DrawingDefaults>(INITIAL_DEFAULTS);
   const [showMapDebug, setShowMapDebug] = useState(false);
   const [showBgDialog, setShowBgDialog] = useState(false);
@@ -65,45 +67,80 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     zoomReset,
   } = useCanvasControls(containerRef);
 
-  const selectedElement = selectedId
-    ? data.elements.find((el) => el.id === selectedId) ?? null
-    : null;
+  // Derived selection helpers
+  const selectedElements = useMemo(
+    () => data.elements.filter((el) => selectedIds.has(el.id)),
+    [data.elements, selectedIds]
+  );
+  const selectedElement = selectedElements.length === 1 ? selectedElements[0] : null;
+  const hasSelection = selectedIds.size > 0;
+  const isMultiSelect = selectedIds.size > 1;
 
+  // Selection helpers
+  const selectOne = useCallback((id: string) => {
+    setSelectedIds(new Set([id]));
+  }, []);
+
+  const selectNone = useCallback(() => {
+    setSelectedIds(new Set());
+  }, []);
+
+  const toggleSelect = useCallback((id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
+  const selectAll = useCallback(() => {
+    setSelectedIds(new Set(data.elements.map((el) => el.id)));
+  }, [data.elements]);
+
+  const selectMany = useCallback((ids: string[]) => {
+    setSelectedIds(new Set(ids));
+  }, []);
+
+  // Clipboard
   const { copy, paste } = useClipboard();
 
   const handleCopy = useCallback(() => {
-    if (selectedElement) copy(selectedElement);
-  }, [selectedElement, copy]);
+    if (selectedElements.length > 0) copy(selectedElements);
+  }, [selectedElements, copy]);
 
   const handlePaste = useCallback(() => {
-    const newElement = paste();
-    if (newElement) {
-      addElement(newElement);
-      setSelectedId(newElement.id);
+    const newElements = paste();
+    if (newElements.length > 0) {
+      for (const el of newElements) addElement(el);
+      setSelectedIds(new Set(newElements.map((el) => el.id)));
     }
   }, [paste, addElement]);
 
   const handleDuplicate = useCallback(() => {
-    if (selectedElement) {
-      copy(selectedElement);
-      const newElement = paste();
-      if (newElement) {
-        addElement(newElement);
-        setSelectedId(newElement.id);
+    if (selectedElements.length > 0) {
+      copy(selectedElements);
+      const newElements = paste();
+      if (newElements.length > 0) {
+        for (const el of newElements) addElement(el);
+        setSelectedIds(new Set(newElements.map((el) => el.id)));
       }
     }
-  }, [selectedElement, copy, paste, addElement]);
+  }, [selectedElements, copy, paste, addElement]);
 
   const handleDeselect = useCallback(() => {
-    setSelectedId(null);
-  }, []);
+    selectNone();
+  }, [selectNone]);
 
   const handleDelete = useCallback(() => {
-    if (selectedId) {
-      deleteElement(selectedId);
-      setSelectedId(null);
+    if (hasSelection) {
+      deleteElements(selectedIds);
+      selectNone();
     }
-  }, [selectedId, deleteElement]);
+  }, [hasSelection, selectedIds, deleteElements, selectNone]);
 
   useKeyboardShortcuts({
     setActiveTool,
@@ -112,9 +149,10 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     onCopy: handleCopy,
     onPaste: handlePaste,
     onDuplicate: handleDuplicate,
+    onSelectAll: selectAll,
   });
 
-  // The colors shown in the options bar: selected element's colors or defaults
+  // Options bar: show selected element's colors or defaults
   const activeDefaults: DrawingDefaults = selectedElement
     ? {
         fill: selectedElement.properties.color,
@@ -130,33 +168,29 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
 
   const handleDefaultsChange = useCallback(
     (updates: Partial<DrawingDefaults>) => {
-      // Always update defaults
       setDefaults((prev) => ({ ...prev, ...updates }));
 
-      // If something is selected, also update the element
-      if (selectedId && selectedElement) {
-        const isLine = selectedElement.geometry.shape === "line";
+      // Update all selected elements
+      for (const id of selectedIds) {
+        const el = data.elements.find((e) => e.id === id);
+        if (!el) continue;
+        const isLine = el.geometry.shape === "line";
         if (updates.fill !== undefined) {
-          if (isLine) {
-            // Lines use color as their stroke
-            updateProperties(selectedId, { color: updates.fill });
-          } else {
-            updateProperties(selectedId, { color: updates.fill });
-          }
+          updateProperties(id, { color: updates.fill });
         }
         if (updates.stroke !== undefined) {
           if (isLine) {
-            updateProperties(selectedId, { color: updates.stroke });
+            updateProperties(id, { color: updates.stroke });
           } else {
-            updateProperties(selectedId, { strokeColor: updates.stroke });
+            updateProperties(id, { strokeColor: updates.stroke });
           }
         }
         if (updates.strokeWidth !== undefined) {
-          updateProperties(selectedId, { strokeWidth: updates.strokeWidth });
+          updateProperties(id, { strokeWidth: updates.strokeWidth });
         }
       }
     },
-    [selectedId, selectedElement, updateProperties]
+    [selectedIds, data.elements, updateProperties]
   );
 
   const handleDrawEnd = useCallback(
@@ -180,23 +214,15 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
       } else {
         const geometry =
           activeTool === "ellipse"
-            ? {
-                shape: "ellipse" as const,
-                x,
-                y,
-                radiusX: width / 2,
-                radiusY: height / 2,
-              }
+            ? { shape: "ellipse" as const, x, y, radiusX: width / 2, radiusY: height / 2 }
             : { shape: "rect" as const, x, y, width, height };
-
-        const name = activeTool === "ellipse" ? "Ellipse" : "Rectangle";
 
         addElement({
           id,
           type: "shape",
           geometry,
           properties: {
-            name,
+            name: activeTool === "ellipse" ? "Ellipse" : "Rectangle",
             color: defaults.fill,
             strokeColor: defaults.stroke,
             strokeWidth: defaults.strokeWidth,
@@ -204,16 +230,15 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           },
         });
       }
-      setSelectedId(id);
+      selectOne(id);
       setActiveTool("select");
     },
-    [activeTool, addElement, defaults]
+    [activeTool, addElement, defaults, selectOne]
   );
 
   const handleLineDrawEnd = useCallback(
     (x1: number, y1: number, x2: number, y2: number) => {
       const id = uuidv4();
-
       const anchorX = (x1 + x2) / 2;
       const anchorY = (y1 + y2) / 2;
 
@@ -224,12 +249,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           shape: "line",
           x: anchorX,
           y: anchorY,
-          points: [
-            x1 - anchorX,
-            y1 - anchorY,
-            x2 - anchorX,
-            y2 - anchorY,
-          ],
+          points: [x1 - anchorX, y1 - anchorY, x2 - anchorX, y2 - anchorY],
         },
         properties: {
           name: "Line",
@@ -238,30 +258,25 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           zIndex: 1,
         },
       });
-      setSelectedId(id);
+      selectOne(id);
       setActiveTool("select");
     },
-    [addElement, defaults]
+    [addElement, defaults, selectOne]
   );
 
   const handleEndpointMove = useCallback(
     (id: string, pointIndex: 0 | 1, x: number, y: number) => {
       const element = data.elements.find((el) => el.id === id);
       if (!element || element.geometry.shape !== "line") return;
-
       const geo = element.geometry;
-      const relX = x - geo.x;
-      const relY = y - geo.y;
-
       const newPoints = [...geo.points] as [number, number, number, number];
       if (pointIndex === 0) {
-        newPoints[0] = relX;
-        newPoints[1] = relY;
+        newPoints[0] = x - geo.x;
+        newPoints[1] = y - geo.y;
       } else {
-        newPoints[2] = relX;
-        newPoints[3] = relY;
+        newPoints[2] = x - geo.x;
+        newPoints[3] = y - geo.y;
       }
-
       updateElement(id, { points: newPoints });
     },
     [data.elements, updateElement]
@@ -272,6 +287,13 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
       updateElement(id, { x, y });
     },
     [updateElement]
+  );
+
+  const handleMultiMove = useCallback(
+    (updates: Array<{ id: string; x: number; y: number }>) => {
+      moveElements(updates);
+    },
+    [moveElements]
   );
 
   const handleElementResize = useCallback(
@@ -290,19 +312,9 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     (dataUrl: string, imageWidth: number, imageHeight: number, mode: "resize-canvas" | "fit-image") => {
       if (mode === "resize-canvas") {
         updateDimensions({ width: imageWidth, height: imageHeight });
-        setBackgroundImage({
-          url: dataUrl,
-          width: imageWidth,
-          height: imageHeight,
-          opacity: 0.3,
-        });
+        setBackgroundImage({ url: dataUrl, width: imageWidth, height: imageHeight, opacity: 0.3 });
       } else {
-        setBackgroundImage({
-          url: dataUrl,
-          width: data.dimensions.width,
-          height: data.dimensions.height,
-          opacity: 0.3,
-        });
+        setBackgroundImage({ url: dataUrl, width: data.dimensions.width, height: data.dimensions.height, opacity: 0.3 });
       }
       setShowBgDialog(false);
     },
@@ -311,10 +323,10 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
 
   const handleElementContextMenu = useCallback(
     (elementId: string, screenX: number, screenY: number) => {
-      setSelectedId(elementId);
+      selectOne(elementId);
       setContextMenu({ elementId, x: screenX, y: screenY });
     },
-    []
+    [selectOne]
   );
 
   const contextMenuItems: ContextMenuItem[] = (() => {
@@ -339,7 +351,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
             danger: true,
             onClick: () => {
               deleteElement(contextMenu.elementId);
-              setSelectedId(null);
+              selectNone();
             },
           });
           break;
@@ -351,9 +363,31 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   const handleToolChange = useCallback((tool: ActiveTool) => {
     setActiveTool(tool);
     if (tool !== "select") {
-      setSelectedId(null);
+      selectNone();
     }
-  }, []);
+  }, [selectNone]);
+
+  // Canvas selection handler: supports shift+click
+  const handleSelect = useCallback(
+    (id: string | null, shiftKey?: boolean) => {
+      if (id === null) {
+        selectNone();
+      } else if (shiftKey) {
+        toggleSelect(id);
+      } else {
+        selectOne(id);
+      }
+    },
+    [selectNone, toggleSelect, selectOne]
+  );
+
+  // Drag-select complete: select all elements in the rectangle
+  const handleDragSelect = useCallback(
+    (ids: string[]) => {
+      selectMany(ids);
+    },
+    [selectMany]
+  );
 
   return (
     <div className="flex flex-col h-full">
@@ -379,7 +413,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
               <Canvas
                 data={data}
                 activeTool={activeTool}
-                selectedId={selectedId}
+                selectedIds={selectedIds}
                 scale={scale}
                 position={position}
                 stageSize={stageSize}
@@ -389,8 +423,10 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                 onDragEnd={handleDragEnd}
                 onDrawEnd={handleDrawEnd}
                 onLineDrawEnd={handleLineDrawEnd}
-                onSelect={setSelectedId}
+                onSelect={handleSelect}
+                onDragSelect={handleDragSelect}
                 onElementMove={handleElementMove}
+                onMultiMove={handleMultiMove}
                 onEndpointMove={handleEndpointMove}
                 onElementResize={handleElementResize}
                 onElementContextMenu={handleElementContextMenu}
@@ -399,13 +435,24 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
             </div>
             <PropertiesPanel
               element={selectedElement}
+              selectedCount={selectedIds.size}
               backgroundImage={data.backgroundImage}
               debug={debug}
-              onUpdateProperties={updateProperties}
+              onUpdateProperties={(id, updates) => {
+                if (isMultiSelect) {
+                  for (const sid of selectedIds) updateProperties(sid, updates);
+                } else {
+                  updateProperties(id, updates);
+                }
+              }}
               onUpdateGeometry={updateElement}
               onDelete={(id) => {
-                deleteElement(id);
-                setSelectedId(null);
+                if (isMultiSelect) {
+                  deleteElements(selectedIds);
+                } else {
+                  deleteElement(id);
+                }
+                selectNone();
               }}
               onConvertToBooth={(id) => updateElementType(id, "booth")}
               onBackgroundOpacityChange={(opacity) =>

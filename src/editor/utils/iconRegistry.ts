@@ -10,6 +10,18 @@ import {
   PiLock, PiKey, PiClock, PiCalendar, PiBell,
   PiLightning, PiCarBattery, PiThermometer, PiDrop,
   PiMusicNote, PiSpeakerHigh, PiMonitor, PiPresentation,
+  // Additional icons
+  PiBaby, PiBicycle, PiBus, PiTaxi, PiTrain, PiAirplaneTakeoff,
+  PiHouse, PiBuildings, PiTent, PiPark,
+  PiSun, PiMoon, PiCloudRain, PiSnowflake, PiWind,
+  PiHandshake, PiUsers, PiUserCircle, PiMegaphone,
+  PiShoppingCart, PiTShirt, PiBackpack, PiSuitcase,
+  PiGameController, PiBalloon, PiConfetti, PiCrown,
+  PiRocket, PiAlien, PiGhost, PiSkull, PiCat,
+  PiHamburger, PiPizza, PiBeerBottle, PiWine, PiCookingPot,
+  PiScissors, PiPaintBrush, PiPencil, PiNotebook,
+  PiMedal, PiTrophy, PiTarget, PiSoccerBall,
+  PiGlobe, PiCompass, PiBinoculars, PiMountains,
 } from "react-icons/pi";
 
 export interface IconEntry {
@@ -84,6 +96,75 @@ export const iconRegistry: IconEntry[] = [
   { id: "PiClock", label: "Clock", category: "General", keywords: ["time", "schedule", "hours"], component: PiClock },
   { id: "PiCalendar", label: "Calendar", category: "General", keywords: ["date", "schedule", "event"], component: PiCalendar },
   { id: "PiBell", label: "Bell", category: "General", keywords: ["notification", "alert", "ring"], component: PiBell },
+
+  // Transport
+  { id: "PiBicycle", label: "Bicycle", category: "Transport", keywords: ["bike", "cycling", "ride"], component: PiBicycle },
+  { id: "PiBus", label: "Bus", category: "Transport", keywords: ["shuttle", "transit", "public"], component: PiBus },
+  { id: "PiTaxi", label: "Taxi", category: "Transport", keywords: ["cab", "rideshare", "uber"], component: PiTaxi },
+  { id: "PiTrain", label: "Train", category: "Transport", keywords: ["rail", "subway", "metro"], component: PiTrain },
+  { id: "PiAirplaneTakeoff", label: "Airplane", category: "Transport", keywords: ["flight", "airport", "travel"], component: PiAirplaneTakeoff },
+
+  // Venues
+  { id: "PiHouse", label: "House", category: "Venues", keywords: ["home", "building", "residence"], component: PiHouse },
+  { id: "PiBuildings", label: "Buildings", category: "Venues", keywords: ["city", "office", "downtown"], component: PiBuildings },
+  { id: "PiTent", label: "Tent", category: "Venues", keywords: ["camping", "outdoor", "festival"], component: PiTent },
+  { id: "PiPark", label: "Park", category: "Venues", keywords: ["outdoor", "garden", "bench"], component: PiPark },
+
+  // Weather
+  { id: "PiSun", label: "Sun", category: "Weather", keywords: ["sunny", "bright", "outdoor"], component: PiSun },
+  { id: "PiMoon", label: "Moon", category: "Weather", keywords: ["night", "evening"], component: PiMoon },
+  { id: "PiCloudRain", label: "Rain", category: "Weather", keywords: ["weather", "wet", "umbrella"], component: PiCloudRain },
+  { id: "PiSnowflake", label: "Snowflake", category: "Weather", keywords: ["cold", "winter", "ice"], component: PiSnowflake },
+  { id: "PiWind", label: "Wind", category: "Weather", keywords: ["breeze", "air", "ventilation"], component: PiWind },
+
+  // People
+  { id: "PiBaby", label: "Baby", category: "People", keywords: ["child", "infant", "family", "changing"], component: PiBaby },
+  { id: "PiHandshake", label: "Handshake", category: "People", keywords: ["meeting", "partnership", "deal"], component: PiHandshake },
+  { id: "PiUsers", label: "Group", category: "People", keywords: ["team", "people", "crowd", "networking"], component: PiUsers },
+  { id: "PiUserCircle", label: "Person", category: "People", keywords: ["user", "profile", "attendee"], component: PiUserCircle },
+  { id: "PiMegaphone", label: "Megaphone", category: "People", keywords: ["announcement", "speaker", "broadcast"], component: PiMegaphone },
+
+  // Shopping
+  { id: "PiShoppingCart", label: "Shopping Cart", category: "Shopping", keywords: ["buy", "store", "retail", "merch"], component: PiShoppingCart },
+  { id: "PiTShirt", label: "T-Shirt", category: "Shopping", keywords: ["clothing", "merch", "apparel", "swag"], component: PiTShirt },
+  { id: "PiBackpack", label: "Backpack", category: "Shopping", keywords: ["bag", "storage", "coat check"], component: PiBackpack },
+  { id: "PiSuitcase", label: "Suitcase", category: "Shopping", keywords: ["luggage", "travel", "baggage"], component: PiSuitcase },
+
+  // Fun & Entertainment
+  { id: "PiGameController", label: "Game Controller", category: "Fun", keywords: ["gaming", "play", "arcade", "entertainment"], component: PiGameController },
+  { id: "PiBalloon", label: "Balloon", category: "Fun", keywords: ["party", "celebration", "festival"], component: PiBalloon },
+  { id: "PiConfetti", label: "Confetti", category: "Fun", keywords: ["party", "celebration", "win"], component: PiConfetti },
+  { id: "PiCrown", label: "Crown", category: "Fun", keywords: ["vip", "royalty", "premium", "king"], component: PiCrown },
+  { id: "PiRocket", label: "Rocket", category: "Fun", keywords: ["launch", "startup", "space"], component: PiRocket },
+  { id: "PiAlien", label: "Alien", category: "Fun", keywords: ["space", "extraterrestrial", "ufo"], component: PiAlien },
+  { id: "PiGhost", label: "Ghost", category: "Fun", keywords: ["spooky", "halloween", "haunted"], component: PiGhost },
+  { id: "PiSkull", label: "Skull", category: "Fun", keywords: ["danger", "pirate", "halloween"], component: PiSkull },
+  { id: "PiCat", label: "Cat", category: "Fun", keywords: ["pet", "animal", "feline"], component: PiCat },
+
+  // Food & Drink (expanded)
+  { id: "PiHamburger", label: "Hamburger", category: "Food & Drink", keywords: ["burger", "fast food", "meal"], component: PiHamburger },
+  { id: "PiPizza", label: "Pizza", category: "Food & Drink", keywords: ["food", "slice", "italian"], component: PiPizza },
+  { id: "PiBeerBottle", label: "Beer", category: "Food & Drink", keywords: ["alcohol", "pub", "bar", "drink"], component: PiBeerBottle },
+  { id: "PiWine", label: "Wine", category: "Food & Drink", keywords: ["alcohol", "glass", "bar", "drink"], component: PiWine },
+  { id: "PiCookingPot", label: "Cooking Pot", category: "Food & Drink", keywords: ["kitchen", "catering", "chef"], component: PiCookingPot },
+
+  // Creative
+  { id: "PiScissors", label: "Scissors", category: "Creative", keywords: ["cut", "craft", "workshop"], component: PiScissors },
+  { id: "PiPaintBrush", label: "Paint Brush", category: "Creative", keywords: ["art", "painting", "design"], component: PiPaintBrush },
+  { id: "PiPencil", label: "Pencil", category: "Creative", keywords: ["write", "draw", "edit"], component: PiPencil },
+  { id: "PiNotebook", label: "Notebook", category: "Creative", keywords: ["notes", "journal", "writing"], component: PiNotebook },
+
+  // Sports & Awards
+  { id: "PiMedal", label: "Medal", category: "Sports", keywords: ["award", "winner", "achievement"], component: PiMedal },
+  { id: "PiTrophy", label: "Trophy", category: "Sports", keywords: ["award", "winner", "champion", "cup"], component: PiTrophy },
+  { id: "PiTarget", label: "Target", category: "Sports", keywords: ["goal", "aim", "bullseye"], component: PiTarget },
+  { id: "PiSoccerBall", label: "Soccer Ball", category: "Sports", keywords: ["football", "sport", "game"], component: PiSoccerBall },
+
+  // Exploration
+  { id: "PiGlobe", label: "Globe", category: "Exploration", keywords: ["world", "earth", "international"], component: PiGlobe },
+  { id: "PiCompass", label: "Compass", category: "Exploration", keywords: ["direction", "navigation", "orient"], component: PiCompass },
+  { id: "PiBinoculars", label: "Binoculars", category: "Exploration", keywords: ["view", "observe", "lookout"], component: PiBinoculars },
+  { id: "PiMountains", label: "Mountains", category: "Exploration", keywords: ["outdoor", "hiking", "landscape"], component: PiMountains },
 ];
 
 // Lookup by id

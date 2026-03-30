@@ -8,11 +8,12 @@ import {
 } from "../../utils/iconRegistry";
 
 interface IconPickerProps {
+  selectedId: string | null;
   onSelect: (iconId: string) => void;
   onClose: () => void;
 }
 
-export function IconPicker({ onSelect, onClose }: IconPickerProps) {
+export function IconPicker({ selectedId, onSelect, onClose }: IconPickerProps) {
   const [query, setQuery] = useState("");
   const ref = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -36,14 +37,19 @@ export function IconPicker({ onSelect, onClose }: IconPickerProps) {
 
   const renderIcon = (entry: IconEntry) => {
     const Icon = entry.component;
+    const isSelected = entry.id === selectedId;
     return (
       <button
         key={entry.id}
         onClick={() => onSelect(entry.id)}
         title={entry.label}
-        className="flex items-center justify-center w-9 h-9 rounded hover:bg-gray-100 cursor-pointer transition-colors"
+        className={`flex items-center justify-center w-9 h-9 rounded cursor-pointer transition-colors ${
+          isSelected
+            ? "bg-primary-600 text-white"
+            : "hover:bg-gray-100 text-gray-600"
+        }`}
       >
-        <Icon size={20} className="text-gray-600" />
+        <Icon size={20} />
       </button>
     );
   };

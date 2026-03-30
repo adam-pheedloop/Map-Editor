@@ -456,6 +456,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
       <div className="flex flex-1 overflow-hidden">
         <ToolSidebar
           activeTool={activeTool}
+          activeIconName={activeIconName}
           onToolChange={handleToolChange}
           onIconSelect={(iconId) => setActiveIconName(iconId)}
         />

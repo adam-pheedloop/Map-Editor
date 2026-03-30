@@ -2,9 +2,11 @@ import { useState } from "react";
 import { PiCursorFill, PiRectangle, PiCircle, PiLineSegment, PiStorefront, PiTextT, PiSticker } from "react-icons/pi";
 import type { ActiveTool } from "../../types";
 import { IconPicker } from "./IconPicker";
+import { getIconEntry } from "../../utils/iconRegistry";
 
 interface ToolSidebarProps {
   activeTool: ActiveTool;
+  activeIconName: string | null;
   onToolChange: (tool: ActiveTool) => void;
   onIconSelect?: (iconId: string) => void;
 }
@@ -58,26 +60,40 @@ function ToolButton({
   );
 }
 
-export function ToolSidebar({ activeTool, onToolChange, onIconSelect }: ToolSidebarProps) {
+export function ToolSidebar({ activeTool, activeIconName, onToolChange, onIconSelect }: ToolSidebarProps) {
   return (
     <div className="flex flex-col items-center gap-1 py-2 w-12 shrink-0 bg-white border-r border-gray-200">
-      {tools.map((tool) => (
-        <div key={tool.id} className="relative">
-          <ToolButton
-            tool={tool}
-            isActive={activeTool === tool.id}
-            onClick={() => onToolChange(tool.id)}
-          />
-          {tool.id === "icon" && activeTool === "icon" && onIconSelect && (
-            <IconPicker
-              onSelect={(iconId) => {
-                onIconSelect(iconId);
-              }}
-              onClose={() => onToolChange("select")}
+      {tools.map((tool) => {
+        // For the icon tool, show the selected icon on the button
+        const displayTool =
+          tool.id === "icon" && activeIconName
+            ? (() => {
+                const entry = getIconEntry(activeIconName);
+                if (!entry) return tool;
+                const ActiveIcon = entry.component;
+                return { ...tool, icon: <ActiveIcon size={20} /> };
+              })()
+            : tool;
+
+        return (
+          <div key={tool.id} className="relative">
+            <ToolButton
+              tool={displayTool}
+              isActive={activeTool === tool.id}
+              onClick={() => onToolChange(tool.id)}
             />
-          )}
-        </div>
-      ))}
+            {tool.id === "icon" && activeTool === "icon" && onIconSelect && (
+              <IconPicker
+                selectedId={activeIconName}
+                onSelect={(iconId) => {
+                  onIconSelect(iconId);
+                }}
+                onClose={() => onToolChange("select")}
+              />
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }

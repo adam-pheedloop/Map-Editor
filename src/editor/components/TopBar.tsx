@@ -11,6 +11,7 @@ interface TopBarProps {
   onDebugClick?: () => void;
   onHelpClick?: () => void;
   onBackgroundImageClick?: () => void;
+  fileMenuItems?: MenuEntry[];
   editMenuItems?: MenuEntry[];
   toolsMenuItems?: MenuEntry[];
 }
@@ -20,24 +21,51 @@ export function TopBar({
   onDebugClick,
   onHelpClick,
   onBackgroundImageClick,
+  fileMenuItems = [],
   editMenuItems = [],
   toolsMenuItems = [],
 }: TopBarProps) {
+  const [fileOpen, setFileOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
+
+  const closeAll = () => {
+    setFileOpen(false);
+    setEditOpen(false);
+    setToolsOpen(false);
+  };
 
   return (
     <div className="flex items-center bg-white border-b border-gray-200">
       <div className="flex items-center justify-center w-12 shrink-0 h-10 border-r border-gray-200 text-gray-400">
         <PiMapTrifold size={20} />
       </div>
-      <span className="px-3 text-sm text-gray-400 cursor-default">File</span>
       <div className="relative">
         <button
           onMouseDown={(e) => {
             e.stopPropagation();
+            closeAll();
+            setFileOpen((prev) => !prev);
+          }}
+          className={`px-3 h-10 text-sm cursor-pointer transition-colors ${
+            fileOpen ? "text-gray-800 bg-gray-100" : "text-gray-400 hover:text-gray-600"
+          }`}
+        >
+          File
+        </button>
+        {fileOpen && (
+          <DropdownMenu
+            items={fileMenuItems}
+            onClose={() => setFileOpen(false)}
+          />
+        )}
+      </div>
+      <div className="relative">
+        <button
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            closeAll();
             setEditOpen((prev) => !prev);
-            setToolsOpen(false);
           }}
           className={`px-3 h-10 text-sm cursor-pointer transition-colors ${
             editOpen ? "text-gray-800 bg-gray-100" : "text-gray-400 hover:text-gray-600"
@@ -56,8 +84,8 @@ export function TopBar({
         <button
           onMouseDown={(e) => {
             e.stopPropagation();
+            closeAll();
             setToolsOpen((prev) => !prev);
-            setEditOpen(false);
           }}
           className={`px-3 h-10 text-sm cursor-pointer transition-colors ${
             toolsOpen ? "text-gray-800 bg-gray-100" : "text-gray-400 hover:text-gray-600"

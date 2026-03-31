@@ -457,6 +457,72 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
         onDebugClick={() => setShowMapDebug(true)}
         onHelpClick={() => setShowHelp(true)}
         onBackgroundImageClick={() => setShowBgDialog(true)}
+        fileMenuItems={[
+          {
+            label: "Export as PNG",
+            onClick: () => {
+              const stage = stageRef.current;
+              if (!stage) return;
+              const dataUrl = stage.toDataURL({ pixelRatio: 2 });
+              const link = document.createElement("a");
+              link.download = `${data.name || "map"}.png`;
+              link.href = dataUrl;
+              link.click();
+            },
+          },
+          {
+            label: "Export as JSON",
+            onClick: () => {
+              const json = JSON.stringify(data, null, 2);
+              const blob = new Blob([json], { type: "application/json" });
+              const url = URL.createObjectURL(blob);
+              const link = document.createElement("a");
+              link.download = `${data.name || "map"}.json`;
+              link.href = url;
+              link.click();
+              URL.revokeObjectURL(url);
+            },
+          },
+          {
+            label: "Import JSON",
+            onClick: () => {
+              const input = document.createElement("input");
+              input.type = "file";
+              input.accept = ".json";
+              input.onchange = (e) => {
+                const file = (e.target as HTMLInputElement).files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                  try {
+                    const imported = JSON.parse(reader.result as string);
+                    if (imported.version && imported.elements) {
+                      // Replace current data by adding/removing elements
+                      // Simple approach: reload the page with new data in storage
+                      localStorage.setItem("map-editor:floorplan", JSON.stringify(imported));
+                      window.location.reload();
+                    }
+                  } catch {
+                    // Invalid JSON — ignore
+                  }
+                };
+                reader.readAsText(file);
+              };
+              input.click();
+            },
+          },
+          ...(debug ? [
+            { type: "divider" as const },
+            {
+              label: "Reset Demo",
+              danger: true,
+              onClick: () => {
+                localStorage.removeItem("map-editor:floorplan");
+                window.location.reload();
+              },
+            },
+          ] : []),
+        ]}
         editMenuItems={[
           { label: "Undo", shortcut: `${modKey}Z`, disabled: !canUndo, onClick: undo },
           { label: "Redo", shortcut: `${modKey}⇧Z`, disabled: !canRedo, onClick: redo },

@@ -18,6 +18,7 @@ import { modKey } from "./components/TopBar";
 import { MapDebugDialog } from "./components/debug";
 import { BackgroundImageDialog } from "./components/panels/BackgroundImageDialog";
 import { GridSettingsDialog } from "./components/panels/GridSettingsDialog";
+import { HelpDialog } from "./components/panels/HelpDialog";
 import type { FloorPlanData } from "../types";
 
 const INITIAL_DEFAULTS: DrawingDefaults = {
@@ -56,6 +57,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   const [defaults, setDefaults] = useState<DrawingDefaults>(INITIAL_DEFAULTS);
   const [showMapDebug, setShowMapDebug] = useState(false);
   const [showBgDialog, setShowBgDialog] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
   const [activeIconName, setActiveIconName] = useState<string | null>(null);
   const [gridSettings, setGridSettings] = useState({
     showGrid: true,
@@ -453,6 +455,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
       <TopBar
         debug={debug}
         onDebugClick={() => setShowMapDebug(true)}
+        onHelpClick={() => setShowHelp(true)}
         onBackgroundImageClick={() => setShowBgDialog(true)}
         editMenuItems={[
           { label: "Undo", shortcut: `${modKey}Z`, disabled: !canUndo, onClick: undo },
@@ -575,6 +578,9 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           onSave={setGridSettings}
           onClose={() => setShowGridDialog(false)}
         />
+      )}
+      {showHelp && (
+        <HelpDialog onClose={() => setShowHelp(false)} />
       )}
       {contextMenu && contextMenuItems.length > 0 && (
         <ContextMenu

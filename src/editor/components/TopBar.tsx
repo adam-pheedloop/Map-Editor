@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PiMapTrifold, PiBug, PiImage } from "react-icons/pi";
+import { PiMapTrifold, PiBug, PiImage, PiQuestion } from "react-icons/pi";
 import { DropdownMenu } from "./ui";
 import type { MenuEntry } from "./ui";
 
@@ -9,6 +9,7 @@ const mod = isMac ? "⌘" : "Ctrl+";
 interface TopBarProps {
   debug?: boolean;
   onDebugClick?: () => void;
+  onHelpClick?: () => void;
   onBackgroundImageClick?: () => void;
   editMenuItems?: MenuEntry[];
   toolsMenuItems?: MenuEntry[];
@@ -17,6 +18,7 @@ interface TopBarProps {
 export function TopBar({
   debug,
   onDebugClick,
+  onHelpClick,
   onBackgroundImageClick,
   editMenuItems = [],
   toolsMenuItems = [],
@@ -78,6 +80,13 @@ export function TopBar({
         <span>Background</span>
       </button>
       <div className="flex-1" />
+      <button
+        onClick={onHelpClick}
+        className="flex items-center gap-1 px-3 h-10 text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
+        title="Help & Shortcuts"
+      >
+        <PiQuestion size={16} />
+      </button>
       {debug && (
         <button
           onClick={onDebugClick}

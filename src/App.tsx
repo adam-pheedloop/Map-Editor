@@ -1,5 +1,10 @@
 import { useState, useEffect } from "react";
-import { PiDesktop, PiDeviceMobile, PiUser, PiStorefront } from "react-icons/pi";
+import {
+  PiDesktop,
+  PiDeviceMobile,
+  PiUser,
+  PiStorefront,
+} from "react-icons/pi";
 import { MapEditor } from "./editor";
 import { MapViewer } from "./viewer";
 import { sampleMap } from "./sample-data/sample-map";
@@ -25,9 +30,17 @@ function loadViewerData(): FloorPlanData | null {
   }
 }
 
-function ViewerRoute({ viewport, mode }: { viewport: Viewport; mode: ViewerMode }) {
+function ViewerRoute({
+  viewport,
+  mode,
+}: {
+  viewport: Viewport;
+  mode: ViewerMode;
+}) {
   const data = loadViewerData() ?? sampleMap;
-  const viewer = <MapViewer data={data} exhibitors={sampleExhibitors} mode={mode} />;
+  const viewer = (
+    <MapViewer data={data} exhibitors={sampleExhibitors} mode={mode} />
+  );
 
   if (viewport === "mobile") {
     return (
@@ -86,7 +99,9 @@ function App() {
             <button
               onClick={() => setViewport("desktop")}
               className={`p-1 rounded cursor-pointer transition-colors ${
-                viewport === "desktop" ? "text-white" : "text-gray-500 hover:text-gray-300"
+                viewport === "desktop"
+                  ? "text-white"
+                  : "text-gray-500 hover:text-gray-300"
               }`}
               title="Desktop"
             >
@@ -95,7 +110,9 @@ function App() {
             <button
               onClick={() => setViewport("mobile")}
               className={`p-1 rounded cursor-pointer transition-colors ${
-                viewport === "mobile" ? "text-white" : "text-gray-500 hover:text-gray-300"
+                viewport === "mobile"
+                  ? "text-white"
+                  : "text-gray-500 hover:text-gray-300"
               }`}
               title="Mobile (390×844)"
             >
@@ -105,7 +122,9 @@ function App() {
             <button
               onClick={() => setViewerMode("attendee")}
               className={`flex items-center gap-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
-                viewerMode === "attendee" ? "bg-white/15 text-white" : "text-gray-500 hover:text-gray-300"
+                viewerMode === "attendee"
+                  ? "bg-white/15 text-white"
+                  : "text-gray-500 hover:text-gray-300"
               }`}
               title="Attendee view"
             >
@@ -115,7 +134,9 @@ function App() {
             <button
               onClick={() => setViewerMode("exhibitor")}
               className={`flex items-center gap-1 px-2 py-0.5 rounded cursor-pointer transition-colors ${
-                viewerMode === "exhibitor" ? "bg-white/15 text-white" : "text-gray-500 hover:text-gray-300"
+                viewerMode === "exhibitor"
+                  ? "bg-white/15 text-white"
+                  : "text-gray-500 hover:text-gray-300"
               }`}
               title="Exhibitor view"
             >
@@ -127,9 +148,11 @@ function App() {
       </nav>
       <div className="flex-1 overflow-hidden">
         {route === "editor" && (
-          <MapEditor initialData={sampleMap} persist />
+          <MapEditor initialData={sampleMap} persist debug />
         )}
-        {route === "viewer" && <ViewerRoute viewport={viewport} mode={viewerMode} />}
+        {route === "viewer" && (
+          <ViewerRoute viewport={viewport} mode={viewerMode} />
+        )}
       </div>
     </div>
   );

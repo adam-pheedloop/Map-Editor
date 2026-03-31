@@ -1,4 +1,4 @@
-import { useCallback, useState, useRef } from "react";
+import { useCallback, useState, useRef, useEffect } from "react";
 import { Stage, Layer, Rect } from "react-konva";
 import type Konva from "konva";
 import type { FloorPlanData, LineGeometry } from "../../../types";
@@ -14,6 +14,7 @@ import { BackgroundImage } from "./BackgroundImage";
 import { AlignmentGuides } from "./AlignmentGuides";
 import { SelectionRect } from "./SelectionRect";
 import { MultiSelectBounds } from "./MultiSelectBounds";
+import { GridLayer } from "./GridLayer";
 import { useAlignmentGuides } from "../../hooks/useAlignmentGuides";
 import { getElementBounds } from "../../utils/bounds";
 
@@ -45,6 +46,14 @@ interface CanvasProps {
   onEndpointMove: (id: string, pointIndex: 0 | 1, x: number, y: number) => void;
   onElementContextMenu: (id: string, screenX: number, screenY: number) => void;
   onClickPlace: (x: number, y: number) => void;
+  gridSettings: {
+    showGrid: boolean;
+    gridSpacing: number;
+    snapToGrid: boolean;
+    gridColor: string;
+    gridOpacity: number;
+  };
+  snapToObjects: boolean;
 }
 
 export function Canvas({
@@ -68,6 +77,8 @@ export function Canvas({
   onElementResize,
   onElementContextMenu,
   onClickPlace,
+  gridSettings,
+  snapToObjects,
 }: CanvasProps) {
   const isSelectMode = activeTool === "select";
   const isDrawing = !isSelectMode;
@@ -75,6 +86,28 @@ export function Canvas({
   const isTextTool = activeTool === "text";
   const isIconTool = activeTool === "icon";
   const isClickPlaceTool = isTextTool || isIconTool;
+
+  // Track Space key for pan mode
+  const [spaceHeld, setSpaceHeld] = useState(false);
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "Space" && !(e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement)) {
+        e.preventDefault();
+        setSpaceHeld(true);
+      }
+    };
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (e.code === "Space") setSpaceHeld(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("keyup", onKeyUp);
+    };
+  }, []);
+
+  const isPanMode = spaceHeld;
 
   // Drag-select rectangle state
   const [dragSelectRect, setDragSelectRect] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
@@ -112,6 +145,9 @@ export function Canvas({
   const isSelectedLine = selectedElement?.geometry.shape === "line";
 
   const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    // Space held = pan mode, let stage draggable handle it
+    if (isPanMode) return;
+
     if (isSelectMode) {
       if (isEmptySpaceClick(e)) {
         // Start drag-select rectangle
@@ -248,26 +284,59 @@ export function Canvas({
           }
         }
       } else {
-        // Single drag: use alignment guides
+        // Single drag: alignment guides (if enabled), then grid snap fallback
         const element = data.elements.find((el) => el.id === id);
         if (!element) return;
 
-        const geo = element.geometry;
-        const proposedBounds = getElementBounds({
-          ...element,
-          geometry: { ...geo, x, y } as typeof geo,
-        });
+        let finalX = x;
+        let finalY = y;
+        let guidesSnappedX = false;
+        let guidesSnappedY = false;
 
-        const snapped = snapPosition(id, proposedBounds);
+        if (snapToObjects) {
+          const geo = element.geometry;
+          const proposedBounds = getElementBounds({
+            ...element,
+            geometry: { ...geo, x, y } as typeof geo,
+          });
+
+          const snapped = snapPosition(id, proposedBounds);
+          if (snapped.x !== proposedBounds.left) {
+            finalX = snapped.x;
+            guidesSnappedX = true;
+          }
+          if (snapped.y !== proposedBounds.top) {
+            finalY = snapped.y;
+            guidesSnappedY = true;
+          }
+        }
+
+        // Grid snap fallback (only where alignment guides didn't snap)
+        if (gridSettings.snapToGrid) {
+          const gs = gridSettings.gridSpacing;
+          const gridSnapThreshold = gs * 0.25;
+          if (!guidesSnappedX) {
+            const nearestGridX = Math.round(x / gs) * gs;
+            if (Math.abs(x - nearestGridX) < gridSnapThreshold) {
+              finalX = nearestGridX;
+            }
+          }
+          if (!guidesSnappedY) {
+            const nearestGridY = Math.round(y / gs) * gs;
+            if (Math.abs(y - nearestGridY) < gridSnapThreshold) {
+              finalY = nearestGridY;
+            }
+          }
+        }
 
         const node = stage.findOne(`.${id}`);
         if (node) {
-          node.x(snapped.x);
-          node.y(snapped.y);
+          node.x(finalX);
+          node.y(finalY);
         }
       }
     },
-    [data.elements, snapPosition, stageRef, selectedIds]
+    [data.elements, snapPosition, stageRef, selectedIds, gridSettings, snapToObjects]
   );
 
   const handleElementDragEnd = useCallback(
@@ -306,7 +375,7 @@ export function Canvas({
     <div
       ref={containerRef}
       className="flex-1 min-w-0 bg-gray-200 overflow-hidden"
-      style={{ cursor: isDrawing ? "crosshair" : "default" }}
+      style={{ cursor: isPanMode ? "grab" : isDrawing ? "crosshair" : "default" }}
     >
       <Stage
         ref={stageRef}
@@ -316,7 +385,7 @@ export function Canvas({
         scaleY={scale}
         x={position.x}
         y={position.y}
-        draggable={isSelectMode && !dragSelectOrigin.current}
+        draggable={isPanMode || (isSelectMode && !dragSelectOrigin.current)}
         onWheel={onWheel}
         onDragEnd={onDragEnd}
         onMouseDown={handleMouseDown}
@@ -336,6 +405,15 @@ export function Canvas({
           />
           {data.backgroundImage && (
             <BackgroundImage config={data.backgroundImage} />
+          )}
+          {gridSettings.showGrid && (
+            <GridLayer
+              width={data.dimensions.width}
+              height={data.dimensions.height}
+              spacing={gridSettings.gridSpacing}
+              color={gridSettings.gridColor}
+              opacity={gridSettings.gridOpacity}
+            />
           )}
         </Layer>
 

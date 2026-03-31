@@ -11,6 +11,7 @@ interface TopBarProps {
   onDebugClick?: () => void;
   onBackgroundImageClick?: () => void;
   editMenuItems?: MenuEntry[];
+  toolsMenuItems?: MenuEntry[];
 }
 
 export function TopBar({
@@ -18,8 +19,10 @@ export function TopBar({
   onDebugClick,
   onBackgroundImageClick,
   editMenuItems = [],
+  toolsMenuItems = [],
 }: TopBarProps) {
   const [editOpen, setEditOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
 
   return (
     <div className="flex items-center bg-white border-b border-gray-200">
@@ -32,6 +35,7 @@ export function TopBar({
           onMouseDown={(e) => {
             e.stopPropagation();
             setEditOpen((prev) => !prev);
+            setToolsOpen(false);
           }}
           className={`px-3 h-10 text-sm cursor-pointer transition-colors ${
             editOpen ? "text-gray-800 bg-gray-100" : "text-gray-400 hover:text-gray-600"
@@ -43,6 +47,26 @@ export function TopBar({
           <DropdownMenu
             items={editMenuItems}
             onClose={() => setEditOpen(false)}
+          />
+        )}
+      </div>
+      <div className="relative">
+        <button
+          onMouseDown={(e) => {
+            e.stopPropagation();
+            setToolsOpen((prev) => !prev);
+            setEditOpen(false);
+          }}
+          className={`px-3 h-10 text-sm cursor-pointer transition-colors ${
+            toolsOpen ? "text-gray-800 bg-gray-100" : "text-gray-400 hover:text-gray-600"
+          }`}
+        >
+          Tools
+        </button>
+        {toolsOpen && (
+          <DropdownMenu
+            items={toolsMenuItems}
+            onClose={() => setToolsOpen(false)}
           />
         )}
       </div>

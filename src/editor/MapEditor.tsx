@@ -17,6 +17,7 @@ import { ContextMenu, type ContextMenuItem } from "./components/canvas/ContextMe
 import { modKey } from "./components/TopBar";
 import { MapDebugDialog } from "./components/debug";
 import { BackgroundImageDialog } from "./components/panels/BackgroundImageDialog";
+import { GridSettingsDialog } from "./components/panels/GridSettingsDialog";
 import type { FloorPlanData } from "../types";
 
 const INITIAL_DEFAULTS: DrawingDefaults = {
@@ -56,6 +57,15 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   const [showMapDebug, setShowMapDebug] = useState(false);
   const [showBgDialog, setShowBgDialog] = useState(false);
   const [activeIconName, setActiveIconName] = useState<string | null>(null);
+  const [gridSettings, setGridSettings] = useState({
+    showGrid: true,
+    gridSpacing: 20,
+    snapToGrid: true,
+    gridColor: "#d1d5db",
+    gridOpacity: 0.5,
+  });
+  const [snapToObjects, setSnapToObjects] = useState(true);
+  const [showGridDialog, setShowGridDialog] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
     elementId: string;
     x: number;
@@ -230,7 +240,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           type: "shape",
           geometry,
           properties: {
-            name: activeTool === "ellipse" ? "Ellipse" : "Rectangle",
+            name: "",
             color: defaults.fill,
             strokeColor: defaults.stroke,
             strokeWidth: defaults.strokeWidth,
@@ -452,6 +462,25 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           { label: "Paste", shortcut: `${modKey}V`, disabled: !hasBuffer, onClick: handlePaste },
           { label: "Duplicate", shortcut: `${modKey}D`, disabled: !hasSelection, onClick: handleDuplicate },
         ]}
+        toolsMenuItems={[
+          {
+            label: `${gridSettings.showGrid ? "✓ " : "   "}Show Grid`,
+            onClick: () => setGridSettings((s) => ({ ...s, showGrid: !s.showGrid })),
+          },
+          {
+            label: `${gridSettings.snapToGrid ? "✓ " : "   "}Snap to Grid`,
+            onClick: () => setGridSettings((s) => ({ ...s, snapToGrid: !s.snapToGrid })),
+          },
+          {
+            label: `${snapToObjects ? "✓ " : "   "}Snap to Objects`,
+            onClick: () => setSnapToObjects((s) => !s),
+          },
+          { type: "divider" as const },
+          {
+            label: "Configure Grid...",
+            onClick: () => setShowGridDialog(true),
+          },
+        ]}
       />
       <div className="flex flex-1 overflow-hidden">
         <ToolSidebar
@@ -493,6 +522,8 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                 onElementResize={handleElementResize}
                 onElementContextMenu={handleElementContextMenu}
                 onClickPlace={handleClickPlace}
+                gridSettings={gridSettings}
+                snapToObjects={snapToObjects}
               />
               <StatusBar scale={scale} onZoomReset={zoomReset} />
             </div>
@@ -536,6 +567,13 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           canvasHeight={data.dimensions.height}
           onConfirm={handleBackgroundImage}
           onClose={() => setShowBgDialog(false)}
+        />
+      )}
+      {showGridDialog && (
+        <GridSettingsDialog
+          settings={gridSettings}
+          onSave={setGridSettings}
+          onClose={() => setShowGridDialog(false)}
         />
       )}
       {contextMenu && contextMenuItems.length > 0 && (

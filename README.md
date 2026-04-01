@@ -2,8 +2,6 @@
 
 Interactive map editor and viewer for PheedLoop events. Standalone package built with Konva.js + React + TypeScript — will be consumed by raichu (editor) and Charmander (viewer) once integrated.
 
-See [.planning/EventMaps-Redevelopment-Reference.md](.planning/EventMaps-Redevelopment-Reference.md) for the full project context and architecture decisions.
-
 ## Quick Start
 
 ```bash
@@ -79,6 +77,7 @@ During development, data persists to localStorage (controlled via `persist` prop
 - **Interactivity:** Pan, zoom, booth hover/click with popover
 - **Exhibitor list:** Desktop sidebar / mobile bottom sheet, sorted alphabetically
 - **Search:** Real-time search across booth codes, names, and exhibitor names
+- **Wayfinding:** A* pathfinding on walkable grid — attendees pick start/end booths and see a route
 - **Responsive:** Container-query based — desktop sidebar, mobile bottom sheet
 
 ## Shape Config System
@@ -95,15 +94,6 @@ export const boothConfig: ShapeConfig = {
 ```
 
 Adding a new element type = new component file with its config. The UI adapts automatically.
-
-## Development Phases
-
-| Phase | Status | Focus |
-|-------|--------|-------|
-| [Phase 1](.planning/PHASE-1.md) | Complete | Core editor — canvas, drawing tools, selection, properties |
-| [Phase 2](.planning/PHASE-2.md) | Complete | Exhibitor booths as first-class elements |
-| [Phase 3](.planning/PHASE-3.md) | Complete | Attendee-facing viewer with search, exhibitor list, modes |
-| [Phase 4](.planning/PHASE-4.md) | In progress | Editor polish — copy/paste, alignment guides, multi-select |
 
 ## Scripts
 

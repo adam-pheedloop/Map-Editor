@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from "react";
 import type { FloorPlanData, FloorPlanElement, ElementType, Geometry, ElementProperties, BackgroundImage, Dimensions } from "../../types";
+import { ELEMENT_TYPE_TO_LAYER } from "../../types";
 import { useHistory } from "./useHistory";
 
 const STORAGE_KEY = "map-editor:floorplan";
@@ -14,6 +15,18 @@ function loadFromStorage(): FloorPlanData | null {
   }
 }
 
+/** Ensures every element has a `layer` property, assigning from type mapping if missing. */
+function backfillLayers(data: FloorPlanData): FloorPlanData {
+  const needsBackfill = data.elements.some((el) => !el.layer);
+  if (!needsBackfill) return data;
+  return {
+    ...data,
+    elements: data.elements.map((el) =>
+      el.layer ? el : { ...el, layer: ELEMENT_TYPE_TO_LAYER[el.type] }
+    ),
+  };
+}
+
 interface UseEditorStateOptions {
   persist?: boolean;
 }
@@ -22,7 +35,7 @@ export function useEditorState(
   initialData: FloorPlanData,
   { persist = false }: UseEditorStateOptions = {}
 ) {
-  const loadedData = persist ? loadFromStorage() ?? initialData : initialData;
+  const loadedData = backfillLayers(persist ? loadFromStorage() ?? initialData : initialData);
   const { present: data, set: setData, undo, redo, canUndo, canRedo } = useHistory<FloorPlanData>(loadedData);
 
   // Auto-save to localStorage
@@ -32,9 +45,12 @@ export function useEditorState(
   }, [data, persist]);
 
   const addElement = useCallback((element: FloorPlanElement) => {
+    const withLayer = element.layer
+      ? element
+      : { ...element, layer: ELEMENT_TYPE_TO_LAYER[element.type] };
     setData((prev) => ({
       ...prev,
-      elements: [...prev.elements, element],
+      elements: [...prev.elements, withLayer],
     }));
   }, []);
 
@@ -117,6 +133,10 @@ export function useEditorState(
     }));
   }, []);
 
+  const setBackgroundColor = useCallback((color: string) => {
+    setData((prev) => ({ ...prev, backgroundColor: color }));
+  }, []);
+
   const clearStorage = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
   }, []);
@@ -131,6 +151,7 @@ export function useEditorState(
     moveElements,
     updateElementType,
     setBackgroundImage,
+    setBackgroundColor,
     updateDimensions,
     clearStorage,
     undo,

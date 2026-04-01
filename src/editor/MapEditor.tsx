@@ -19,7 +19,9 @@ import { MapDebugDialog } from "./components/debug";
 import { BackgroundImageDialog } from "./components/panels/BackgroundImageDialog";
 import { GridSettingsDialog } from "./components/panels/GridSettingsDialog";
 import { HelpDialog } from "./components/panels/HelpDialog";
-import type { FloorPlanData } from "../types";
+import { LayerPanel } from "./components/panels/LayerPanel";
+import type { FloorPlanData, LayerId, LayerDefinition } from "../types";
+import { DEFAULT_LAYERS } from "../types";
 
 const INITIAL_DEFAULTS: DrawingDefaults = {
   fill: "#94a3b8",
@@ -46,12 +48,25 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     moveElements,
     updateElementType,
     setBackgroundImage,
+    setBackgroundColor,
     updateDimensions,
     undo,
     redo,
     canUndo,
     canRedo,
   } = useEditorState(initialData, { persist });
+  // Layer state (editor-only, not persisted in FloorPlanData)
+  const [layers, setLayers] = useState<LayerDefinition[]>(() =>
+    DEFAULT_LAYERS.map((l) => ({ ...l }))
+  );
+  const [activeLayerId, setActiveLayerId] = useState<LayerId>("content");
+
+  const toggleLayerVisibility = useCallback((id: LayerId) => {
+    setLayers((prev) =>
+      prev.map((l) => (l.id === id ? { ...l, visible: !l.visible } : l))
+    );
+  }, []);
+
   const [activeTool, setActiveTool] = useState<ActiveTool>("select");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [defaults, setDefaults] = useState<DrawingDefaults>(INITIAL_DEFAULTS);
@@ -456,7 +471,6 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
         debug={debug}
         onDebugClick={() => setShowMapDebug(true)}
         onHelpClick={() => setShowHelp(true)}
-        onBackgroundImageClick={() => setShowBgDialog(true)}
         fileMenuItems={[
           {
             label: "Export as PNG",
@@ -570,36 +584,48 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           />
           <div className="flex flex-1 overflow-hidden">
             <div className="flex flex-col flex-1">
-              <Canvas
-                data={data}
-                activeTool={activeTool}
-                selectedIds={selectedIds}
-                scale={scale}
-                position={position}
-                stageSize={stageSize}
-                stageRef={stageRef}
-                containerRef={containerRef}
-                onWheel={handleWheel}
-                onDragEnd={handleDragEnd}
-                onDrawEnd={handleDrawEnd}
-                onLineDrawEnd={handleLineDrawEnd}
-                onSelect={handleSelect}
-                onDragSelect={handleDragSelect}
-                onElementMove={handleElementMove}
-                onMultiMove={handleMultiMove}
-                onEndpointMove={handleEndpointMove}
-                onElementResize={handleElementResize}
-                onElementContextMenu={handleElementContextMenu}
-                onClickPlace={handleClickPlace}
-                gridSettings={gridSettings}
-                snapToObjects={snapToObjects}
-              />
+              <div className="relative flex-1 flex flex-col">
+                <Canvas
+                  data={data}
+                  activeTool={activeTool}
+                  selectedIds={selectedIds}
+                  scale={scale}
+                  position={position}
+                  stageSize={stageSize}
+                  stageRef={stageRef}
+                  containerRef={containerRef}
+                  onWheel={handleWheel}
+                  onDragEnd={handleDragEnd}
+                  onDrawEnd={handleDrawEnd}
+                  onLineDrawEnd={handleLineDrawEnd}
+                  onSelect={handleSelect}
+                  onDragSelect={handleDragSelect}
+                  onElementMove={handleElementMove}
+                  onMultiMove={handleMultiMove}
+                  onEndpointMove={handleEndpointMove}
+                  onElementResize={handleElementResize}
+                  onElementContextMenu={handleElementContextMenu}
+                  onClickPlace={handleClickPlace}
+                  gridSettings={gridSettings}
+                  snapToObjects={snapToObjects}
+                  layers={layers}
+                  activeLayerId={activeLayerId}
+                />
+                <LayerPanel
+                  layers={layers}
+                  activeLayerId={activeLayerId}
+                  onSetActiveLayer={setActiveLayerId}
+                  onToggleVisibility={toggleLayerVisibility}
+                />
+              </div>
               <StatusBar scale={scale} onZoomReset={zoomReset} />
             </div>
             <PropertiesPanel
               element={selectedElement}
               selectedCount={selectedIds.size}
               backgroundImage={data.backgroundImage}
+              backgroundColor={data.backgroundColor}
+              activeLayerId={activeLayerId}
               debug={debug}
               onUpdateProperties={(id, updates) => {
                 if (isMultiSelect) {
@@ -623,6 +649,8 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                 setBackgroundImage({ ...data.backgroundImage, opacity })
               }
               onRemoveBackground={() => setBackgroundImage(undefined)}
+              onUploadBackground={() => setShowBgDialog(true)}
+              onBackgroundColorChange={setBackgroundColor}
             />
           </div>
         </div>

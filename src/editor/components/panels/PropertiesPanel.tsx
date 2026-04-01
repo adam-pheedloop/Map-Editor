@@ -1,14 +1,16 @@
 import { useState } from "react";
-import type { FloorPlanElement, ElementProperties, Geometry, BackgroundImage } from "../../../types";
+import type { FloorPlanElement, ElementProperties, Geometry, BackgroundImage, LayerId } from "../../../types";
 import { getShapeConfig } from "../canvas/elements";
 import type { PropertiesPanelField } from "../canvas/elements";
-import { SectionLabel, FieldRow, NumberInput } from "../ui";
+import { SectionLabel, FieldRow, NumberInput, ColorSwatch } from "../ui";
 import { JsonDebugView } from "../debug";
 
 interface PropertiesPanelProps {
   element: FloorPlanElement | null;
   selectedCount: number;
   backgroundImage?: BackgroundImage;
+  backgroundColor?: string;
+  activeLayerId: LayerId;
   debug: boolean;
   onUpdateProperties: (id: string, updates: Partial<ElementProperties>) => void;
   onUpdateGeometry: (id: string, updates: Partial<Geometry>) => void;
@@ -16,6 +18,8 @@ interface PropertiesPanelProps {
   onConvertToBooth?: (id: string) => void;
   onBackgroundOpacityChange?: (opacity: number) => void;
   onRemoveBackground?: () => void;
+  onUploadBackground?: () => void;
+  onBackgroundColorChange?: (color: string) => void;
 }
 
 function getDimensions(element: FloorPlanElement): { width: number; height: number; length: number } {
@@ -35,6 +39,8 @@ export function PropertiesPanel({
   element,
   selectedCount,
   backgroundImage,
+  backgroundColor,
+  activeLayerId,
   debug,
   onUpdateProperties,
   onUpdateGeometry,
@@ -42,6 +48,8 @@ export function PropertiesPanel({
   onConvertToBooth,
   onBackgroundOpacityChange,
   onRemoveBackground,
+  onUploadBackground,
+  onBackgroundColorChange,
 }: PropertiesPanelProps) {
   const [tab, setTab] = useState<"properties" | "debug">("properties");
 
@@ -71,39 +79,85 @@ export function PropertiesPanel({
   }
 
   if (!element) {
-    return (
-      <div className="w-60 shrink-0 border-l border-gray-200 bg-white p-4">
-        {backgroundImage ? (
-          <div className="flex flex-col gap-3">
-            <SectionLabel>Background Image</SectionLabel>
+    if (activeLayerId === "background") {
+      return (
+        <div className="w-60 shrink-0 border-l border-gray-200 bg-white flex flex-col">
+          <div className="px-3 py-2 border-b border-gray-200">
+            <span className="text-xs font-medium text-gray-600">Background</span>
+          </div>
+          <div className="flex flex-col gap-4 p-3 overflow-y-auto flex-1">
             <div className="flex flex-col gap-1.5">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] text-gray-500">Opacity</span>
-                <span className="text-[11px] text-gray-400">
-                  {Math.round(backgroundImage.opacity * 100)}%
-                </span>
-              </div>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                value={Math.round(backgroundImage.opacity * 100)}
-                onChange={(e) =>
-                  onBackgroundOpacityChange?.(Number(e.target.value) / 100)
-                }
-                className="w-full accent-primary-600"
+              <SectionLabel>Background Color</SectionLabel>
+              <ColorSwatch
+                label=""
+                value={backgroundColor ?? "#ffffff"}
+                onChange={(c) => onBackgroundColorChange?.(c)}
               />
             </div>
-            <button
-              onClick={onRemoveBackground}
-              className="text-xs text-red-600 border border-red-200 rounded px-2 py-1 hover:bg-red-50 cursor-pointer transition-colors"
-            >
-              Remove
-            </button>
+
+            <div className="flex flex-col gap-1.5">
+              <SectionLabel>Background Image</SectionLabel>
+              {backgroundImage ? (
+                <div className="flex flex-col gap-2">
+                  <div
+                    className="w-full h-20 rounded border border-gray-200 bg-gray-50"
+                    style={{
+                      backgroundImage: `url(${backgroundImage.url})`,
+                      backgroundSize: "contain",
+                      backgroundRepeat: "no-repeat",
+                      backgroundPosition: "center",
+                    }}
+                  />
+                  <div className="flex flex-col gap-1.5">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[11px] text-gray-500">Opacity</span>
+                      <span className="text-[11px] text-gray-400">
+                        {Math.round(backgroundImage.opacity * 100)}%
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      value={Math.round(backgroundImage.opacity * 100)}
+                      onChange={(e) =>
+                        onBackgroundOpacityChange?.(Number(e.target.value) / 100)
+                      }
+                      className="w-full accent-primary-600"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={onUploadBackground}
+                      className="flex-1 text-xs text-gray-600 border border-gray-200 rounded px-2 py-1 hover:bg-gray-50 cursor-pointer transition-colors"
+                    >
+                      Replace
+                    </button>
+                    <button
+                      onClick={onRemoveBackground}
+                      className="flex-1 text-xs text-red-600 border border-red-200 rounded px-2 py-1 hover:bg-red-50 cursor-pointer transition-colors"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={onUploadBackground}
+                  className="w-full text-xs text-gray-600 border border-gray-200 border-dashed rounded px-2 py-3 hover:bg-gray-50 cursor-pointer transition-colors"
+                >
+                  Upload Image
+                </button>
+              )}
+            </div>
           </div>
-        ) : (
-          <p className="text-xs text-gray-400">No selection</p>
-        )}
+        </div>
+      );
+    }
+
+    return (
+      <div className="w-60 shrink-0 border-l border-gray-200 bg-white p-4">
+        <p className="text-xs text-gray-400">No Items Selected</p>
       </div>
     );
   }

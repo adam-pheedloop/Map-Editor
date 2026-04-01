@@ -1,4 +1,5 @@
 export { ColorSwatch } from "./ColorSwatch";
+export { Dialog } from "./Dialog";
 export { NumberInput } from "./NumberInput";
 export { SectionLabel } from "./SectionLabel";
 export { FieldRow } from "./FieldRow";

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { SectionLabel, NumberInput, ColorSwatch } from "../ui";
+import { Dialog, SectionLabel, NumberInput, ColorSwatch } from "../ui";
 
 export interface GridSettings {
   showGrid: boolean;
@@ -19,58 +19,11 @@ export function GridSettingsDialog({ settings, onSave, onClose }: GridSettingsDi
   const [local, setLocal] = useState<GridSettings>({ ...settings });
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-lg shadow-xl w-[360px] flex flex-col">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-          <h2 className="text-sm font-semibold text-gray-800">Grid Settings</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-lg leading-none cursor-pointer"
-          >
-            &times;
-          </button>
-        </div>
-
-        <div className="flex flex-col gap-4 p-4">
-          <div className="flex flex-col gap-1.5">
-            <SectionLabel>Spacing (px)</SectionLabel>
-            <NumberInput
-              value={local.gridSpacing}
-              onChange={(v) => setLocal((s) => ({ ...s, gridSpacing: Math.max(5, v) }))}
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <SectionLabel>Color</SectionLabel>
-            <ColorSwatch
-              label=""
-              value={local.gridColor}
-              onChange={(c) => setLocal((s) => ({ ...s, gridColor: c }))}
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <SectionLabel>Opacity</SectionLabel>
-            <div className="flex items-center gap-2">
-              <input
-                type="range"
-                min={5}
-                max={100}
-                value={Math.round(local.gridOpacity * 100)}
-                onChange={(e) =>
-                  setLocal((s) => ({ ...s, gridOpacity: Number(e.target.value) / 100 }))
-                }
-                className="flex-1 accent-primary-600"
-              />
-              <span className="text-xs text-gray-400 w-8 text-right">
-                {Math.round(local.gridOpacity * 100)}%
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-200">
+    <Dialog
+      title="Grid Settings"
+      onClose={onClose}
+      footer={
+        <>
           <button
             onClick={onClose}
             className="px-3 py-1.5 text-xs text-gray-600 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer transition-colors"
@@ -86,8 +39,46 @@ export function GridSettingsDialog({ settings, onSave, onClose }: GridSettingsDi
           >
             Apply
           </button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-4 p-4">
+        <div className="flex flex-col gap-1.5">
+          <SectionLabel>Spacing (px)</SectionLabel>
+          <NumberInput
+            value={local.gridSpacing}
+            onChange={(v) => setLocal((s) => ({ ...s, gridSpacing: Math.max(5, v) }))}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <SectionLabel>Color</SectionLabel>
+          <ColorSwatch
+            label=""
+            value={local.gridColor}
+            onChange={(c) => setLocal((s) => ({ ...s, gridColor: c }))}
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <SectionLabel>Opacity</SectionLabel>
+          <div className="flex items-center gap-2">
+            <input
+              type="range"
+              min={5}
+              max={100}
+              value={Math.round(local.gridOpacity * 100)}
+              onChange={(e) =>
+                setLocal((s) => ({ ...s, gridOpacity: Number(e.target.value) / 100 }))
+              }
+              className="flex-1 accent-primary-600"
+            />
+            <span className="text-xs text-gray-400 w-8 text-right">
+              {Math.round(local.gridOpacity * 100)}%
+            </span>
+          </div>
         </div>
       </div>
-    </div>
+    </Dialog>
   );
 }

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { SectionLabel, NumberInput } from "../ui";
+import { Button, Dialog, SectionLabel, NumberInput } from "../ui";
 import type { FloorPlanElement } from "../../../types";
 import { getElementBounds } from "../../utils/bounds";
 
@@ -31,87 +31,47 @@ export function CanvasResizeDialog({
   }, [elements, newWidth, newHeight, width, height]);
 
   return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="relative bg-white rounded-lg shadow-xl w-[360px] flex flex-col">
-        <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200">
-          <h2 className="text-sm font-semibold text-gray-800">Canvas Size</h2>
-          <button
-            onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-lg leading-none cursor-pointer"
-          >
-            &times;
-          </button>
+    <Dialog
+      title="Canvas Size"
+      onClose={onClose}
+      footer={
+        <>
+          <Button variant="outline" color="neutral" onClick={onClose}>Cancel</Button>
+          <Button variant="solid" color="primary" onClick={() => { onConfirm(newWidth, newHeight, mode); onClose(); }}>Apply</Button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-4 p-4">
+        <div className="flex flex-col gap-1.5">
+          <SectionLabel>Width (px)</SectionLabel>
+          <NumberInput
+            value={newWidth}
+            onChange={(v) => setNewWidth(Math.max(100, v))}
+          />
         </div>
 
-        <div className="flex flex-col gap-4 p-4">
-          <div className="flex flex-col gap-1.5">
-            <SectionLabel>Width (px)</SectionLabel>
-            <NumberInput
-              value={newWidth}
-              onChange={(v) => setNewWidth(Math.max(100, v))}
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <SectionLabel>Height (px)</SectionLabel>
-            <NumberInput
-              value={newHeight}
-              onChange={(v) => setNewHeight(Math.max(100, v))}
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <SectionLabel>Elements</SectionLabel>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setMode("preserve")}
-                className={`flex-1 px-2 py-1.5 text-xs border rounded cursor-pointer transition-colors ${
-                  mode === "preserve"
-                    ? "bg-gray-700 text-white border-gray-700"
-                    : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-                }`}
-              >
-                Keep positions
-              </button>
-              <button
-                onClick={() => setMode("scale")}
-                className={`flex-1 px-2 py-1.5 text-xs border rounded cursor-pointer transition-colors ${
-                  mode === "scale"
-                    ? "bg-gray-700 text-white border-gray-700"
-                    : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-                }`}
-              >
-                Scale to fit
-              </button>
-            </div>
-          </div>
-
-          {clippedCount > 0 && mode === "preserve" && (
-            <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
-              {clippedCount} element{clippedCount > 1 ? "s" : ""} will be outside the new canvas bounds.
-            </p>
-          )}
+        <div className="flex flex-col gap-1.5">
+          <SectionLabel>Height (px)</SectionLabel>
+          <NumberInput
+            value={newHeight}
+            onChange={(v) => setNewHeight(Math.max(100, v))}
+          />
         </div>
 
-        <div className="flex items-center justify-end gap-2 px-4 py-3 border-t border-gray-200">
-          <button
-            onClick={onClose}
-            className="px-3 py-1.5 text-xs text-gray-600 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => {
-              onConfirm(newWidth, newHeight, mode);
-              onClose();
-            }}
-            className="px-3 py-1.5 text-xs text-white bg-primary-600 rounded hover:bg-primary-700 cursor-pointer transition-colors"
-          >
-            Apply
-          </button>
+        <div className="flex flex-col gap-1.5">
+          <SectionLabel>Elements</SectionLabel>
+          <div className="flex gap-2">
+            <Button variant="outline" color="neutral" active={mode === "preserve"} className="flex-1" onClick={() => setMode("preserve")}>Keep positions</Button>
+            <Button variant="outline" color="neutral" active={mode === "scale"} className="flex-1" onClick={() => setMode("scale")}>Scale to fit</Button>
+          </div>
         </div>
+
+        {clippedCount > 0 && mode === "preserve" && (
+          <p className="text-xs text-amber-600 bg-amber-50 border border-amber-200 rounded px-2 py-1.5">
+            {clippedCount} element{clippedCount > 1 ? "s" : ""} will be outside the new canvas bounds.
+          </p>
+        )}
       </div>
-    </div>
+    </Dialog>
   );
 }

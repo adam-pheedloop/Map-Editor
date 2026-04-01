@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { PiStack, PiEye, PiEyeSlash } from "react-icons/pi";
 import type { LayerDefinition, LayerId } from "../../../types";
+import { IconButton } from "../ui";
 
 interface LayerPanelProps {
   layers: LayerDefinition[];
@@ -58,17 +59,14 @@ export function LayerPanel({
             {activeLayer.name}
           </div>
         )}
-        <button
+        <IconButton
+          active={open}
           onClick={() => setOpen((prev) => !prev)}
-          className={`flex items-center justify-center w-9 h-9 rounded-lg shadow-md border transition-colors ${
-            open
-              ? "bg-primary-600 text-white border-primary-600"
-              : "bg-white text-gray-500 border-gray-200 hover:bg-gray-50 hover:text-gray-700"
-          }`}
+          className={`shadow-md border ${open ? "border-primary-600" : "border-gray-200 bg-white hover:bg-gray-50"}`}
           title="Layers"
         >
           <PiStack size={18} />
-        </button>
+        </IconButton>
       </div>
 
       {open && (
@@ -88,8 +86,8 @@ export function LayerPanel({
                   style={{ backgroundColor: LAYER_COLORS[layer.id] }}
                 />
                 <span className="flex-1">{layer.name}</span>
-                <button
-                  className="p-0.5 rounded hover:bg-gray-200 text-gray-400 hover:text-gray-600 transition-colors"
+                <IconButton
+                  size="sm"
                   onClick={(e) => {
                     e.stopPropagation();
                     onToggleVisibility(layer.id);
@@ -97,7 +95,7 @@ export function LayerPanel({
                   title={layer.visible ? "Hide layer" : "Show layer"}
                 >
                   {layer.visible ? <PiEye size={14} /> : <PiEyeSlash size={14} />}
-                </button>
+                </IconButton>
               </div>
             );
           })}

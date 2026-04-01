@@ -1,4 +1,5 @@
 import { PiMagicWand, PiPath } from "react-icons/pi";
+import { Button, Select, Slider } from "../ui";
 
 interface PathingOptionsBarProps {
   cellSize: number;
@@ -25,23 +26,16 @@ export function PathingOptionsBar({
     <div className="flex items-center gap-4 px-3 py-2 bg-white border-b border-gray-200">
       <div className="flex items-center gap-1.5">
         <span className="text-[11px] text-gray-500">Cell Size</span>
-        <select
-          value={cellSize}
-          onChange={(e) => onCellSizeChange(Number(e.target.value))}
-          className="px-2 py-1 text-xs border border-gray-200 rounded bg-white"
-        >
+        <Select value={cellSize} onChange={(e) => onCellSizeChange(Number(e.target.value))}>
           {CELL_SIZE_OPTIONS.map((s) => (
-            <option key={s} value={s}>
-              {s}px
-            </option>
+            <option key={s} value={s}>{s}px</option>
           ))}
-        </select>
+        </Select>
       </div>
 
       <div className="flex items-center gap-1.5">
         <span className="text-[11px] text-gray-500">Opacity</span>
-        <input
-          type="range"
+        <Slider
           min={0.1}
           max={0.8}
           step={0.05}
@@ -54,14 +48,10 @@ export function PathingOptionsBar({
 
       <div className="h-4 w-px bg-gray-200" />
 
-      <button
-        onClick={onAutoMarkWalkable}
-        className="flex items-center gap-1 px-2 py-1 text-xs text-gray-600 hover:bg-green-50 hover:text-green-700 rounded transition-colors cursor-pointer"
-        title="Mark all non-booth space as walkable"
-      >
+      <Button variant="ghost" color="positive" className="gap-1" onClick={onAutoMarkWalkable} title="Mark all non-booth space as walkable">
         <PiPath size={14} />
         Auto-mark aisles
-      </button>
+      </Button>
 
       <button
         onClick={onAutoMarkObstacles}
@@ -74,13 +64,9 @@ export function PathingOptionsBar({
 
       <div className="h-4 w-px bg-gray-200" />
 
-      <button
-        onClick={onClearGrid}
-        className="px-2 py-1 text-xs text-gray-500 hover:bg-red-50 hover:text-red-600 rounded transition-colors cursor-pointer"
-        title="Reset all cells to impassable"
-      >
+      <Button variant="ghost" color="negative" onClick={onClearGrid} title="Reset all cells to impassable">
         Clear grid
-      </button>
+      </Button>
     </div>
   );
 }

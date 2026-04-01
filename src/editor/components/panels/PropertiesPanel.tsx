@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { FloorPlanElement, ElementProperties, Geometry, BackgroundImage, LayerId } from "../../../types";
 import { getShapeConfig } from "../canvas/elements";
 import type { PropertiesPanelField } from "../canvas/elements";
-import { SectionLabel, FieldRow, NumberInput, ColorSwatch } from "../ui";
+import { Button, TabBar, Slider, SectionLabel, FieldRow, NumberInput, TextInput, TextArea, ColorSwatch } from "../ui";
 import { JsonDebugView } from "../debug";
 
 interface PropertiesPanelProps {
@@ -67,12 +67,9 @@ export function PropertiesPanel({
           </p>
         </div>
         <div className="p-3 border-t border-gray-200">
-          <button
-            onClick={() => onDelete("")}
-            className="w-full px-3 py-1.5 text-xs text-red-600 border border-red-200 rounded hover:bg-red-50 cursor-pointer transition-colors"
-          >
+          <Button variant="outline" color="negative" className="w-full" onClick={() => onDelete("")}>
             Delete All ({selectedCount})
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -115,30 +112,17 @@ export function PropertiesPanel({
                         {Math.round(backgroundImage.opacity * 100)}%
                       </span>
                     </div>
-                    <input
-                      type="range"
+                    <Slider
                       min={0}
                       max={100}
                       value={Math.round(backgroundImage.opacity * 100)}
-                      onChange={(e) =>
-                        onBackgroundOpacityChange?.(Number(e.target.value) / 100)
-                      }
-                      className="w-full accent-primary-600"
+                      onChange={(e) => onBackgroundOpacityChange?.(Number(e.target.value) / 100)}
+                      className="w-full"
                     />
                   </div>
                   <div className="flex gap-2">
-                    <button
-                      onClick={onUploadBackground}
-                      className="flex-1 text-xs text-gray-600 border border-gray-200 rounded px-2 py-1 hover:bg-gray-50 cursor-pointer transition-colors"
-                    >
-                      Replace
-                    </button>
-                    <button
-                      onClick={onRemoveBackground}
-                      className="flex-1 text-xs text-red-600 border border-red-200 rounded px-2 py-1 hover:bg-red-50 cursor-pointer transition-colors"
-                    >
-                      Remove
-                    </button>
+                    <Button variant="outline" color="neutral" className="flex-1" onClick={onUploadBackground}>Replace</Button>
+                    <Button variant="outline" color="negative" className="flex-1" onClick={onRemoveBackground}>Remove</Button>
                   </div>
                 </div>
               ) : (
@@ -193,28 +177,12 @@ export function PropertiesPanel({
           {element.type === "shape" ? geo.shape : element.type}
         </span>
         {debug && (
-          <div className="flex text-[10px]">
-            <button
-              onClick={() => setTab("properties")}
-              className={`px-1.5 py-0.5 rounded-l border cursor-pointer ${
-                tab === "properties"
-                  ? "bg-gray-700 text-white border-gray-700"
-                  : "bg-white text-gray-500 border-gray-200"
-              }`}
-            >
-              Props
-            </button>
-            <button
-              onClick={() => setTab("debug")}
-              className={`px-1.5 py-0.5 rounded-r border border-l-0 cursor-pointer ${
-                tab === "debug"
-                  ? "bg-gray-700 text-white border-gray-700"
-                  : "bg-white text-gray-500 border-gray-200"
-              }`}
-            >
-              Debug
-            </button>
-          </div>
+          <TabBar
+            tabs={[{ id: "properties", label: "Props" }, { id: "debug", label: "Debug" }]}
+            value={tab}
+            onChange={(id) => setTab(id as typeof tab)}
+            itemClassName="px-1.5 py-0.5 text-[10px]"
+          />
         )}
       </div>
 
@@ -227,13 +195,9 @@ export function PropertiesPanel({
         {fields.has("name") && (
           <div className="flex flex-col gap-1.5">
             <SectionLabel>Name</SectionLabel>
-            <input
-              type="text"
+            <TextInput
               value={element.properties.name || ""}
-              onChange={(e) =>
-                onUpdateProperties(element.id, { name: e.target.value })
-              }
-              className="w-full px-2 py-1 text-xs border border-gray-200 rounded bg-white"
+              onChange={(e) => onUpdateProperties(element.id, { name: e.target.value })}
             />
           </div>
         )}
@@ -241,14 +205,10 @@ export function PropertiesPanel({
         {fields.has("boothCode") && (
           <div className="flex flex-col gap-1.5">
             <SectionLabel>Booth Code</SectionLabel>
-            <input
-              type="text"
+            <TextInput
               value={element.properties.boothCode || ""}
               placeholder="e.g. A101"
-              onChange={(e) =>
-                onUpdateProperties(element.id, { boothCode: e.target.value || undefined })
-              }
-              className="w-full px-2 py-1 text-xs border border-gray-200 rounded bg-white"
+              onChange={(e) => onUpdateProperties(element.id, { boothCode: e.target.value || undefined })}
             />
           </div>
         )}
@@ -256,13 +216,10 @@ export function PropertiesPanel({
         {fields.has("text") && (
           <div className="flex flex-col gap-1.5">
             <SectionLabel>Text</SectionLabel>
-            <textarea
+            <TextArea
               value={element.properties.text || ""}
-              onChange={(e) =>
-                onUpdateProperties(element.id, { text: e.target.value })
-              }
               rows={2}
-              className="w-full px-2 py-1 text-xs border border-gray-200 rounded bg-white resize-none"
+              onChange={(e) => onUpdateProperties(element.id, { text: e.target.value })}
             />
           </div>
         )}
@@ -282,52 +239,13 @@ export function PropertiesPanel({
             <SectionLabel>Style</SectionLabel>
             <div className="flex gap-1">
               {fields.has("fontWeight") && (
-                <button
-                  onClick={() =>
-                    onUpdateProperties(element.id, {
-                      fontWeight: element.properties.fontWeight === "bold" ? "normal" : "bold",
-                    })
-                  }
-                  className={`w-8 h-8 text-xs font-bold border rounded cursor-pointer transition-colors ${
-                    element.properties.fontWeight === "bold"
-                      ? "bg-gray-700 text-white border-gray-700"
-                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-                  }`}
-                >
-                  B
-                </button>
+                <Button variant="outline" color="neutral" active={element.properties.fontWeight === "bold"} className="w-8 h-8 p-0 font-bold" onClick={() => onUpdateProperties(element.id, { fontWeight: element.properties.fontWeight === "bold" ? "normal" : "bold" })}>B</Button>
               )}
               {fields.has("fontStyle") && (
-                <button
-                  onClick={() =>
-                    onUpdateProperties(element.id, {
-                      fontStyle: element.properties.fontStyle === "italic" ? "normal" : "italic",
-                    })
-                  }
-                  className={`w-8 h-8 text-xs italic border rounded cursor-pointer transition-colors ${
-                    element.properties.fontStyle === "italic"
-                      ? "bg-gray-700 text-white border-gray-700"
-                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-                  }`}
-                >
-                  I
-                </button>
+                <Button variant="outline" color="neutral" active={element.properties.fontStyle === "italic"} className="w-8 h-8 p-0 italic" onClick={() => onUpdateProperties(element.id, { fontStyle: element.properties.fontStyle === "italic" ? "normal" : "italic" })}>I</Button>
               )}
               {fields.has("textDecoration") && (
-                <button
-                  onClick={() =>
-                    onUpdateProperties(element.id, {
-                      textDecoration: element.properties.textDecoration === "underline" ? "none" : "underline",
-                    })
-                  }
-                  className={`w-8 h-8 text-xs underline border rounded cursor-pointer transition-colors ${
-                    element.properties.textDecoration === "underline"
-                      ? "bg-gray-700 text-white border-gray-700"
-                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-                  }`}
-                >
-                  U
-                </button>
+                <Button variant="outline" color="neutral" active={element.properties.textDecoration === "underline"} className="w-8 h-8 p-0 underline" onClick={() => onUpdateProperties(element.id, { textDecoration: element.properties.textDecoration === "underline" ? "none" : "underline" })}>U</Button>
               )}
             </div>
           </div>
@@ -336,19 +254,20 @@ export function PropertiesPanel({
         {fields.has("textAlign") && (
           <div className="flex flex-col gap-1.5">
             <SectionLabel>Alignment</SectionLabel>
-            <div className="flex text-xs">
+            <div className="flex">
               {(["left", "center", "right"] as const).map((align) => (
-                <button
+                <Button
                   key={align}
+                  variant="outline"
+                  color="neutral"
+                  active={(element.properties.textAlign ?? "left") === align}
+                  className={`flex-1 py-1 capitalize ${
+                    align === "left" ? "rounded-r-none" : align === "right" ? "rounded-l-none" : "rounded-none border-l-0 border-r-0"
+                  }`}
                   onClick={() => onUpdateProperties(element.id, { textAlign: align })}
-                  className={`flex-1 py-1 border cursor-pointer transition-colors capitalize ${
-                    (element.properties.textAlign ?? "left") === align
-                      ? "bg-gray-700 text-white border-gray-700"
-                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-                  } ${align === "left" ? "rounded-l" : align === "right" ? "rounded-r" : "border-l-0 border-r-0"}`}
                 >
                   {align}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -405,19 +324,13 @@ export function PropertiesPanel({
 
       <div className="flex flex-col gap-2 p-3 border-t border-gray-200">
         {canConvertToBooth && (
-          <button
-            onClick={() => onConvertToBooth?.(element.id)}
-            className="w-full px-3 py-1.5 text-xs text-primary-600 border border-primary-200 rounded hover:bg-primary-100 cursor-pointer transition-colors"
-          >
+          <Button variant="outline" color="primary" className="w-full" onClick={() => onConvertToBooth?.(element.id)}>
             Convert to Booth
-          </button>
+          </Button>
         )}
-        <button
-          onClick={() => onDelete(element.id)}
-          className="w-full px-3 py-1.5 text-xs text-red-600 border border-red-200 rounded hover:bg-red-50 cursor-pointer transition-colors"
-        >
+        <Button variant="outline" color="negative" className="w-full" onClick={() => onDelete(element.id)}>
           Delete
-        </button>
+        </Button>
       </div>
     </div>
   );

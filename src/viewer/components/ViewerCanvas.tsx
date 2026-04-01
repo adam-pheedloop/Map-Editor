@@ -10,6 +10,7 @@ import type {
 import { useCanvasControls } from "../../editor/hooks/useCanvasControls";
 import { BackgroundImage } from "../../editor/components/canvas/BackgroundImage";
 import type { ViewerMode } from "../types";
+import { RouteOverlay } from "./RouteOverlay";
 
 interface ViewerCanvasProps {
   data: FloorPlanData;
@@ -17,6 +18,7 @@ interface ViewerCanvasProps {
   occupiedBoothCodes: Set<string>;
   highlightedBoothCode: string | null;
   searchMatchCodes: Set<string> | null;
+  routePath: { x: number; y: number }[] | null;
   onBoothClick: (boothCode: string, screenX: number, screenY: number) => void;
 }
 
@@ -152,7 +154,7 @@ function ViewerElement({
   );
 }
 
-export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedBoothCode, searchMatchCodes, onBoothClick }: ViewerCanvasProps) {
+export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedBoothCode, searchMatchCodes, routePath, onBoothClick }: ViewerCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredBoothCode, setHoveredBoothCode] = useState<string | null>(null);
   const isSearching = searchMatchCodes !== null && searchMatchCodes.size > 0;
@@ -239,6 +241,8 @@ export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedBoothC
             );
           })}
         </Layer>
+
+        {routePath && <RouteOverlay path={routePath} />}
       </Stage>
     </div>
   );

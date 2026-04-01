@@ -192,7 +192,7 @@ export function Canvas({
 
     // Pathing mode: delegate to pathing handlers
     if (isPathingMode && onPathingMouseDown) {
-      onPathingMouseDown(e);
+      onPathingMouseDown();
       return;
     }
 
@@ -228,7 +228,7 @@ export function Canvas({
   const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
     // Pathing mode: delegate to pathing handlers
     if (isPathingMode && onPathingMouseMove) {
-      onPathingMouseMove(e);
+      onPathingMouseMove();
       // Don't return — allow drag-select logic to be skipped naturally
       if (!dragSelectOrigin.current) return;
     }

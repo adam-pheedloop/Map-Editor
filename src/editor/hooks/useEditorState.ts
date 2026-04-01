@@ -1,6 +1,7 @@
 import { useCallback, useEffect } from "react";
-import type { FloorPlanData, FloorPlanElement, ElementType, Geometry, ElementProperties, BackgroundImage, Dimensions } from "../../types";
+import type { FloorPlanData, FloorPlanElement, ElementType, Geometry, ElementProperties, BackgroundImage, Dimensions, WalkableGrid } from "../../types";
 import { ELEMENT_TYPE_TO_LAYER } from "../../types";
+import { createWalkableGrid } from "../utils/walkableGrid";
 import { useHistory } from "./useHistory";
 
 const STORAGE_KEY = "map-editor:floorplan";
@@ -188,6 +189,95 @@ export function useEditorState(
     localStorage.removeItem(STORAGE_KEY);
   }, []);
 
+  // --- Walkable grid mutations ---
+
+  /** Initialize or get walkable grid, creating it lazily if needed. */
+  const initWalkableGrid = useCallback(() => {
+    setData((prev) => {
+      if (prev.walkableLayer) return prev;
+      return {
+        ...prev,
+        walkableLayer: createWalkableGrid(prev.dimensions.width, prev.dimensions.height),
+      };
+    });
+  }, []);
+
+  /** Set a single cell value. */
+  const setWalkableCell = useCallback((col: number, row: number, value: 0 | 1) => {
+    setData((prev) => {
+      const grid = prev.walkableLayer;
+      if (!grid || row < 0 || row >= grid.rows || col < 0 || col >= grid.cols) return prev;
+      if (grid.cells[row][col] === value) return prev;
+      const newCells = grid.cells.map((r, ri) =>
+        ri === row ? r.map((c, ci) => (ci === col ? value : c)) : r
+      );
+      return { ...prev, walkableLayer: { ...grid, cells: newCells } };
+    });
+  }, []);
+
+  /** Set a rectangular range of cells. Pushes a single undo entry. */
+  const setWalkableCellRange = useCallback(
+    (startCol: number, startRow: number, endCol: number, endRow: number, value: 0 | 1) => {
+      setData((prev) => {
+        const grid = prev.walkableLayer;
+        if (!grid) return prev;
+        const minCol = Math.max(0, Math.min(startCol, endCol));
+        const maxCol = Math.min(grid.cols - 1, Math.max(startCol, endCol));
+        const minRow = Math.max(0, Math.min(startRow, endRow));
+        const maxRow = Math.min(grid.rows - 1, Math.max(startRow, endRow));
+        const newCells = grid.cells.map((r, ri) => {
+          if (ri < minRow || ri > maxRow) return r;
+          return r.map((c, ci) => (ci >= minCol && ci <= maxCol ? value : c));
+        });
+        return { ...prev, walkableLayer: { ...grid, cells: newCells } };
+      });
+    },
+    []
+  );
+
+  /** Apply a batch of cell changes as a single undo entry (used for paint strokes). */
+  const setWalkableCells = useCallback(
+    (changes: Array<{ col: number; row: number; value: 0 | 1 }>) => {
+      setData((prev) => {
+        const grid = prev.walkableLayer;
+        if (!grid) return prev;
+        const newCells = grid.cells.map((r) => [...r]);
+        for (const { col, row, value } of changes) {
+          if (row >= 0 && row < grid.rows && col >= 0 && col < grid.cols) {
+            newCells[row][col] = value;
+          }
+        }
+        return { ...prev, walkableLayer: { ...grid, cells: newCells } };
+      });
+    },
+    []
+  );
+
+  /** Clear the entire grid (all impassable). */
+  const clearWalkableGrid = useCallback(() => {
+    setData((prev) => {
+      const grid = prev.walkableLayer;
+      if (!grid) return prev;
+      return {
+        ...prev,
+        walkableLayer: createWalkableGrid(prev.dimensions.width, prev.dimensions.height, grid.cellSize),
+      };
+    });
+  }, []);
+
+  /** Change grid resolution — reinitializes the grid. */
+  const setWalkableGridResolution = useCallback((cellSize: number) => {
+    setData((prev) => ({
+      ...prev,
+      walkableLayer: createWalkableGrid(prev.dimensions.width, prev.dimensions.height, cellSize),
+    }));
+  }, []);
+
+  /** Replace the entire walkable grid (for auto-generation). */
+  const setWalkableGrid = useCallback((grid: WalkableGrid) => {
+    setData((prev) => ({ ...prev, walkableLayer: grid }));
+  }, []);
+
   return {
     data,
     addElement,
@@ -202,6 +292,14 @@ export function useEditorState(
     setBackgroundColor,
     updateDimensions,
     clearStorage,
+    // Walkable grid
+    initWalkableGrid,
+    setWalkableCell,
+    setWalkableCellRange,
+    setWalkableCells,
+    clearWalkableGrid,
+    setWalkableGridResolution,
+    setWalkableGrid,
     undo,
     redo,
     canUndo,

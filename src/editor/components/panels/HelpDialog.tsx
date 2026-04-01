@@ -15,6 +15,15 @@ const shortcuts: { category: string; items: { keys: string; description: string 
     ],
   },
   {
+    category: "Pathing Tools (Pathing layer active)",
+    items: [
+      { keys: "V", description: "Select / pan" },
+      { keys: "W", description: "Paint walkable" },
+      { keys: "E", description: "Paint impassable (erase)" },
+      { keys: "R", description: "Rectangle fill" },
+    ],
+  },
+  {
     category: "Edit",
     items: [
       { keys: `${mod}+Z`, description: "Undo" },
@@ -79,6 +88,25 @@ export function HelpDialog({ onClose }: HelpDialogProps) {
               <li>Upload a background floor plan via <strong>Background</strong> in the menu bar</li>
               <li>Use <strong>Tools → Configure Grid</strong> to customize the grid overlay</li>
               <li>Hold <strong>Space</strong> and drag to pan the canvas</li>
+            </ul>
+
+            <h3 className="text-xs font-semibold text-gray-800 mt-4 mb-2">Layers</h3>
+            <ul className="text-xs text-gray-600 space-y-1.5">
+              <li>Click the <strong>layer icon</strong> (top-right of canvas) to open the layer panel</li>
+              <li>Four layers: <strong>Background</strong>, <strong>Content</strong>, <strong>Pathing</strong>, and <strong>Markup</strong></li>
+              <li>Click a layer to make it <strong>active</strong> — only elements on the active layer are selectable</li>
+              <li>Toggle the <strong>eye icon</strong> to show/hide a layer</li>
+              <li>Booths and rooms live on <strong>Content</strong>; labels, icons, and shapes on <strong>Markup</strong></li>
+            </ul>
+
+            <h3 className="text-xs font-semibold text-gray-800 mt-4 mb-2">Wayfinding (Pathing Layer)</h3>
+            <ul className="text-xs text-gray-600 space-y-1.5">
+              <li>Switch to the <strong>Pathing layer</strong> to define walkable areas for attendee wayfinding</li>
+              <li>The sidebar swaps to pathing tools: <strong>Paint Walkable</strong> (W), <strong>Erase</strong> (E), <strong>Rectangle Fill</strong> (R)</li>
+              <li>Green cells = walkable, empty = impassable. Unset areas default to impassable.</li>
+              <li>Use <strong>Auto-mark aisles</strong> to quickly mark all open space as walkable</li>
+              <li>Use <strong>Auto-mark obstacles</strong> to block booth footprints</li>
+              <li>Adjust <strong>cell size</strong> and <strong>opacity</strong> in the options bar</li>
             </ul>
           </div>
 

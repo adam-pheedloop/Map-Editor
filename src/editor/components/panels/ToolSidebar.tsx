@@ -1,22 +1,17 @@
 import { useState } from "react";
-import { PiCursorFill, PiRectangle, PiCircle, PiLineSegment, PiStorefront, PiTextT, PiSticker } from "react-icons/pi";
-import type { ActiveTool } from "../../types";
+import { PiCursorFill, PiRectangle, PiCircle, PiLineSegment, PiStorefront, PiTextT, PiSticker, PiPaintBrush, PiEraser, PiSquare } from "react-icons/pi";
+import type { ActiveTool, PathingTool } from "../../types";
 import { IconPicker } from "./IconPicker";
 import { getIconEntry } from "../../utils/iconRegistry";
 
-interface ToolSidebarProps {
-  activeTool: ActiveTool;
-  activeIconName: string | null;
-  onToolChange: (tool: ActiveTool) => void;
-  onIconSelect?: (iconId: string) => void;
-}
-
-const tools: {
-  id: ActiveTool;
+interface ToolDef<T extends string> {
+  id: T;
   label: string;
   shortcut: string;
   icon: React.ReactNode;
-}[] = [
+}
+
+const tools: ToolDef<ActiveTool>[] = [
   { id: "select", label: "Select", shortcut: "V", icon: <PiCursorFill size={20} /> },
   { id: "rectangle", label: "Rectangle", shortcut: "R", icon: <PiRectangle size={20} /> },
   { id: "ellipse", label: "Ellipse", shortcut: "O", icon: <PiCircle size={20} /> },
@@ -26,12 +21,19 @@ const tools: {
   { id: "icon", label: "Icon", shortcut: "I", icon: <PiSticker size={20} /> },
 ];
 
-function ToolButton({
+const pathingTools: ToolDef<PathingTool>[] = [
+  { id: "select", label: "Select", shortcut: "V", icon: <PiCursorFill size={20} /> },
+  { id: "paintWalkable", label: "Paint Walkable", shortcut: "W", icon: <PiPaintBrush size={20} /> },
+  { id: "paintImpassable", label: "Erase (Impassable)", shortcut: "E", icon: <PiEraser size={20} /> },
+  { id: "rectFill", label: "Rectangle Fill", shortcut: "R", icon: <PiSquare size={20} /> },
+];
+
+function ToolButton<T extends string>({
   tool,
   isActive,
   onClick,
 }: {
-  tool: (typeof tools)[number];
+  tool: ToolDef<T>;
   isActive: boolean;
   onClick: () => void;
 }) {
@@ -60,7 +62,40 @@ function ToolButton({
   );
 }
 
-export function ToolSidebar({ activeTool, activeIconName, onToolChange, onIconSelect }: ToolSidebarProps) {
+interface ToolSidebarProps {
+  activeTool: ActiveTool;
+  activeIconName: string | null;
+  onToolChange: (tool: ActiveTool) => void;
+  onIconSelect?: (iconId: string) => void;
+  isPathingMode?: boolean;
+  activePathingTool?: PathingTool;
+  onPathingToolChange?: (tool: PathingTool) => void;
+}
+
+export function ToolSidebar({
+  activeTool,
+  activeIconName,
+  onToolChange,
+  onIconSelect,
+  isPathingMode,
+  activePathingTool,
+  onPathingToolChange,
+}: ToolSidebarProps) {
+  if (isPathingMode && onPathingToolChange && activePathingTool) {
+    return (
+      <div className="flex flex-col items-center gap-1 py-2 w-12 shrink-0 bg-white border-r border-gray-200">
+        {pathingTools.map((tool) => (
+          <ToolButton
+            key={tool.id}
+            tool={tool}
+            isActive={activePathingTool === tool.id}
+            onClick={() => onPathingToolChange(tool.id)}
+          />
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col items-center gap-1 py-2 w-12 shrink-0 bg-white border-r border-gray-200">
       {tools.map((tool) => {

@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { Dialog } from "../ui";
+import { Button, Dialog } from "../ui";
 
 type SizeMode = "resize-canvas" | "fit-image";
 
@@ -55,19 +55,8 @@ export function BackgroundImageDialog({
       width="480px"
       footer={
         <>
-          <button
-            onClick={onClose}
-            className="px-3 py-1.5 text-xs text-gray-600 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleConfirm}
-            disabled={!preview}
-            className="px-3 py-1.5 text-xs text-white bg-primary-600 rounded hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
-          >
-            Apply
-          </button>
+          <Button variant="outline" color="neutral" onClick={onClose}>Cancel</Button>
+          <Button variant="solid" color="primary" onClick={handleConfirm} disabled={!preview}>Apply</Button>
         </>
       }
     >

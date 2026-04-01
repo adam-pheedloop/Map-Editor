@@ -1,3 +1,5 @@
+export { Button } from "./Button";
+export type { ButtonProps } from "./Button";
 export { ColorSwatch } from "./ColorSwatch";
 export { Dialog } from "./Dialog";
 export { NumberInput } from "./NumberInput";

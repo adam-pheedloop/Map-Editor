@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Dialog, SectionLabel, NumberInput, ColorSwatch } from "../ui";
+import { Button, Dialog, SectionLabel, NumberInput, ColorSwatch } from "../ui";
 
 export interface GridSettings {
   showGrid: boolean;
@@ -24,21 +24,8 @@ export function GridSettingsDialog({ settings, onSave, onClose }: GridSettingsDi
       onClose={onClose}
       footer={
         <>
-          <button
-            onClick={onClose}
-            className="px-3 py-1.5 text-xs text-gray-600 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => {
-              onSave(local);
-              onClose();
-            }}
-            className="px-3 py-1.5 text-xs text-white bg-primary-600 rounded hover:bg-primary-700 cursor-pointer transition-colors"
-          >
-            Apply
-          </button>
+          <Button variant="outline" color="neutral" onClick={onClose}>Cancel</Button>
+          <Button variant="solid" color="primary" onClick={() => { onSave(local); onClose(); }}>Apply</Button>
         </>
       }
     >

@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Dialog, SectionLabel, NumberInput } from "../ui";
+import { Button, Dialog, SectionLabel, NumberInput } from "../ui";
 import type { FloorPlanElement } from "../../../types";
 import { getElementBounds } from "../../utils/bounds";
 
@@ -36,21 +36,8 @@ export function CanvasResizeDialog({
       onClose={onClose}
       footer={
         <>
-          <button
-            onClick={onClose}
-            className="px-3 py-1.5 text-xs text-gray-600 border border-gray-200 rounded hover:bg-gray-50 cursor-pointer transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={() => {
-              onConfirm(newWidth, newHeight, mode);
-              onClose();
-            }}
-            className="px-3 py-1.5 text-xs text-white bg-primary-600 rounded hover:bg-primary-700 cursor-pointer transition-colors"
-          >
-            Apply
-          </button>
+          <Button variant="outline" color="neutral" onClick={onClose}>Cancel</Button>
+          <Button variant="solid" color="primary" onClick={() => { onConfirm(newWidth, newHeight, mode); onClose(); }}>Apply</Button>
         </>
       }
     >

@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { FloorPlanElement, ElementProperties, Geometry, BackgroundImage, LayerId } from "../../../types";
 import { getShapeConfig } from "../canvas/elements";
 import type { PropertiesPanelField } from "../canvas/elements";
-import { SectionLabel, FieldRow, NumberInput, ColorSwatch } from "../ui";
+import { Button, SectionLabel, FieldRow, NumberInput, ColorSwatch } from "../ui";
 import { JsonDebugView } from "../debug";
 
 interface PropertiesPanelProps {
@@ -67,12 +67,9 @@ export function PropertiesPanel({
           </p>
         </div>
         <div className="p-3 border-t border-gray-200">
-          <button
-            onClick={() => onDelete("")}
-            className="w-full px-3 py-1.5 text-xs text-red-600 border border-red-200 rounded hover:bg-red-50 cursor-pointer transition-colors"
-          >
+          <Button variant="outline" color="negative" className="w-full" onClick={() => onDelete("")}>
             Delete All ({selectedCount})
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -127,18 +124,8 @@ export function PropertiesPanel({
                     />
                   </div>
                   <div className="flex gap-2">
-                    <button
-                      onClick={onUploadBackground}
-                      className="flex-1 text-xs text-gray-600 border border-gray-200 rounded px-2 py-1 hover:bg-gray-50 cursor-pointer transition-colors"
-                    >
-                      Replace
-                    </button>
-                    <button
-                      onClick={onRemoveBackground}
-                      className="flex-1 text-xs text-red-600 border border-red-200 rounded px-2 py-1 hover:bg-red-50 cursor-pointer transition-colors"
-                    >
-                      Remove
-                    </button>
+                    <Button variant="outline" color="neutral" className="flex-1" onClick={onUploadBackground}>Replace</Button>
+                    <Button variant="outline" color="negative" className="flex-1" onClick={onRemoveBackground}>Remove</Button>
                   </div>
                 </div>
               ) : (
@@ -405,19 +392,13 @@ export function PropertiesPanel({
 
       <div className="flex flex-col gap-2 p-3 border-t border-gray-200">
         {canConvertToBooth && (
-          <button
-            onClick={() => onConvertToBooth?.(element.id)}
-            className="w-full px-3 py-1.5 text-xs text-primary-600 border border-primary-200 rounded hover:bg-primary-100 cursor-pointer transition-colors"
-          >
+          <Button variant="outline" color="primary" className="w-full" onClick={() => onConvertToBooth?.(element.id)}>
             Convert to Booth
-          </button>
+          </Button>
         )}
-        <button
-          onClick={() => onDelete(element.id)}
-          className="w-full px-3 py-1.5 text-xs text-red-600 border border-red-200 rounded hover:bg-red-50 cursor-pointer transition-colors"
-        >
+        <Button variant="outline" color="negative" className="w-full" onClick={() => onDelete(element.id)}>
           Delete
-        </button>
+        </Button>
       </div>
     </div>
   );

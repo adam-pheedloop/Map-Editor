@@ -1,12 +1,11 @@
 import { useState, useMemo, useCallback } from "react";
-import type { FloorPlanData, FloorPlanElement } from "../../types";
+import type { FloorPlanData } from "../../types";
 import type { Exhibitor } from "../types";
 import type { SearchResult } from "./useSearch";
 import { findPath, smoothPath } from "../utils/pathfinding";
 import {
   findNearestWalkableCell,
   resolveBoothToCell,
-  resolveExhibitorToCell,
 } from "../utils/snapToGrid";
 
 export interface DirectionsLocation {
@@ -141,7 +140,7 @@ export function useDirections(
 
   const swap = useCallback(() => {
     setStartLocation((prev) => {
-      setEndLocation((end) => prev);
+      setEndLocation(prev);
       return endLocation;
     });
   }, [endLocation]);

@@ -599,7 +599,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   }, [clearWalkableGrid]);
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full overflow-hidden">
       <TopBar
         debug={debug}
         onDebugClick={() => setShowMapDebug(true)}
@@ -712,7 +712,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           activePathingTool={activePathingTool}
           onPathingToolChange={setActivePathingTool}
         />
-        <div className="flex flex-col flex-1">
+        <div className="flex flex-col flex-1 min-w-0 min-h-0">
           {isPathingMode ? (
             <PathingOptionsBar
               cellSize={data.walkableLayer?.cellSize ?? 20}
@@ -735,8 +735,8 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
             />
           )}
           <div className="flex flex-1 overflow-hidden">
-            <div className="flex flex-col flex-1">
-              <div className="relative flex-1 flex flex-col">
+            <div className="flex flex-col flex-1 min-w-0">
+              <div className="relative flex-1 flex flex-col min-h-0">
                 <Canvas
                   data={data}
                   activeTool={activeTool}

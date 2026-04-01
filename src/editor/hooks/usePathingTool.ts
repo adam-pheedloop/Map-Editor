@@ -61,7 +61,7 @@ export function usePathingTool({
   const paintValue: 0 | 1 = activePathingTool === "paintWalkable" ? 1 : 0;
 
   const handleMouseDown = useCallback(
-    (e: Konva.KonvaEventObject<MouseEvent>) => {
+    () => {
       if (!grid) return;
       if (activePathingTool === "select") return;
 
@@ -92,7 +92,7 @@ export function usePathingTool({
   );
 
   const handleMouseMove = useCallback(
-    (e: Konva.KonvaEventObject<MouseEvent>) => {
+    () => {
       if (!grid) return;
 
       const cell = getCell();

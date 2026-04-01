@@ -60,8 +60,8 @@ interface CanvasProps {
   activeLayerId: LayerId;
   walkableGridOpacity?: number;
   walkableHoverCell?: { col: number; row: number } | null;
-  onPathingMouseDown?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
-  onPathingMouseMove?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
+  onPathingMouseDown?: () => void;
+  onPathingMouseMove?: () => void;
   onPathingMouseUp?: () => void;
   isPathingMode?: boolean;
   pathingRectPreview?: { startCol: number; startRow: number; endCol: number; endRow: number } | null;

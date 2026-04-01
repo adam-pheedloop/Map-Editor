@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Dialog, SectionLabel, NumberInput, ColorSwatch } from "../ui";
+import { Button, Dialog, Slider, SectionLabel, NumberInput, ColorSwatch } from "../ui";
 
 export interface GridSettings {
   showGrid: boolean;
@@ -50,15 +50,12 @@ export function GridSettingsDialog({ settings, onSave, onClose }: GridSettingsDi
         <div className="flex flex-col gap-1.5">
           <SectionLabel>Opacity</SectionLabel>
           <div className="flex items-center gap-2">
-            <input
-              type="range"
+            <Slider
               min={5}
               max={100}
               value={Math.round(local.gridOpacity * 100)}
-              onChange={(e) =>
-                setLocal((s) => ({ ...s, gridOpacity: Number(e.target.value) / 100 }))
-              }
-              className="flex-1 accent-primary-600"
+              onChange={(e) => setLocal((s) => ({ ...s, gridOpacity: Number(e.target.value) / 100 }))}
+              className="flex-1"
             />
             <span className="text-xs text-gray-400 w-8 text-right">
               {Math.round(local.gridOpacity * 100)}%

@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { FloorPlanElement, ElementProperties, Geometry, BackgroundImage, LayerId } from "../../../types";
 import { getShapeConfig } from "../canvas/elements";
 import type { PropertiesPanelField } from "../canvas/elements";
-import { Button, SectionLabel, FieldRow, NumberInput, ColorSwatch } from "../ui";
+import { Button, Slider, SectionLabel, FieldRow, NumberInput, TextInput, TextArea, ColorSwatch } from "../ui";
 import { JsonDebugView } from "../debug";
 
 interface PropertiesPanelProps {
@@ -112,15 +112,12 @@ export function PropertiesPanel({
                         {Math.round(backgroundImage.opacity * 100)}%
                       </span>
                     </div>
-                    <input
-                      type="range"
+                    <Slider
                       min={0}
                       max={100}
                       value={Math.round(backgroundImage.opacity * 100)}
-                      onChange={(e) =>
-                        onBackgroundOpacityChange?.(Number(e.target.value) / 100)
-                      }
-                      className="w-full accent-primary-600"
+                      onChange={(e) => onBackgroundOpacityChange?.(Number(e.target.value) / 100)}
+                      className="w-full"
                     />
                   </div>
                   <div className="flex gap-2">
@@ -214,13 +211,9 @@ export function PropertiesPanel({
         {fields.has("name") && (
           <div className="flex flex-col gap-1.5">
             <SectionLabel>Name</SectionLabel>
-            <input
-              type="text"
+            <TextInput
               value={element.properties.name || ""}
-              onChange={(e) =>
-                onUpdateProperties(element.id, { name: e.target.value })
-              }
-              className="w-full px-2 py-1 text-xs border border-gray-200 rounded bg-white"
+              onChange={(e) => onUpdateProperties(element.id, { name: e.target.value })}
             />
           </div>
         )}
@@ -228,14 +221,10 @@ export function PropertiesPanel({
         {fields.has("boothCode") && (
           <div className="flex flex-col gap-1.5">
             <SectionLabel>Booth Code</SectionLabel>
-            <input
-              type="text"
+            <TextInput
               value={element.properties.boothCode || ""}
               placeholder="e.g. A101"
-              onChange={(e) =>
-                onUpdateProperties(element.id, { boothCode: e.target.value || undefined })
-              }
-              className="w-full px-2 py-1 text-xs border border-gray-200 rounded bg-white"
+              onChange={(e) => onUpdateProperties(element.id, { boothCode: e.target.value || undefined })}
             />
           </div>
         )}
@@ -243,13 +232,10 @@ export function PropertiesPanel({
         {fields.has("text") && (
           <div className="flex flex-col gap-1.5">
             <SectionLabel>Text</SectionLabel>
-            <textarea
+            <TextArea
               value={element.properties.text || ""}
-              onChange={(e) =>
-                onUpdateProperties(element.id, { text: e.target.value })
-              }
               rows={2}
-              className="w-full px-2 py-1 text-xs border border-gray-200 rounded bg-white resize-none"
+              onChange={(e) => onUpdateProperties(element.id, { text: e.target.value })}
             />
           </div>
         )}

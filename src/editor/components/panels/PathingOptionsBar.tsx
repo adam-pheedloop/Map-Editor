@@ -1,4 +1,5 @@
 import { PiMagicWand, PiPath } from "react-icons/pi";
+import { Select, Slider } from "../ui";
 
 interface PathingOptionsBarProps {
   cellSize: number;
@@ -25,23 +26,16 @@ export function PathingOptionsBar({
     <div className="flex items-center gap-4 px-3 py-2 bg-white border-b border-gray-200">
       <div className="flex items-center gap-1.5">
         <span className="text-[11px] text-gray-500">Cell Size</span>
-        <select
-          value={cellSize}
-          onChange={(e) => onCellSizeChange(Number(e.target.value))}
-          className="px-2 py-1 text-xs border border-gray-200 rounded bg-white"
-        >
+        <Select value={cellSize} onChange={(e) => onCellSizeChange(Number(e.target.value))}>
           {CELL_SIZE_OPTIONS.map((s) => (
-            <option key={s} value={s}>
-              {s}px
-            </option>
+            <option key={s} value={s}>{s}px</option>
           ))}
-        </select>
+        </Select>
       </div>
 
       <div className="flex items-center gap-1.5">
         <span className="text-[11px] text-gray-500">Opacity</span>
-        <input
-          type="range"
+        <Slider
           min={0.1}
           max={0.8}
           step={0.05}

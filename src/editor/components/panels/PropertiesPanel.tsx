@@ -2,7 +2,7 @@ import { useState } from "react";
 import type { FloorPlanElement, ElementProperties, Geometry, BackgroundImage, LayerId } from "../../../types";
 import { getShapeConfig } from "../canvas/elements";
 import type { PropertiesPanelField } from "../canvas/elements";
-import { Button, Slider, SectionLabel, FieldRow, NumberInput, TextInput, TextArea, ColorSwatch } from "../ui";
+import { Button, TabBar, Slider, SectionLabel, FieldRow, NumberInput, TextInput, TextArea, ColorSwatch } from "../ui";
 import { JsonDebugView } from "../debug";
 
 interface PropertiesPanelProps {
@@ -177,10 +177,12 @@ export function PropertiesPanel({
           {element.type === "shape" ? geo.shape : element.type}
         </span>
         {debug && (
-          <div className="flex text-[10px]">
-            <Button variant="outline" color="neutral" active={tab === "properties"} className="px-1.5 py-0.5 rounded-r-none" onClick={() => setTab("properties")}>Props</Button>
-            <Button variant="outline" color="neutral" active={tab === "debug"} className="px-1.5 py-0.5 rounded-l-none border-l-0" onClick={() => setTab("debug")}>Debug</Button>
-          </div>
+          <TabBar
+            tabs={[{ id: "properties", label: "Props" }, { id: "debug", label: "Debug" }]}
+            value={tab}
+            onChange={(id) => setTab(id as typeof tab)}
+            itemClassName="px-1.5 py-0.5 text-[10px]"
+          />
         )}
       </div>
 

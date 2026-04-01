@@ -38,7 +38,12 @@ const styles = {
   },
 };
 
-const activeStyle = "bg-gray-700 text-white border border-gray-700 hover:bg-gray-700";
+const activeStyles = {
+  primary:  "bg-primary-600 text-white border border-primary-600 hover:bg-primary-600",
+  neutral:  "bg-gray-700 text-white border border-gray-700 hover:bg-gray-700",
+  negative: "bg-red-600 text-white border border-red-600 hover:bg-red-600",
+  positive: "bg-green-600 text-white border border-green-600 hover:bg-green-600",
+};
 
 export function Button({
   variant = "solid",
@@ -52,7 +57,7 @@ export function Button({
   return (
     <button
       type="button"
-      className={[base, sizes[size], active ? activeStyle : styles[variant][color], className]
+      className={[base, sizes[size], active ? activeStyles[color] : styles[variant][color], className]
         .filter(Boolean)
         .join(" ")}
       {...props}

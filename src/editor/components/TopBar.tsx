@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { PiMapTrifold, PiBug, PiQuestion } from "react-icons/pi";
-import { DropdownMenu } from "./ui";
+import { DropdownMenu, MenuButton } from "./ui";
 import type { MenuEntry } from "./ui";
 
 const isMac = navigator.platform.toUpperCase().includes("MAC");
@@ -39,82 +39,32 @@ export function TopBar({
         <PiMapTrifold size={20} />
       </div>
       <div className="relative">
-        <button
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            closeAll();
-            setFileOpen((prev) => !prev);
-          }}
-          className={`px-3 h-10 text-sm cursor-pointer transition-colors ${
-            fileOpen ? "text-gray-800 bg-gray-100" : "text-gray-400 hover:text-gray-600"
-          }`}
-        >
+        <MenuButton open={fileOpen} onMouseDown={(e) => { e.stopPropagation(); closeAll(); setFileOpen((prev) => !prev); }}>
           File
-        </button>
-        {fileOpen && (
-          <DropdownMenu
-            items={fileMenuItems}
-            onClose={() => setFileOpen(false)}
-          />
-        )}
+        </MenuButton>
+        {fileOpen && <DropdownMenu items={fileMenuItems} onClose={() => setFileOpen(false)} />}
       </div>
       <div className="relative">
-        <button
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            closeAll();
-            setEditOpen((prev) => !prev);
-          }}
-          className={`px-3 h-10 text-sm cursor-pointer transition-colors ${
-            editOpen ? "text-gray-800 bg-gray-100" : "text-gray-400 hover:text-gray-600"
-          }`}
-        >
+        <MenuButton open={editOpen} onMouseDown={(e) => { e.stopPropagation(); closeAll(); setEditOpen((prev) => !prev); }}>
           Edit
-        </button>
-        {editOpen && (
-          <DropdownMenu
-            items={editMenuItems}
-            onClose={() => setEditOpen(false)}
-          />
-        )}
+        </MenuButton>
+        {editOpen && <DropdownMenu items={editMenuItems} onClose={() => setEditOpen(false)} />}
       </div>
       <div className="relative">
-        <button
-          onMouseDown={(e) => {
-            e.stopPropagation();
-            closeAll();
-            setToolsOpen((prev) => !prev);
-          }}
-          className={`px-3 h-10 text-sm cursor-pointer transition-colors ${
-            toolsOpen ? "text-gray-800 bg-gray-100" : "text-gray-400 hover:text-gray-600"
-          }`}
-        >
+        <MenuButton open={toolsOpen} onMouseDown={(e) => { e.stopPropagation(); closeAll(); setToolsOpen((prev) => !prev); }}>
           Tools
-        </button>
-        {toolsOpen && (
-          <DropdownMenu
-            items={toolsMenuItems}
-            onClose={() => setToolsOpen(false)}
-          />
-        )}
+        </MenuButton>
+        {toolsOpen && <DropdownMenu items={toolsMenuItems} onClose={() => setToolsOpen(false)} />}
       </div>
       <div className="flex-1" />
-      <button
-        onClick={onHelpClick}
-        className="flex items-center gap-1 px-3 h-10 text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
-        title="Help & Shortcuts"
-      >
+      <MenuButton onClick={onHelpClick} title="Help & Shortcuts">
         <PiQuestion size={16} />
-      </button>
+      </MenuButton>
       {debug && (
-        <button
-          onClick={onDebugClick}
-          className="flex items-center gap-1 px-3 h-10 text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
-          title="Debug: View Map JSON"
-        >
+        <MenuButton onClick={onDebugClick} title="Debug: View Map JSON">
           <PiBug size={16} />
           <span className="text-[11px]">Debug</span>
-        </button>
+        </MenuButton>
       )}
     </div>
   );

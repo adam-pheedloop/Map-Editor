@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Dialog } from "../ui";
+import { Button, Dialog, TabBar } from "../ui";
 import type { FloorPlanData } from "../../../types";
 import { JsonDebugView } from "./JsonDebugView";
 
@@ -12,10 +12,12 @@ export function MapDebugDialog({ data, onClose }: MapDebugDialogProps) {
   const [tab, setTab] = useState<"tree" | "raw">("tree");
 
   const tabs = (
-    <div className="flex">
-      <Button variant="outline" color="neutral" active={tab === "tree"} className="px-2 py-1 rounded-r-none" onClick={() => setTab("tree")}>Tree</Button>
-      <Button variant="outline" color="neutral" active={tab === "raw"} className="px-2 py-1 rounded-l-none border-l-0" onClick={() => setTab("raw")}>JSON</Button>
-    </div>
+    <TabBar
+      tabs={[{ id: "tree", label: "Tree" }, { id: "raw", label: "JSON" }]}
+      value={tab}
+      onChange={(id) => setTab(id as typeof tab)}
+      itemClassName="px-2 py-1"
+    />
   );
 
   return (

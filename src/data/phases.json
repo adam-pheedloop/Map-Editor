@@ -1,0 +1,188 @@
+{
+  "lastUpdated": "2026-04-01",
+  "phases": [
+    {
+      "id": 1,
+      "title": "Core Editor",
+      "summary": "Konva.js canvas editor with shape tools, selection, transformation, property editing, and background image support.",
+      "status": "done",
+      "tasks": [
+        "Konva.js canvas setup",
+        "Shape drawing tools (rect, ellipse, polygon)",
+        "Selection & transformation handles",
+        "Property panel (fill, stroke, size, position)",
+        "Background image upload & positioning"
+      ]
+    },
+    {
+      "id": 2,
+      "title": "Exhibitor Booths",
+      "summary": "First-class booth elements with domain-specific properties (booth code, assigned exhibitor, area calculation).",
+      "status": "done",
+      "tasks": [
+        "Booth element type & rendering",
+        "Booth code & exhibitor name properties",
+        "Area calculation (sq ft / m²)",
+        "Booth label display on canvas",
+        "Booth-specific property panel fields"
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Attendee-Facing Map Viewer",
+      "summary": "Read-only interactive viewer with pan/zoom, booth click-to-detail, search/highlight, exhibitor list, and responsive mobile layout.",
+      "status": "done",
+      "tasks": [
+        "Read-only canvas with pan & zoom",
+        "Booth click-to-detail panel",
+        "Search & highlight by exhibitor name",
+        "Sidebar exhibitor list",
+        "Responsive mobile layout"
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Additional Editor Tools",
+      "summary": "Grid, snap-to-grid, undo/redo, copy/paste, multi-select, import/export, and additional drawing tools.",
+      "status": "done",
+      "tasks": [
+        "Grid overlay & snap-to-grid",
+        "Undo / redo stack",
+        "Copy / paste elements",
+        "Multi-select & group transform",
+        "JSON import / export",
+        "Additional drawing tools (line, freehand)"
+      ]
+    },
+    {
+      "id": 5,
+      "title": "Layer System & Background Rethink",
+      "summary": "Fixed layer architecture (Background, Content, Pathing, Markup) with visibility toggles, z-ordering, canvas resize, and background color.",
+      "status": "done",
+      "tasks": [
+        "Fixed layer architecture (Background, Content, Pathing, Markup)",
+        "Layer visibility toggles",
+        "Z-ordering within layers",
+        "Canvas resize tool",
+        "Background color picker"
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Walkable Layer (Editor)",
+      "summary": "Authoring system for defining walkable and impassable regions on the floor plan — the data foundation for wayfinding.",
+      "status": "done",
+      "tasks": [
+        "Walkable region drawing tools",
+        "Impassable region markup",
+        "Grid cell resolution settings",
+        "Walkable layer visibility toggle",
+        "Persist walkable grid in floor plan data"
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Wayfinding: Pathfinding (Viewer)",
+      "summary": "A* pathfinding on the walkable grid. Pick a start and destination by booth/exhibitor name or tap-on-map, get a visual route.",
+      "status": "done",
+      "tasks": [
+        "A* pathfinding on walkable grid",
+        "Start / destination picker (booth name or tap)",
+        "Visual route overlay on canvas",
+        "Route distance / ETA display",
+        "Clear / reset route action"
+      ]
+    },
+    {
+      "id": 8,
+      "title": "Scale Calibration & Real Dimensions",
+      "summary": "Two-point scale calibration tool so maps have real-world units. Booth areas in sq ft/m, scale bar on canvas.",
+      "status": "planned",
+      "tasks": [
+        "Two-point scale calibration tool",
+        "Real-world unit storage (ft / m)",
+        "Booth area display in real units",
+        "Scale bar overlay on canvas",
+        "Unit preference setting (imperial / metric)"
+      ]
+    },
+    {
+      "id": 9,
+      "title": "New Drawing Tools, Labels & Opacity",
+      "summary": "Arrow and arc tools, full label customization (color, position, font, hide/show), and per-element opacity.",
+      "status": "planned",
+      "tasks": [
+        "Arrow tool",
+        "Arc / curve tool",
+        "Label color, font & position controls",
+        "Show / hide label per element",
+        "Per-element opacity slider"
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Session Locations & Meeting Rooms",
+      "summary": "First-class session and meeting room elements in the editor and viewer, with their own search and interactions.",
+      "status": "planned",
+      "tasks": [
+        "Session element type & properties",
+        "Meeting room element type & properties",
+        "Session / room search in viewer",
+        "Click-to-detail for sessions & rooms",
+        "Schedule integration (session time / track)"
+      ]
+    },
+    {
+      "id": 11,
+      "title": "Legend Persistence & Customization",
+      "summary": "Configurable, persisted legend with custom entries, colors, positioning, and optional category filtering in the viewer.",
+      "status": "planned",
+      "tasks": [
+        "Legend editor (add / edit / remove entries)",
+        "Custom colors per legend entry",
+        "Legend position & size controls",
+        "Persist legend in floor plan data",
+        "Category filter toggle in viewer"
+      ]
+    },
+    {
+      "id": 12,
+      "title": "Auto-Generate Booths",
+      "summary": "Quickly populate a floor plan with a grid of booths — configurable size, spacing, labeling pattern, with live preview.",
+      "status": "planned",
+      "tasks": [
+        "Grid-of-booths generator dialog",
+        "Configurable booth size & spacing",
+        "Labeling pattern options (numeric, alpha, custom)",
+        "Live canvas preview",
+        "Place generated booths as editable elements"
+      ]
+    },
+    {
+      "id": 13,
+      "title": "Editor Polish & Validation",
+      "summary": "Middle-click pan, visual undo history, hover states, booth placement validation rules, and coordinate display.",
+      "status": "planned",
+      "tasks": [
+        "Middle-click / space-drag pan",
+        "Visual undo history panel",
+        "Hover state feedback on canvas elements",
+        "Booth overlap / boundary validation",
+        "Cursor coordinate display"
+      ]
+    },
+    {
+      "id": 14,
+      "title": "Backend Integration",
+      "summary": "Connect to the PheedLoop backend — save/load maps, link booths to real exhibitors, sessions to talks, and ship the viewer in-app.",
+      "status": "planned",
+      "tasks": [
+        "Save / load floor plans via PheedLoop API",
+        "Link booths to real exhibitor records",
+        "Link session elements to talk records",
+        "Auth & permissions for map editing",
+        "Embed viewer in PheedLoop attendee app"
+      ]
+    }
+  ]
+}

@@ -7,17 +7,20 @@ import {
 } from "react-icons/pi";
 import { MapEditor } from "./editor";
 import { MapViewer } from "./viewer";
+import { Roadmap } from "./roadmap/Roadmap";
 import { sampleMap } from "./sample-data/sample-map";
 import { sampleExhibitors } from "./sample-data/sample-exhibitors";
 import type { FloorPlanData } from "./types";
 import type { ViewerMode } from "./viewer/types";
 
-type Route = "editor" | "viewer";
+type Route = "editor" | "viewer" | "roadmap";
 type Viewport = "desktop" | "mobile";
 
 function getRoute(): Route {
   const hash = window.location.hash.replace("#", "");
-  return hash === "viewer" ? "viewer" : "editor";
+  if (hash === "viewer") return "viewer";
+  if (hash === "roadmap") return "roadmap";
+  return "editor";
 }
 
 function loadViewerData(): FloorPlanData | null {
@@ -92,6 +95,16 @@ function App() {
         >
           Viewer
         </a>
+        <a
+          href="#roadmap"
+          className={`px-3 py-1 rounded transition-colors ${
+            route === "roadmap"
+              ? "bg-white/15 text-white"
+              : "text-gray-400 hover:text-white"
+          }`}
+        >
+          Roadmap
+        </a>
 
         {route === "viewer" && (
           <>
@@ -153,6 +166,7 @@ function App() {
         {route === "viewer" && (
           <ViewerRoute viewport={viewport} mode={viewerMode} />
         )}
+        {route === "roadmap" && <Roadmap />}
       </div>
     </div>
   );

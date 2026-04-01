@@ -1,5 +1,7 @@
 export { Button } from "./Button";
 export type { ButtonProps } from "./Button";
+export { IconButton } from "./IconButton";
+export type { IconButtonProps } from "./IconButton";
 export { ColorSwatch } from "./ColorSwatch";
 export { Dialog } from "./Dialog";
 export { NumberInput } from "./NumberInput";

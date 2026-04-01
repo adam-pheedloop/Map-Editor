@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { PiCursorFill, PiRectangle, PiCircle, PiLineSegment, PiStorefront, PiTextT, PiSticker, PiPaintBrush, PiEraser, PiSquare } from "react-icons/pi";
 import type { ActiveTool, PathingTool } from "../../types";
+import { IconButton } from "../ui";
 import { IconPicker } from "./IconPicker";
 import { getIconEntry } from "../../utils/iconRegistry";
 
@@ -41,18 +42,14 @@ function ToolButton<T extends string>({
 
   return (
     <div className="relative">
-      <button
+      <IconButton
+        active={isActive}
         onClick={onClick}
         onMouseEnter={() => setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
-        className={`flex items-center justify-center w-9 h-9 rounded-lg cursor-pointer transition-colors ${
-          isActive
-            ? "bg-primary-600 text-white"
-            : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
-        }`}
       >
         {tool.icon}
-      </button>
+      </IconButton>
       {showTooltip && !isActive && (
         <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap z-50 pointer-events-none">
           {tool.label} ({tool.shortcut})

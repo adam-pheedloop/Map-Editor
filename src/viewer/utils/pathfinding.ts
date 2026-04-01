@@ -129,3 +129,84 @@ export function findPath(
 
   return null; // No path found
 }
+
+// --- Path smoothing (string-pulling) ---
+
+/**
+ * Check if there is a clear walkable line-of-sight between two cells.
+ * Uses Bresenham's line to check every cell along the line.
+ */
+function hasLineOfSight(
+  grid: WalkableGrid,
+  a: Cell,
+  b: Cell
+): boolean {
+  let x0 = a.col, y0 = a.row;
+  const x1 = b.col, y1 = b.row;
+  const dx = Math.abs(x1 - x0);
+  const dy = Math.abs(y1 - y0);
+  const sx = x0 < x1 ? 1 : -1;
+  const sy = y0 < y1 ? 1 : -1;
+  let err = dx - dy;
+
+  while (true) {
+    if (!isWalkable(grid, x0, y0)) return false;
+    if (x0 === x1 && y0 === y1) break;
+    const e2 = 2 * err;
+    if (e2 > -dy) {
+      err -= dy;
+      x0 += sx;
+    }
+    if (e2 < dx) {
+      err += dx;
+      y0 += sy;
+    }
+  }
+  return true;
+}
+
+/**
+ * Smooth a raw A* cell path using string-pulling.
+ *
+ * Walks through the path and skips intermediate points when there's a
+ * clear walkable line-of-sight between non-adjacent points.
+ *
+ * Returns canvas-space {x, y} points (cell center coordinates).
+ */
+export function smoothPath(
+  grid: WalkableGrid,
+  path: Cell[]
+): { x: number; y: number }[] {
+  if (path.length <= 2) {
+    return path.map((c) => cellToCanvas(c, grid.cellSize));
+  }
+
+  const smoothed: Cell[] = [path[0]];
+  let current = 0;
+
+  while (current < path.length - 1) {
+    // Look as far ahead as possible while maintaining line-of-sight
+    let farthest = current + 1;
+    for (let i = path.length - 1; i > current + 1; i--) {
+      if (hasLineOfSight(grid, path[current], path[i])) {
+        farthest = i;
+        break;
+      }
+    }
+    smoothed.push(path[farthest]);
+    current = farthest;
+  }
+
+  return smoothed.map((c) => cellToCanvas(c, grid.cellSize));
+}
+
+/** Convert a grid cell to its canvas center point. */
+function cellToCanvas(
+  cell: Cell,
+  cellSize: number
+): { x: number; y: number } {
+  return {
+    x: cell.col * cellSize + cellSize / 2,
+    y: cell.row * cellSize + cellSize / 2,
+  };
+}

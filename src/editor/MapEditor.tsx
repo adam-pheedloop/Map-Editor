@@ -19,9 +19,10 @@ import { MapDebugDialog } from "./components/debug";
 import { BackgroundImageDialog } from "./components/panels/BackgroundImageDialog";
 import { GridSettingsDialog } from "./components/panels/GridSettingsDialog";
 import { HelpDialog } from "./components/panels/HelpDialog";
+import { CanvasResizeDialog } from "./components/panels/CanvasResizeDialog";
 import { LayerPanel } from "./components/panels/LayerPanel";
 import type { FloorPlanData, LayerId, LayerDefinition } from "../types";
-import { DEFAULT_LAYERS } from "../types";
+import { DEFAULT_LAYERS, ELEMENT_TYPE_TO_LAYER } from "../types";
 
 const INITIAL_DEFAULTS: DrawingDefaults = {
   fill: "#94a3b8",
@@ -49,6 +50,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     updateElementType,
     setBackgroundImage,
     setBackgroundColor,
+    reorderElement,
     updateDimensions,
     undo,
     redo,
@@ -59,7 +61,12 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   const [layers, setLayers] = useState<LayerDefinition[]>(() =>
     DEFAULT_LAYERS.map((l) => ({ ...l }))
   );
-  const [activeLayerId, setActiveLayerId] = useState<LayerId>("content");
+  const [activeLayerId, _setActiveLayerId] = useState<LayerId>("content");
+
+  const setActiveLayerId = useCallback((id: LayerId) => {
+    _setActiveLayerId(id);
+    setSelectedIds(new Set());
+  }, []);
 
   const toggleLayerVisibility = useCallback((id: LayerId) => {
     setLayers((prev) =>
@@ -83,6 +90,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   });
   const [snapToObjects, setSnapToObjects] = useState(true);
   const [showGridDialog, setShowGridDialog] = useState(false);
+  const [showResizeDialog, setShowResizeDialog] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
     elementId: string;
     x: number;
@@ -131,8 +139,12 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   }, []);
 
   const selectAll = useCallback(() => {
-    setSelectedIds(new Set(data.elements.map((el) => el.id)));
-  }, [data.elements]);
+    setSelectedIds(new Set(
+      data.elements
+        .filter((el) => (el.layer ?? ELEMENT_TYPE_TO_LAYER[el.type]) === activeLayerId)
+        .map((el) => el.id)
+    ));
+  }, [data.elements, activeLayerId]);
 
   const selectMany = useCallback((ids: string[]) => {
     setSelectedIds(new Set(ids));
@@ -384,6 +396,32 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     [data.elements, updateElement]
   );
 
+  const handleCanvasResize = useCallback(
+    (newWidth: number, newHeight: number, mode: "preserve" | "scale") => {
+      if (mode === "scale") {
+        const scaleX = newWidth / data.dimensions.width;
+        const scaleY = newHeight / data.dimensions.height;
+        for (const el of data.elements) {
+          const geo = el.geometry;
+          if ("x" in geo && "y" in geo) {
+            const updates: Record<string, number> = {
+              x: geo.x * scaleX,
+              y: geo.y * scaleY,
+            };
+            if ("width" in geo) updates.width = geo.width * scaleX;
+            if ("height" in geo) updates.height = geo.height * scaleY;
+            if ("radiusX" in geo) updates.radiusX = geo.radiusX * scaleX;
+            if ("radiusY" in geo) updates.radiusY = geo.radiusY * scaleY;
+            if ("radius" in geo) updates.radius = geo.radius * Math.min(scaleX, scaleY);
+            updateElement(el.id, updates);
+          }
+        }
+      }
+      updateDimensions({ width: newWidth, height: newHeight });
+    },
+    [data.dimensions, data.elements, updateElement, updateDimensions]
+  );
+
   const handleBackgroundImage = useCallback(
     (dataUrl: string, imageWidth: number, imageHeight: number, mode: "resize-canvas" | "fit-image") => {
       if (mode === "resize-canvas") {
@@ -412,6 +450,16 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
 
     const config = getShapeConfig(element.geometry.shape, element.type);
     const items: ContextMenuItem[] = [];
+
+    // Z-ordering actions
+    items.push(
+      { label: "Bring to Front", onClick: () => reorderElement(contextMenu.elementId, "front") },
+      { label: "Bring Forward", onClick: () => reorderElement(contextMenu.elementId, "forward") },
+      { label: "Send Backward", onClick: () => reorderElement(contextMenu.elementId, "backward") },
+      { label: "Send to Back", onClick: () => reorderElement(contextMenu.elementId, "back") },
+    );
+
+    items.push({ type: "divider" as const });
 
     for (const action of config.contextMenu) {
       switch (action) {
@@ -563,6 +611,10 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
             label: "Configure Grid...",
             onClick: () => setShowGridDialog(true),
           },
+          {
+            label: "Canvas Size...",
+            onClick: () => setShowResizeDialog(true),
+          },
         ]}
       />
       <div className="flex flex-1 overflow-hidden">
@@ -671,6 +723,15 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           settings={gridSettings}
           onSave={setGridSettings}
           onClose={() => setShowGridDialog(false)}
+        />
+      )}
+      {showResizeDialog && (
+        <CanvasResizeDialog
+          width={data.dimensions.width}
+          height={data.dimensions.height}
+          elements={data.elements}
+          onConfirm={handleCanvasResize}
+          onClose={() => setShowResizeDialog(false)}
         />
       )}
       {showHelp && (

@@ -231,6 +231,10 @@ export function Canvas({
         const rect = dragSelectRect;
         const OVERLAP_THRESHOLD = 0.9;
         const enclosed = data.elements.filter((el) => {
+          // Only select elements on the active layer
+          const elLayer = el.layer ?? ELEMENT_TYPE_TO_LAYER[el.type];
+          if (elLayer !== activeLayerId) return false;
+
           const b = getElementBounds(el);
           const elWidth = b.right - b.left;
           const elHeight = b.bottom - b.top;
@@ -442,23 +446,26 @@ export function Canvas({
         </Layer>
 
         {/* Element layers: one Konva Layer per floor plan layer */}
-        {elementLayerOrder.map((layerId) => (
-          <Layer key={layerId} visible={layerVisibility.get(layerId) !== false}>
-            {(elementsByLayer.get(layerId) ?? []).map((element) => (
-              <ElementShape
-                key={element.id}
-                element={element}
-                isSelectMode={isSelectMode}
-                isSelected={selectedIds.has(element.id)}
-                onSelect={onSelect}
-                onDragStart={handleElementDragStart}
-                onDragMove={handleElementDragMove}
-                onDragEnd={handleElementDragEnd}
-                onContextMenu={onElementContextMenu}
-              />
-            ))}
-          </Layer>
-        ))}
+        {elementLayerOrder.map((layerId) => {
+          const isActiveLayer = layerId === activeLayerId;
+          return (
+            <Layer key={layerId} visible={layerVisibility.get(layerId) !== false} listening={isActiveLayer}>
+              {(elementsByLayer.get(layerId) ?? []).map((element) => (
+                <ElementShape
+                  key={element.id}
+                  element={element}
+                  isSelectMode={isSelectMode && isActiveLayer}
+                  isSelected={selectedIds.has(element.id)}
+                  onSelect={onSelect}
+                  onDragStart={handleElementDragStart}
+                  onDragMove={handleElementDragMove}
+                  onDragEnd={handleElementDragEnd}
+                  onContextMenu={onElementContextMenu}
+                />
+              ))}
+            </Layer>
+          );
+        })}
 
         {/* Selection overlay: transformer, multi-select bounds, line handles */}
         <Layer>

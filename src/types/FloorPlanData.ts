@@ -163,6 +163,17 @@ export interface FloorPlanMetadata {
   scale: number;
 }
 
+// --- Walkable grid (Phase 6) ---
+
+export interface WalkableGrid {
+  enabled: boolean;
+  cellSize: number;
+  cols: number;
+  rows: number;
+  /** 2D array [row][col]: 0 = impassable, 1 = walkable */
+  cells: number[][];
+}
+
 export interface FloorPlanData {
   version: string;
   id: string;
@@ -172,5 +183,6 @@ export interface FloorPlanData {
   legend: Legend;
   backgroundImage?: BackgroundImage;
   backgroundColor?: string;
+  walkableLayer?: WalkableGrid;
   metadata: FloorPlanMetadata;
 }

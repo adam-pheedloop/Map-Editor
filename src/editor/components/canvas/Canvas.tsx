@@ -16,6 +16,7 @@ import { AlignmentGuides } from "./AlignmentGuides";
 import { SelectionRect } from "./SelectionRect";
 import { MultiSelectBounds } from "./MultiSelectBounds";
 import { GridLayer } from "./GridLayer";
+import { WalkableGridOverlay } from "./WalkableGridOverlay";
 import { useAlignmentGuides } from "../../hooks/useAlignmentGuides";
 import { getElementBounds } from "../../utils/bounds";
 
@@ -57,6 +58,15 @@ interface CanvasProps {
   snapToObjects: boolean;
   layers: LayerDefinition[];
   activeLayerId: LayerId;
+  walkableGridOpacity?: number;
+  walkableHoverCell?: { col: number; row: number } | null;
+  onPathingMouseDown?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
+  onPathingMouseMove?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
+  onPathingMouseUp?: () => void;
+  isPathingMode?: boolean;
+  pathingRectPreview?: { startCol: number; startRow: number; endCol: number; endRow: number } | null;
+  pendingCells?: Set<string>;
+  pendingValue?: 0 | 1;
 }
 
 export function Canvas({
@@ -84,6 +94,15 @@ export function Canvas({
   snapToObjects,
   layers,
   activeLayerId,
+  walkableGridOpacity = 0.3,
+  walkableHoverCell,
+  onPathingMouseDown,
+  onPathingMouseMove,
+  onPathingMouseUp,
+  isPathingMode,
+  pathingRectPreview,
+  pendingCells,
+  pendingValue,
 }: CanvasProps) {
   const isSelectMode = activeTool === "select";
   const isDrawing = !isSelectMode;
@@ -171,6 +190,12 @@ export function Canvas({
     // Space held = pan mode, let stage draggable handle it
     if (isPanMode) return;
 
+    // Pathing mode: delegate to pathing handlers
+    if (isPathingMode && onPathingMouseDown) {
+      onPathingMouseDown(e);
+      return;
+    }
+
     if (isSelectMode) {
       if (isEmptySpaceClick(e)) {
         // Start drag-select rectangle
@@ -201,6 +226,13 @@ export function Canvas({
   };
 
   const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    // Pathing mode: delegate to pathing handlers
+    if (isPathingMode && onPathingMouseMove) {
+      onPathingMouseMove(e);
+      // Don't return — allow drag-select logic to be skipped naturally
+      if (!dragSelectOrigin.current) return;
+    }
+
     // Drag-select rectangle
     if (dragSelectOrigin.current && isSelectMode) {
       const stage = stageRef.current;
@@ -225,6 +257,12 @@ export function Canvas({
   };
 
   const handleMouseUp = () => {
+    // Pathing mode: delegate to pathing handlers
+    if (isPathingMode && onPathingMouseUp) {
+      onPathingMouseUp();
+      return;
+    }
+
     // Complete drag-select
     if (dragSelectOrigin.current && dragSelectRect) {
       if (dragSelectRect.width > 5 && dragSelectRect.height > 5) {
@@ -402,7 +440,7 @@ export function Canvas({
     <div
       ref={containerRef}
       className="flex-1 min-w-0 bg-gray-200 overflow-hidden"
-      style={{ cursor: isPanMode ? "grab" : isDrawing ? "crosshair" : "default" }}
+      style={{ cursor: isPanMode ? "grab" : isPathingMode ? "crosshair" : isDrawing ? "crosshair" : "default" }}
     >
       <Stage
         ref={stageRef}
@@ -412,7 +450,7 @@ export function Canvas({
         scaleY={scale}
         x={position.x}
         y={position.y}
-        draggable={isPanMode || (isSelectMode && !dragSelectOrigin.current)}
+        draggable={isPanMode || (!isPathingMode && isSelectMode && !dragSelectOrigin.current)}
         onWheel={onWheel}
         onDragEnd={onDragEnd}
         onMouseDown={handleMouseDown}
@@ -450,6 +488,16 @@ export function Canvas({
           const isActiveLayer = layerId === activeLayerId;
           return (
             <Layer key={layerId} visible={layerVisibility.get(layerId) !== false} listening={isActiveLayer}>
+              {layerId === "pathing" && data.walkableLayer && (
+                <WalkableGridOverlay
+                  grid={data.walkableLayer}
+                  showGridLines={activeLayerId === "pathing"}
+                  opacity={walkableGridOpacity}
+                  hoverCell={activeLayerId === "pathing" ? walkableHoverCell : null}
+                  pendingCells={pendingCells}
+                  pendingValue={pendingValue}
+                />
+              )}
               {(elementsByLayer.get(layerId) ?? []).map((element) => (
                 <ElementShape
                   key={element.id}
@@ -503,6 +551,19 @@ export function Canvas({
             canvasHeight={data.dimensions.height}
           />
           <SelectionRect rect={dragSelectRect} />
+          {pathingRectPreview && data.walkableLayer && (
+            <Rect
+              x={Math.min(pathingRectPreview.startCol, pathingRectPreview.endCol) * data.walkableLayer.cellSize}
+              y={Math.min(pathingRectPreview.startRow, pathingRectPreview.endRow) * data.walkableLayer.cellSize}
+              width={(Math.abs(pathingRectPreview.endCol - pathingRectPreview.startCol) + 1) * data.walkableLayer.cellSize}
+              height={(Math.abs(pathingRectPreview.endRow - pathingRectPreview.startRow) + 1) * data.walkableLayer.cellSize}
+              fill="rgba(34, 197, 94, 0.2)"
+              stroke="rgba(34, 197, 94, 0.8)"
+              strokeWidth={1}
+              dash={[4, 4]}
+              listening={false}
+            />
+          )}
         </Layer>
       </Stage>
     </div>

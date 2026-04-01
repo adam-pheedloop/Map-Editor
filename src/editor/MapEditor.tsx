@@ -1,15 +1,17 @@
 import { useRef, useState, useCallback, useMemo } from "react";
 import { v4 as uuidv4 } from "uuid";
-import type { ActiveTool } from "./types";
+import type { ActiveTool, PathingTool } from "./types";
 import type { DrawingDefaults } from "./components/panels/OptionsBar";
 import { useCanvasControls } from "./hooks/useCanvasControls";
 import { useEditorState } from "./hooks/useEditorState";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useClipboard } from "./hooks/useClipboard";
+import { usePathingTool } from "./hooks/usePathingTool";
 import { Canvas } from "./components/canvas/Canvas";
 import { ToolSidebar } from "./components/panels/ToolSidebar";
 import { TopBar } from "./components/TopBar";
 import { OptionsBar } from "./components/panels/OptionsBar";
+import { PathingOptionsBar } from "./components/panels/PathingOptionsBar";
 import { StatusBar } from "./components/StatusBar";
 import { PropertiesPanel } from "./components/panels/PropertiesPanel";
 import { getShapeConfig } from "./components/canvas/elements";
@@ -52,6 +54,12 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     setBackgroundColor,
     reorderElement,
     updateDimensions,
+    initWalkableGrid,
+    setWalkableCells,
+    setWalkableCellRange,
+    clearWalkableGrid,
+    setWalkableGridResolution,
+    setWalkableGrid,
     undo,
     redo,
     canUndo,
@@ -66,7 +74,11 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   const setActiveLayerId = useCallback((id: LayerId) => {
     _setActiveLayerId(id);
     setSelectedIds(new Set());
-  }, []);
+    if (id === "pathing") {
+      initWalkableGrid();
+      setActivePathingTool("select");
+    }
+  }, [initWalkableGrid]);
 
   const toggleLayerVisibility = useCallback((id: LayerId) => {
     setLayers((prev) =>
@@ -75,6 +87,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   }, []);
 
   const [activeTool, setActiveTool] = useState<ActiveTool>("select");
+  const [activePathingTool, setActivePathingTool] = useState<PathingTool>("select");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [defaults, setDefaults] = useState<DrawingDefaults>(INITIAL_DEFAULTS);
   const [showMapDebug, setShowMapDebug] = useState(false);
@@ -89,6 +102,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     gridOpacity: 0.5,
   });
   const [snapToObjects, setSnapToObjects] = useState(true);
+  const [walkableGridOpacity, setWalkableGridOpacity] = useState(0.3);
   const [showGridDialog, setShowGridDialog] = useState(false);
   const [showResizeDialog, setShowResizeDialog] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
@@ -153,6 +167,18 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   // Clipboard
   const { copy, paste, hasBuffer } = useClipboard();
 
+  // Pathing tool
+  const isPathingMode = activeLayerId === "pathing";
+  const pathingTool = usePathingTool({
+    stageRef,
+    position,
+    scale,
+    grid: data.walkableLayer,
+    activePathingTool,
+    onPaintStroke: setWalkableCells,
+    onRectFill: setWalkableCellRange,
+  });
+
   const handleCopy = useCallback(() => {
     if (selectedElements.length > 0) copy(selectedElements);
   }, [selectedElements, copy]);
@@ -197,6 +223,8 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     onSelectAll: selectAll,
     onUndo: undo,
     onRedo: redo,
+    isPathingMode,
+    setPathingTool: setActivePathingTool,
   });
 
   // Options bar: show selected element's colors or defaults
@@ -513,6 +541,63 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     [selectMany]
   );
 
+  // --- Auto-generation handlers ---
+
+  const handleAutoMarkObstacles = useCallback(() => {
+    const grid = data.walkableLayer;
+    if (!grid) return;
+    const newCells = grid.cells.map((r) => [...r]);
+    for (const el of data.elements) {
+      const geo = el.geometry;
+      if (!("x" in geo && "y" in geo && "width" in geo && "height" in geo)) continue;
+      const g = geo as { x: number; y: number; width: number; height: number };
+      const startCol = Math.floor(g.x / grid.cellSize);
+      const startRow = Math.floor(g.y / grid.cellSize);
+      const endCol = Math.ceil((g.x + g.width) / grid.cellSize) - 1;
+      const endRow = Math.ceil((g.y + g.height) / grid.cellSize) - 1;
+      for (let row = Math.max(0, startRow); row <= Math.min(grid.rows - 1, endRow); row++) {
+        for (let col = Math.max(0, startCol); col <= Math.min(grid.cols - 1, endCol); col++) {
+          newCells[row][col] = 0;
+        }
+      }
+    }
+    setWalkableGrid({ ...grid, cells: newCells });
+  }, [data.walkableLayer, data.elements, setWalkableGrid]);
+
+  const handleAutoMarkWalkable = useCallback(() => {
+    const grid = data.walkableLayer;
+    if (!grid) return;
+    // Start with all walkable, then mark element footprints as impassable
+    const newCells = Array.from({ length: grid.rows }, () => new Array(grid.cols).fill(1));
+    for (const el of data.elements) {
+      const geo = el.geometry;
+      if (!("x" in geo && "y" in geo && "width" in geo && "height" in geo)) continue;
+      const g = geo as { x: number; y: number; width: number; height: number };
+      const startCol = Math.floor(g.x / grid.cellSize);
+      const startRow = Math.floor(g.y / grid.cellSize);
+      const endCol = Math.ceil((g.x + g.width) / grid.cellSize) - 1;
+      const endRow = Math.ceil((g.y + g.height) / grid.cellSize) - 1;
+      for (let row = Math.max(0, startRow); row <= Math.min(grid.rows - 1, endRow); row++) {
+        for (let col = Math.max(0, startCol); col <= Math.min(grid.cols - 1, endCol); col++) {
+          newCells[row][col] = 0;
+        }
+      }
+    }
+    setWalkableGrid({ ...grid, cells: newCells });
+  }, [data.walkableLayer, data.elements, setWalkableGrid]);
+
+  const handleCellSizeChange = useCallback((size: number) => {
+    if (data.walkableLayer && data.walkableLayer.cells.some((r) => r.some((c) => c === 1))) {
+      if (!window.confirm("Changing grid resolution will clear your current walkable areas. Continue?")) return;
+    }
+    setWalkableGridResolution(size);
+  }, [data.walkableLayer, setWalkableGridResolution]);
+
+  const handleClearGrid = useCallback(() => {
+    if (!window.confirm("Clear all walkable areas? This cannot be undone except via undo.")) return;
+    clearWalkableGrid();
+  }, [clearWalkableGrid]);
+
   return (
     <div className="flex flex-col h-full">
       <TopBar
@@ -623,17 +708,32 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           activeIconName={activeIconName}
           onToolChange={handleToolChange}
           onIconSelect={(iconId) => setActiveIconName(iconId)}
+          isPathingMode={activeLayerId === "pathing"}
+          activePathingTool={activePathingTool}
+          onPathingToolChange={setActivePathingTool}
         />
         <div className="flex flex-col flex-1">
-          <OptionsBar
-            defaults={activeDefaults}
-            config={getShapeConfig(
-              selectedElement?.geometry.shape
-                ?? (activeTool === "line" ? "line" : activeTool === "ellipse" ? "ellipse" : "rect"),
-              selectedElement?.type ?? (activeTool === "booth" ? "booth" : activeTool === "text" ? "label" : activeTool === "icon" ? "icon" : undefined)
-            )}
-            onDefaultsChange={handleDefaultsChange}
-          />
+          {isPathingMode ? (
+            <PathingOptionsBar
+              cellSize={data.walkableLayer?.cellSize ?? 20}
+              opacity={walkableGridOpacity}
+              onCellSizeChange={handleCellSizeChange}
+              onOpacityChange={setWalkableGridOpacity}
+              onAutoMarkObstacles={handleAutoMarkObstacles}
+              onAutoMarkWalkable={handleAutoMarkWalkable}
+              onClearGrid={handleClearGrid}
+            />
+          ) : (
+            <OptionsBar
+              defaults={activeDefaults}
+              config={getShapeConfig(
+                selectedElement?.geometry.shape
+                  ?? (activeTool === "line" ? "line" : activeTool === "ellipse" ? "ellipse" : "rect"),
+                selectedElement?.type ?? (activeTool === "booth" ? "booth" : activeTool === "text" ? "label" : activeTool === "icon" ? "icon" : undefined)
+              )}
+              onDefaultsChange={handleDefaultsChange}
+            />
+          )}
           <div className="flex flex-1 overflow-hidden">
             <div className="flex flex-col flex-1">
               <div className="relative flex-1 flex flex-col">
@@ -662,6 +762,15 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   snapToObjects={snapToObjects}
                   layers={layers}
                   activeLayerId={activeLayerId}
+                  isPathingMode={isPathingMode && activePathingTool !== "select"}
+                  walkableGridOpacity={walkableGridOpacity}
+                  walkableHoverCell={isPathingMode ? pathingTool.hoverCell : null}
+                  onPathingMouseDown={pathingTool.handleMouseDown}
+                  onPathingMouseMove={pathingTool.handleMouseMove}
+                  onPathingMouseUp={pathingTool.handleMouseUp}
+                  pathingRectPreview={pathingTool.rectPreview}
+                  pendingCells={pathingTool.pendingCells}
+                  pendingValue={pathingTool.pendingValue}
                 />
                 <LayerPanel
                   layers={layers}

@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import type { ActiveTool } from "../types";
+import type { ActiveTool, PathingTool } from "../types";
 
 interface KeyboardShortcutActions {
   setActiveTool: (tool: ActiveTool) => void;
@@ -11,6 +11,8 @@ interface KeyboardShortcutActions {
   onSelectAll: () => void;
   onUndo: () => void;
   onRedo: () => void;
+  isPathingMode?: boolean;
+  setPathingTool?: (tool: PathingTool) => void;
 }
 
 export function useKeyboardShortcuts({
@@ -23,6 +25,8 @@ export function useKeyboardShortcuts({
   onSelectAll,
   onUndo,
   onRedo,
+  isPathingMode,
+  setPathingTool,
 }: KeyboardShortcutActions) {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -67,6 +71,27 @@ export function useKeyboardShortcuts({
         }
       }
 
+      // Pathing mode shortcuts
+      if (isPathingMode && setPathingTool) {
+        switch (e.key.toLowerCase()) {
+          case "v":
+            setPathingTool("select");
+            return;
+          case "w":
+            setPathingTool("paintWalkable");
+            return;
+          case "e":
+            setPathingTool("paintImpassable");
+            return;
+          case "r":
+            setPathingTool("rectFill");
+            return;
+          case "escape":
+            setPathingTool("select");
+            return;
+        }
+      }
+
       switch (e.key.toLowerCase()) {
         case "v":
           setActiveTool("select");
@@ -102,5 +127,5 @@ export function useKeyboardShortcuts({
 
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [setActiveTool, onDeselect, onDelete, onCopy, onPaste, onDuplicate, onSelectAll, onUndo, onRedo]);
+  }, [setActiveTool, onDeselect, onDelete, onCopy, onPaste, onDuplicate, onSelectAll, onUndo, onRedo, isPathingMode, setPathingTool]);
 }

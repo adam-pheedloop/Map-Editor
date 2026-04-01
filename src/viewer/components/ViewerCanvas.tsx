@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { Stage, Layer, Rect, Group, Text, Ellipse, Line } from "react-konva";
+import { useRef, useState, useEffect } from "react";
+import { Stage, Layer, Rect, Group, Text, Ellipse, Line, Image as KonvaImage } from "react-konva";
 import type {
   FloorPlanData,
   FloorPlanElement,
@@ -7,9 +7,12 @@ import type {
   EllipseGeometry,
   LineGeometry,
 } from "../../types";
+import { getIconEntry } from "../../editor/utils/iconRegistry";
+import { iconToImage } from "../../editor/utils/iconToImage";
 import { useCanvasControls } from "../../editor/hooks/useCanvasControls";
 import { BackgroundImage } from "../../editor/components/canvas/BackgroundImage";
 import type { ViewerMode } from "../types";
+import { RouteOverlay } from "./RouteOverlay";
 
 interface ViewerCanvasProps {
   data: FloorPlanData;
@@ -17,7 +20,19 @@ interface ViewerCanvasProps {
   occupiedBoothCodes: Set<string>;
   highlightedBoothCode: string | null;
   searchMatchCodes: Set<string> | null;
+  routePath: { x: number; y: number }[] | null;
   onBoothClick: (boothCode: string, screenX: number, screenY: number) => void;
+}
+
+function ViewerIcon({ iconName, color, width, height }: { iconName: string; color: string; width: number; height: number }) {
+  const [image, setImage] = useState<HTMLImageElement | null>(null);
+  useEffect(() => {
+    const entry = getIconEntry(iconName);
+    if (!entry) return;
+    iconToImage(entry.component, color, 128, setImage);
+  }, [iconName, color]);
+  if (!image) return null;
+  return <KonvaImage image={image} width={width} height={height} />;
 }
 
 function getLabel(element: FloorPlanElement): string {
@@ -87,7 +102,7 @@ function ViewerElement({
         }
       }}
     >
-      {geo.shape === "rect" && (
+      {geo.shape === "rect" && element.type !== "icon" && (
         <>
           <Rect
             width={geo.width}
@@ -148,11 +163,19 @@ function ViewerElement({
           lineCap="round"
         />
       )}
+      {element.type === "icon" && geo.shape === "rect" && element.properties.iconName && (
+        <ViewerIcon
+          iconName={element.properties.iconName}
+          color={color}
+          width={geo.width}
+          height={(geo as RectGeometry).height}
+        />
+      )}
     </Group>
   );
 }
 
-export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedBoothCode, searchMatchCodes, onBoothClick }: ViewerCanvasProps) {
+export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedBoothCode, searchMatchCodes, routePath, onBoothClick }: ViewerCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredBoothCode, setHoveredBoothCode] = useState<string | null>(null);
   const isSearching = searchMatchCodes !== null && searchMatchCodes.size > 0;
@@ -239,6 +262,8 @@ export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedBoothC
             );
           })}
         </Layer>
+
+        {routePath && <RouteOverlay path={routePath} />}
       </Stage>
     </div>
   );

@@ -7,9 +7,10 @@ interface BoothPopoverProps {
   x: number;
   y: number;
   onClose: () => void;
+  onGetDirections?: (boothCode: string) => void;
 }
 
-export function BoothPopover({ boothCode, exhibitor, x, y, onClose }: BoothPopoverProps) {
+export function BoothPopover({ boothCode, exhibitor, x, y, onClose, onGetDirections }: BoothPopoverProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -51,6 +52,14 @@ export function BoothPopover({ boothCode, exhibitor, x, y, onClose }: BoothPopov
         <div className="mt-1 text-[11px] text-gray-400">
           No exhibitor assigned
         </div>
+      )}
+      {onGetDirections && (
+        <button
+          onClick={() => onGetDirections(boothCode)}
+          className="mt-2 w-full text-xs font-medium text-blue-600 hover:bg-blue-50 rounded px-2 py-1.5 cursor-pointer transition-colors text-left"
+        >
+          Get directions to here
+        </button>
       )}
     </div>
   );

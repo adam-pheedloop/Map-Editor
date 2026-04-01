@@ -1,5 +1,27 @@
 export type Unit = "ft" | "m" | "px";
 
+// --- Layer system ---
+
+export type LayerId = "background" | "content" | "pathing" | "markup";
+
+export interface LayerDefinition {
+  id: LayerId;
+  name: string;
+  order: number;
+  visible: boolean;
+  /** Whether this layer accepts arbitrary elements (false = special-purpose layer) */
+  special: boolean;
+}
+
+export const DEFAULT_LAYERS: LayerDefinition[] = [
+  { id: "background", name: "Background", order: 0, visible: true, special: true },
+  { id: "content", name: "Content", order: 1, visible: true, special: false },
+  { id: "pathing", name: "Pathing", order: 2, visible: true, special: true },
+  { id: "markup", name: "Markup", order: 3, visible: true, special: false },
+];
+
+// --- Element types ---
+
 export type ElementType =
   | "booth"
   | "session_area"
@@ -10,6 +32,19 @@ export type ElementType =
   | "label"
   | "icon"
   | "shape";
+
+/** Default layer assignment per element type. Elements can be moved to other non-special layers. */
+export const ELEMENT_TYPE_TO_LAYER: Record<ElementType, LayerId> = {
+  booth: "content",
+  session_area: "content",
+  meeting_room: "content",
+  stage: "content",
+  walkway: "pathing",
+  wall: "pathing",
+  label: "markup",
+  icon: "markup",
+  shape: "markup",
+};
 
 export type ShapeType = "rect" | "polygon" | "circle" | "ellipse";
 
@@ -92,6 +127,7 @@ export interface ElementProperties {
 export interface FloorPlanElement {
   id: string;
   type: ElementType;
+  layer?: LayerId;
   geometry: Geometry;
   properties: ElementProperties;
 }
@@ -135,5 +171,6 @@ export interface FloorPlanData {
   elements: FloorPlanElement[];
   legend: Legend;
   backgroundImage?: BackgroundImage;
+  backgroundColor?: string;
   metadata: FloorPlanMetadata;
 }

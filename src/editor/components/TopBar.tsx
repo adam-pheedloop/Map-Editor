@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PiMapTrifold, PiBug, PiImage, PiQuestion } from "react-icons/pi";
+import { PiMapTrifold, PiBug, PiQuestion } from "react-icons/pi";
 import { DropdownMenu } from "./ui";
 import type { MenuEntry } from "./ui";
 
@@ -10,7 +10,6 @@ interface TopBarProps {
   debug?: boolean;
   onDebugClick?: () => void;
   onHelpClick?: () => void;
-  onBackgroundImageClick?: () => void;
   fileMenuItems?: MenuEntry[];
   editMenuItems?: MenuEntry[];
   toolsMenuItems?: MenuEntry[];
@@ -20,7 +19,6 @@ export function TopBar({
   debug,
   onDebugClick,
   onHelpClick,
-  onBackgroundImageClick,
   fileMenuItems = [],
   editMenuItems = [],
   toolsMenuItems = [],
@@ -100,13 +98,6 @@ export function TopBar({
           />
         )}
       </div>
-      <button
-        onClick={onBackgroundImageClick}
-        className="flex items-center gap-1 px-3 h-10 text-sm text-gray-400 hover:text-gray-600 cursor-pointer transition-colors"
-      >
-        <PiImage size={16} />
-        <span>Background</span>
-      </button>
       <div className="flex-1" />
       <button
         onClick={onHelpClick}

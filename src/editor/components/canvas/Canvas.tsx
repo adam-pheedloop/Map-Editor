@@ -1,7 +1,8 @@
 import { useCallback, useState, useRef, useEffect } from "react";
 import { Stage, Layer, Rect } from "react-konva";
 import type Konva from "konva";
-import type { FloorPlanData, LineGeometry } from "../../../types";
+import type { FloorPlanData, LineGeometry, LayerDefinition, LayerId } from "../../../types";
+import { ELEMENT_TYPE_TO_LAYER } from "../../../types";
 import type { ActiveTool } from "../../types";
 import { isEmptySpaceClick, getCanvasPoint } from "../../utils/canvas";
 import { useDrawingTool } from "../../hooks/useDrawingTool";
@@ -54,6 +55,8 @@ interface CanvasProps {
     gridOpacity: number;
   };
   snapToObjects: boolean;
+  layers: LayerDefinition[];
+  activeLayerId: LayerId;
 }
 
 export function Canvas({
@@ -79,6 +82,8 @@ export function Canvas({
   onClickPlace,
   gridSettings,
   snapToObjects,
+  layers,
+  activeLayerId,
 }: CanvasProps) {
   const isSelectMode = activeTool === "select";
   const isDrawing = !isSelectMode;
@@ -138,6 +143,24 @@ export function Canvas({
   const sortedElements = [...data.elements].sort(
     (a, b) => (a.properties.zIndex ?? 0) - (b.properties.zIndex ?? 0)
   );
+
+  // Build a visibility lookup from layers prop
+  const layerVisibility = new Map(layers.map((l) => [l.id, l.visible]));
+
+  // Group sorted elements by layer
+  const elementsByLayer = new Map<LayerId, typeof sortedElements>();
+  for (const el of sortedElements) {
+    const lid = el.layer ?? ELEMENT_TYPE_TO_LAYER[el.type];
+    const group = elementsByLayer.get(lid);
+    if (group) {
+      group.push(el);
+    } else {
+      elementsByLayer.set(lid, [el]);
+    }
+  }
+
+  // Ordered layer IDs for rendering (excluding background — handled separately)
+  const elementLayerOrder: LayerId[] = ["content", "pathing", "markup"];
 
   const selectedElement = selectedIds.size === 1
     ? data.elements.find((el) => selectedIds.has(el.id))
@@ -208,6 +231,10 @@ export function Canvas({
         const rect = dragSelectRect;
         const OVERLAP_THRESHOLD = 0.9;
         const enclosed = data.elements.filter((el) => {
+          // Only select elements on the active layer
+          const elLayer = el.layer ?? ELEMENT_TYPE_TO_LAYER[el.type];
+          if (elLayer !== activeLayerId) return false;
+
           const b = getElementBounds(el);
           const elWidth = b.right - b.left;
           const elHeight = b.bottom - b.top;
@@ -392,6 +419,7 @@ export function Canvas({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
       >
+        {/* Background layer: color fill, image, grid */}
         <Layer>
           <Rect
             id="background"
@@ -399,11 +427,11 @@ export function Canvas({
             y={0}
             width={data.dimensions.width}
             height={data.dimensions.height}
-            fill="#ffffff"
+            fill={data.backgroundColor ?? "#ffffff"}
             stroke="#d1d5db"
             strokeWidth={1}
           />
-          {data.backgroundImage && (
+          {data.backgroundImage && layerVisibility.get("background") !== false && (
             <BackgroundImage config={data.backgroundImage} />
           )}
           {gridSettings.showGrid && (
@@ -417,20 +445,30 @@ export function Canvas({
           )}
         </Layer>
 
+        {/* Element layers: one Konva Layer per floor plan layer */}
+        {elementLayerOrder.map((layerId) => {
+          const isActiveLayer = layerId === activeLayerId;
+          return (
+            <Layer key={layerId} visible={layerVisibility.get(layerId) !== false} listening={isActiveLayer}>
+              {(elementsByLayer.get(layerId) ?? []).map((element) => (
+                <ElementShape
+                  key={element.id}
+                  element={element}
+                  isSelectMode={isSelectMode && isActiveLayer}
+                  isSelected={selectedIds.has(element.id)}
+                  onSelect={onSelect}
+                  onDragStart={handleElementDragStart}
+                  onDragMove={handleElementDragMove}
+                  onDragEnd={handleElementDragEnd}
+                  onContextMenu={onElementContextMenu}
+                />
+              ))}
+            </Layer>
+          );
+        })}
+
+        {/* Selection overlay: transformer, multi-select bounds, line handles */}
         <Layer>
-          {sortedElements.map((element) => (
-            <ElementShape
-              key={element.id}
-              element={element}
-              isSelectMode={isSelectMode}
-              isSelected={selectedIds.has(element.id)}
-              onSelect={onSelect}
-              onDragStart={handleElementDragStart}
-              onDragMove={handleElementDragMove}
-              onDragEnd={handleElementDragEnd}
-              onContextMenu={onElementContextMenu}
-            />
-          ))}
           <SelectionTransformer
             selectedIds={selectedIds}
             stageRef={stageRef}
@@ -452,6 +490,7 @@ export function Canvas({
           )}
         </Layer>
 
+        {/* Drawing overlay: preview, guides, drag-select rect */}
         <Layer>
           <DrawingPreview
             rectPreview={shapeDrawing.preview}

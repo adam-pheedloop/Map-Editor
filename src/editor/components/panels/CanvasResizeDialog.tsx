@@ -61,26 +61,8 @@ export function CanvasResizeDialog({
         <div className="flex flex-col gap-1.5">
           <SectionLabel>Elements</SectionLabel>
           <div className="flex gap-2">
-            <button
-              onClick={() => setMode("preserve")}
-              className={`flex-1 px-2 py-1.5 text-xs border rounded cursor-pointer transition-colors ${
-                mode === "preserve"
-                  ? "bg-gray-700 text-white border-gray-700"
-                  : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-              }`}
-            >
-              Keep positions
-            </button>
-            <button
-              onClick={() => setMode("scale")}
-              className={`flex-1 px-2 py-1.5 text-xs border rounded cursor-pointer transition-colors ${
-                mode === "scale"
-                  ? "bg-gray-700 text-white border-gray-700"
-                  : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-              }`}
-            >
-              Scale to fit
-            </button>
+            <Button variant="outline" color="neutral" active={mode === "preserve"} className="flex-1" onClick={() => setMode("preserve")}>Keep positions</Button>
+            <Button variant="outline" color="neutral" active={mode === "scale"} className="flex-1" onClick={() => setMode("scale")}>Scale to fit</Button>
           </div>
         </div>
 

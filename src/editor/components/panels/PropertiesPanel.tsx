@@ -178,26 +178,8 @@ export function PropertiesPanel({
         </span>
         {debug && (
           <div className="flex text-[10px]">
-            <button
-              onClick={() => setTab("properties")}
-              className={`px-1.5 py-0.5 rounded-l border cursor-pointer ${
-                tab === "properties"
-                  ? "bg-gray-700 text-white border-gray-700"
-                  : "bg-white text-gray-500 border-gray-200"
-              }`}
-            >
-              Props
-            </button>
-            <button
-              onClick={() => setTab("debug")}
-              className={`px-1.5 py-0.5 rounded-r border border-l-0 cursor-pointer ${
-                tab === "debug"
-                  ? "bg-gray-700 text-white border-gray-700"
-                  : "bg-white text-gray-500 border-gray-200"
-              }`}
-            >
-              Debug
-            </button>
+            <Button variant="outline" color="neutral" active={tab === "properties"} className="px-1.5 py-0.5 rounded-r-none" onClick={() => setTab("properties")}>Props</Button>
+            <Button variant="outline" color="neutral" active={tab === "debug"} className="px-1.5 py-0.5 rounded-l-none border-l-0" onClick={() => setTab("debug")}>Debug</Button>
           </div>
         )}
       </div>
@@ -255,52 +237,13 @@ export function PropertiesPanel({
             <SectionLabel>Style</SectionLabel>
             <div className="flex gap-1">
               {fields.has("fontWeight") && (
-                <button
-                  onClick={() =>
-                    onUpdateProperties(element.id, {
-                      fontWeight: element.properties.fontWeight === "bold" ? "normal" : "bold",
-                    })
-                  }
-                  className={`w-8 h-8 text-xs font-bold border rounded cursor-pointer transition-colors ${
-                    element.properties.fontWeight === "bold"
-                      ? "bg-gray-700 text-white border-gray-700"
-                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-                  }`}
-                >
-                  B
-                </button>
+                <Button variant="outline" color="neutral" active={element.properties.fontWeight === "bold"} className="w-8 h-8 p-0 font-bold" onClick={() => onUpdateProperties(element.id, { fontWeight: element.properties.fontWeight === "bold" ? "normal" : "bold" })}>B</Button>
               )}
               {fields.has("fontStyle") && (
-                <button
-                  onClick={() =>
-                    onUpdateProperties(element.id, {
-                      fontStyle: element.properties.fontStyle === "italic" ? "normal" : "italic",
-                    })
-                  }
-                  className={`w-8 h-8 text-xs italic border rounded cursor-pointer transition-colors ${
-                    element.properties.fontStyle === "italic"
-                      ? "bg-gray-700 text-white border-gray-700"
-                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-                  }`}
-                >
-                  I
-                </button>
+                <Button variant="outline" color="neutral" active={element.properties.fontStyle === "italic"} className="w-8 h-8 p-0 italic" onClick={() => onUpdateProperties(element.id, { fontStyle: element.properties.fontStyle === "italic" ? "normal" : "italic" })}>I</Button>
               )}
               {fields.has("textDecoration") && (
-                <button
-                  onClick={() =>
-                    onUpdateProperties(element.id, {
-                      textDecoration: element.properties.textDecoration === "underline" ? "none" : "underline",
-                    })
-                  }
-                  className={`w-8 h-8 text-xs underline border rounded cursor-pointer transition-colors ${
-                    element.properties.textDecoration === "underline"
-                      ? "bg-gray-700 text-white border-gray-700"
-                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-                  }`}
-                >
-                  U
-                </button>
+                <Button variant="outline" color="neutral" active={element.properties.textDecoration === "underline"} className="w-8 h-8 p-0 underline" onClick={() => onUpdateProperties(element.id, { textDecoration: element.properties.textDecoration === "underline" ? "none" : "underline" })}>U</Button>
               )}
             </div>
           </div>
@@ -309,19 +252,20 @@ export function PropertiesPanel({
         {fields.has("textAlign") && (
           <div className="flex flex-col gap-1.5">
             <SectionLabel>Alignment</SectionLabel>
-            <div className="flex text-xs">
+            <div className="flex">
               {(["left", "center", "right"] as const).map((align) => (
-                <button
+                <Button
                   key={align}
+                  variant="outline"
+                  color="neutral"
+                  active={(element.properties.textAlign ?? "left") === align}
+                  className={`flex-1 py-1 capitalize ${
+                    align === "left" ? "rounded-r-none" : align === "right" ? "rounded-l-none" : "rounded-none border-l-0 border-r-0"
+                  }`}
                   onClick={() => onUpdateProperties(element.id, { textAlign: align })}
-                  className={`flex-1 py-1 border cursor-pointer transition-colors capitalize ${
-                    (element.properties.textAlign ?? "left") === align
-                      ? "bg-gray-700 text-white border-gray-700"
-                      : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-                  } ${align === "left" ? "rounded-l" : align === "right" ? "rounded-r" : "border-l-0 border-r-0"}`}
                 >
                   {align}
-                </button>
+                </Button>
               ))}
             </div>
           </div>

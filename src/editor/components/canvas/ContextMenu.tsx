@@ -1,4 +1,5 @@
 import { useEffect, useRef } from "react";
+import { Button } from "../ui";
 
 export interface ContextMenuAction {
   label: string;
@@ -46,20 +47,18 @@ export function ContextMenu({ x, y, items, onClose }: ContextMenuProps) {
         isDivider(item) ? (
           <div key={`divider-${i}`} className="my-1 border-t border-gray-100" />
         ) : (
-          <button
+          <Button
             key={item.label}
+            variant="ghost"
+            color={item.danger ? "negative" : "neutral"}
+            className="w-full justify-start rounded-none"
             onClick={() => {
               item.onClick();
               onClose();
             }}
-            className={`block w-full text-left px-3 py-1.5 text-xs cursor-pointer transition-colors ${
-              item.danger
-                ? "text-red-600 hover:bg-red-50"
-                : "text-gray-700 hover:bg-gray-100"
-            }`}
           >
             {item.label}
-          </button>
+          </Button>
         )
       )}
     </div>

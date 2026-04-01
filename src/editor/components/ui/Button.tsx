@@ -4,6 +4,7 @@ export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: "solid" | "outline" | "ghost";
   color?: "primary" | "neutral" | "negative" | "positive";
   size?: "sm" | "md" | "lg";
+  active?: boolean;
   children: ReactNode;
 }
 
@@ -37,10 +38,13 @@ const styles = {
   },
 };
 
+const activeStyle = "bg-gray-700 text-white border border-gray-700 hover:bg-gray-700";
+
 export function Button({
   variant = "solid",
   color = "neutral",
   size = "sm",
+  active,
   className,
   children,
   ...props
@@ -48,7 +52,7 @@ export function Button({
   return (
     <button
       type="button"
-      className={[base, sizes[size], styles[variant][color], className]
+      className={[base, sizes[size], active ? activeStyle : styles[variant][color], className]
         .filter(Boolean)
         .join(" ")}
       {...props}

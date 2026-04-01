@@ -135,15 +135,9 @@ export function BackgroundImageDialog({
               </label>
             </div>
 
-            <button
-              onClick={() => {
-                setPreview(null);
-                setImageSize(null);
-              }}
-              className="text-xs text-gray-400 hover:text-gray-600 cursor-pointer self-start"
-            >
+            <Button variant="ghost" color="neutral" className="px-0 self-start" onClick={() => { setPreview(null); setImageSize(null); }}>
               Choose different image
-            </button>
+            </Button>
           </>
         )}
       </div>

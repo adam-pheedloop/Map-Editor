@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from "react";
-import type { FloorPlanData, FloorPlanElement, ElementType, Geometry, ElementProperties, BackgroundImage, Dimensions, LayerId } from "../../types";
+import type { FloorPlanData, FloorPlanElement, ElementType, Geometry, ElementProperties, BackgroundImage, Dimensions } from "../../types";
 import { ELEMENT_TYPE_TO_LAYER } from "../../types";
 import { useHistory } from "./useHistory";
 

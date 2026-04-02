@@ -451,6 +451,55 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     [data.elements, updateElement]
   );
 
+  const handleArcDrawEnd = useCallback(
+    (x1: number, y1: number, cx: number, cy: number, x2: number, y2: number) => {
+      const id = uuidv4();
+      addElement({
+        id,
+        type: "shape",
+        geometry: {
+          shape: "arc",
+          x: x1,
+          y: y1,
+          points: [0, 0, cx - x1, cy - y1, x2 - x1, y2 - y1],
+        },
+        properties: {
+          name: "Arc",
+          color: defaults.stroke,
+          strokeWidth: defaults.strokeWidth,
+          zIndex: 1,
+        },
+      });
+      selectOne(id);
+      setActiveTool("select");
+    },
+    [addElement, defaults, selectOne]
+  );
+
+  const handleArcControlPointMove = useCallback(
+    (id: string, pointIndex: 0 | 1 | 2, x: number, y: number) => {
+      const element = data.elements.find((el) => el.id === id);
+      if (!element || element.geometry.shape !== "arc") return;
+      const geo = element.geometry;
+      const newPoints = [...geo.points] as [number, number, number, number, number, number];
+      if (pointIndex === 0) {
+        // Start point
+        newPoints[0] = x - geo.x;
+        newPoints[1] = y - geo.y;
+      } else if (pointIndex === 1) {
+        // End point
+        newPoints[4] = x - geo.x;
+        newPoints[5] = y - geo.y;
+      } else {
+        // Control point
+        newPoints[2] = x - geo.x;
+        newPoints[3] = y - geo.y;
+      }
+      updateElement(id, { points: newPoints });
+    },
+    [data.elements, updateElement]
+  );
+
   const handleElementMove = useCallback(
     (id: string, x: number, y: number) => {
       updateElement(id, { x, y });
@@ -818,6 +867,8 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   onElementMove={handleElementMove}
                   onMultiMove={handleMultiMove}
                   onEndpointMove={handleEndpointMove}
+                  onArcDrawEnd={handleArcDrawEnd}
+                  onArcControlPointMove={handleArcControlPointMove}
                   onElementResize={handleElementResize}
                   onElementContextMenu={handleElementContextMenu}
                   onClickPlace={handleClickPlace}

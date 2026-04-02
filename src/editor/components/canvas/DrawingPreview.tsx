@@ -1,11 +1,13 @@
-import { Rect, Ellipse, Line, Arrow } from "react-konva";
+import { Rect, Ellipse, Line, Arrow, Shape, Circle } from "react-konva";
 import type { DrawingRect } from "../../hooks/useDrawingTool";
 import type { LinePreview } from "../../hooks/useLineTool";
+import type { ArcToolState } from "../../hooks/useArcTool";
 import type { ActiveTool } from "../../types";
 
 interface DrawingPreviewProps {
   rectPreview: DrawingRect | null;
   linePreview: LinePreview | null;
+  arcState: ArcToolState;
   activeTool: ActiveTool;
 }
 
@@ -26,11 +28,55 @@ const linePreviewStyle = {
   lineCap: "round" as const,
 } as const;
 
+const VERTEX_RADIUS = 4;
+
 export function DrawingPreview({
   rectPreview,
   linePreview,
+  arcState,
   activeTool,
 }: DrawingPreviewProps) {
+  // Arc tool preview
+  if (activeTool === "arc" && arcState.phase !== "idle") {
+    const { pointA, pointB, controlPoint, phase } = arcState;
+    if (!pointA) return null;
+
+    if (phase === "pickEnd" && pointB) {
+      // Dashed line from A to mouse
+      return (
+        <>
+          <Line
+            points={[pointA.x, pointA.y, pointB.x, pointB.y]}
+            {...linePreviewStyle}
+          />
+          <Circle x={pointA.x} y={pointA.y} radius={VERTEX_RADIUS} fill="#475569" listening={false} />
+        </>
+      );
+    }
+
+    if (phase === "setCurvature" && pointB && controlPoint) {
+      // Dashed Bézier curve
+      return (
+        <>
+          <Shape
+            sceneFunc={(ctx, shape) => {
+              ctx.beginPath();
+              ctx.moveTo(pointA.x, pointA.y);
+              ctx.quadraticCurveTo(controlPoint.x, controlPoint.y, pointB.x, pointB.y);
+              ctx.fillStrokeShape(shape);
+            }}
+            {...linePreviewStyle}
+          />
+          <Circle x={pointA.x} y={pointA.y} radius={VERTEX_RADIUS} fill="#475569" listening={false} />
+          <Circle x={pointB.x} y={pointB.y} radius={VERTEX_RADIUS} fill="#475569" listening={false} />
+          <Circle x={controlPoint.x} y={controlPoint.y} radius={3} fill="#007bff" listening={false} />
+        </>
+      );
+    }
+
+    return null;
+  }
+
   if ((activeTool === "line" || activeTool === "arrow") && linePreview) {
     const points = [linePreview.x1, linePreview.y1, linePreview.x2, linePreview.y2];
     if (activeTool === "arrow") {

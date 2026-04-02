@@ -1,11 +1,12 @@
 import { useRef, useState, useEffect } from "react";
-import { Stage, Layer, Rect, Group, Text, Ellipse, Line, Arrow, Image as KonvaImage } from "react-konva";
+import { Stage, Layer, Rect, Group, Text, Ellipse, Line, Arrow, Shape, Image as KonvaImage } from "react-konva";
 import type {
   FloorPlanData,
   FloorPlanElement,
   RectGeometry,
   EllipseGeometry,
   LineGeometry,
+  ArcGeometry,
 } from "../../types";
 import { getIconEntry } from "../../editor/utils/iconRegistry";
 import { iconToImage } from "../../editor/utils/iconToImage";
@@ -175,6 +176,23 @@ function ViewerElement({
           lineCap="round"
         />
       )}
+      {geo.shape === "arc" && (() => {
+        const arcGeo = geo as ArcGeometry;
+        const [x1, y1, cx, cy, x2, y2] = arcGeo.points;
+        return (
+          <Shape
+            sceneFunc={(ctx, shape) => {
+              ctx.beginPath();
+              ctx.moveTo(x1, y1);
+              ctx.quadraticCurveTo(cx, cy, x2, y2);
+              ctx.fillStrokeShape(shape);
+            }}
+            stroke={color}
+            strokeWidth={strokeWidth}
+            lineCap="round"
+          />
+        );
+      })()}
       {element.type === "icon" && geo.shape === "rect" && element.properties.iconName && (
         <ViewerIcon
           iconName={element.properties.iconName}

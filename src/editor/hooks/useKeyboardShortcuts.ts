@@ -108,6 +108,9 @@ export function useKeyboardShortcuts({
         case "a":
           setActiveTool("arrow");
           break;
+        case "c":
+          setActiveTool("arc");
+          break;
         case "b":
           setActiveTool("booth");
           break;

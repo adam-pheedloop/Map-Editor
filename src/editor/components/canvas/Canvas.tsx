@@ -1,15 +1,17 @@
 import { useCallback, useState, useRef, useEffect } from "react";
 import { Stage, Layer, Rect } from "react-konva";
 import type Konva from "konva";
-import type { FloorPlanData, LineGeometry, LayerDefinition, LayerId } from "../../../types";
+import type { FloorPlanData, LineGeometry, ArcGeometry, LayerDefinition, LayerId } from "../../../types";
 import { ELEMENT_TYPE_TO_LAYER } from "../../../types";
 import type { ActiveTool } from "../../types";
 import { isEmptySpaceClick, getCanvasPoint } from "../../utils/canvas";
 import { useDrawingTool } from "../../hooks/useDrawingTool";
 import { useLineTool } from "../../hooks/useLineTool";
+import { useArcTool } from "../../hooks/useArcTool";
 import { ElementShape } from "./ElementShape";
 import { SelectionTransformer } from "./SelectionTransformer";
 import { LineEndpointHandles } from "./LineEndpointHandles";
+import { ArcControlHandle } from "./ArcControlHandle";
 import { DrawingPreview } from "./DrawingPreview";
 import { BackgroundImage } from "./BackgroundImage";
 import { AlignmentGuides } from "./AlignmentGuides";
@@ -50,6 +52,8 @@ interface CanvasProps {
     rotation: number
   ) => void;
   onEndpointMove: (id: string, pointIndex: 0 | 1, x: number, y: number) => void;
+  onArcDrawEnd: (x1: number, y1: number, cx: number, cy: number, x2: number, y2: number) => void;
+  onArcControlPointMove: (id: string, pointIndex: 0 | 1 | 2, x: number, y: number) => void;
   onElementContextMenu: (id: string, screenX: number, screenY: number) => void;
   onClickPlace: (x: number, y: number) => void;
   gridSettings: {
@@ -102,6 +106,8 @@ export function Canvas({
   onElementMove,
   onMultiMove,
   onEndpointMove,
+  onArcDrawEnd,
+  onArcControlPointMove,
   onElementResize,
   onElementContextMenu,
   onClickPlace,
@@ -132,6 +138,7 @@ export function Canvas({
   const isMeasureTool = activeTool === "measure";
   const isDrawing = !isSelectMode && !isMeasureTool;
   const isLineTool = activeTool === "line" || activeTool === "arrow";
+  const isArcTool = activeTool === "arc";
   const isTextTool = activeTool === "text";
   const isIconTool = activeTool === "icon";
   const isClickPlaceTool = isTextTool || isIconTool;
@@ -170,7 +177,7 @@ export function Canvas({
     stageRef,
     position,
     scale,
-    isDrawing && !isLineTool,
+    isDrawing && !isLineTool && !isArcTool,
     onDrawEnd
   );
 
@@ -180,6 +187,14 @@ export function Canvas({
     scale,
     isLineTool,
     onLineDrawEnd
+  );
+
+  const arcDrawing = useArcTool(
+    stageRef,
+    position,
+    scale,
+    isArcTool,
+    onArcDrawEnd
   );
 
   const { activeGuides, startDrag, endDrag, snapPosition } = useAlignmentGuides(data.elements);
@@ -210,6 +225,7 @@ export function Canvas({
     ? data.elements.find((el) => selectedIds.has(el.id))
     : undefined;
   const isSelectedLine = selectedElement?.geometry.shape === "line";
+  const isSelectedArc = selectedElement?.geometry.shape === "arc";
 
   const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
     // Space held = pan mode, let stage draggable handle it
@@ -255,12 +271,22 @@ export function Canvas({
       if (point) onClickPlace(point.x, point.y);
       return;
     }
-    if (isLineTool) {
+    if (isArcTool) {
+      arcDrawing.handleMouseDown(e);
+    } else if (isLineTool) {
       lineDrawing.handleMouseDown(e);
     } else {
       shapeDrawing.handleMouseDown(e);
     }
   };
+
+  // Arc tool escape key listener
+  useEffect(() => {
+    if (!isArcTool) return;
+    const handler = arcDrawing.handleKeyDown;
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [isArcTool, arcDrawing.handleKeyDown]);
 
   const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
     // Calibration mode: intercept before everything else
@@ -298,7 +324,9 @@ export function Canvas({
       return;
     }
 
-    if (isLineTool) {
+    if (isArcTool) {
+      arcDrawing.handleMouseMove(e);
+    } else if (isLineTool) {
       lineDrawing.handleMouseMove(e);
     } else {
       shapeDrawing.handleMouseMove(e);
@@ -608,6 +636,13 @@ export function Canvas({
               onEndpointMove={onEndpointMove}
             />
           )}
+          {isSelectedArc && selectedElement && (
+            <ArcControlHandle
+              elementId={selectedElement.id}
+              geometry={selectedElement.geometry as ArcGeometry}
+              onControlPointMove={onArcControlPointMove}
+            />
+          )}
         </Layer>
 
         {/* Drawing overlay: preview, guides, drag-select rect */}
@@ -615,6 +650,7 @@ export function Canvas({
           <DrawingPreview
             rectPreview={shapeDrawing.preview}
             linePreview={lineDrawing.preview}
+            arcState={arcDrawing.state}
             activeTool={activeTool}
           />
           <AlignmentGuides

@@ -90,12 +90,22 @@ export interface LineGeometry {
   points: [number, number, number, number]; // [x1, y1, x2, y2] relative to anchor
 }
 
+export interface ArcGeometry {
+  shape: "arc";
+  x: number;
+  y: number;
+  points: [number, number, number, number, number, number];
+  // [x1, y1, cx, cy, x2, y2] relative to anchor
+  // x1,y1 = start, cx,cy = control point, x2,y2 = end
+}
+
 export type Geometry =
   | RectGeometry
   | PolygonGeometry
   | CircleGeometry
   | EllipseGeometry
-  | LineGeometry;
+  | LineGeometry
+  | ArcGeometry;
 
 export interface ElementProperties {
   name?: string;

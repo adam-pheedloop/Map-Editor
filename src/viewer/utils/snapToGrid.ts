@@ -30,6 +30,11 @@ export function getElementCenter(geometry: Geometry): { x: number; y: number } {
         x: geometry.x + (geometry.points[0] + geometry.points[2]) / 2,
         y: geometry.y + (geometry.points[1] + geometry.points[3]) / 2,
       };
+    case "arc":
+      return {
+        x: geometry.x + (geometry.points[0] + geometry.points[4]) / 2,
+        y: geometry.y + (geometry.points[1] + geometry.points[5]) / 2,
+      };
   }
 }
 

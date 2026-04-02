@@ -50,6 +50,29 @@ export function getElementBounds(element: FloorPlanElement): ElementBounds {
     };
   }
 
+  if (geo.shape === "arc") {
+    const [x1, y1, cx, cy, x2, y2] = geo.points;
+    const absX1 = geo.x + x1;
+    const absY1 = geo.y + y1;
+    const absCx = geo.x + cx;
+    const absCy = geo.y + cy;
+    const absX2 = geo.x + x2;
+    const absY2 = geo.y + y2;
+    // Bounding box of the three control points covers the curve
+    const left = Math.min(absX1, absCx, absX2);
+    const right = Math.max(absX1, absCx, absX2);
+    const top = Math.min(absY1, absCy, absY2);
+    const bottom = Math.max(absY1, absCy, absY2);
+    return {
+      left,
+      right,
+      top,
+      bottom,
+      centerX: (left + right) / 2,
+      centerY: (top + bottom) / 2,
+    };
+  }
+
   // Fallback
   const x = "x" in geo ? geo.x : 0;
   const y = "y" in geo ? geo.y : 0;

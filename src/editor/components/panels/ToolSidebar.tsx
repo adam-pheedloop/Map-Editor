@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { PiCursorFill, PiRectangle, PiCircle, PiLineSegment, PiArrowUpRight, PiStorefront, PiTextT, PiSticker, PiRuler, PiPaintBrush, PiEraser, PiSquare } from "react-icons/pi";
+import { PiCursorFill, PiRectangle, PiCircle, PiLineSegment, PiArrowUpRight, PiBezierCurve, PiStorefront, PiTextT, PiSticker, PiRuler, PiPaintBrush, PiEraser, PiSquare } from "react-icons/pi";
 import type { ActiveTool, PathingTool } from "../../types";
 import { IconButton } from "../ui";
 import { IconPicker } from "./IconPicker";
@@ -18,6 +18,7 @@ const tools: ToolDef<ActiveTool>[] = [
   { id: "ellipse", label: "Ellipse", shortcut: "O", icon: <PiCircle size={20} /> },
   { id: "line", label: "Line", shortcut: "L", icon: <PiLineSegment size={20} /> },
   { id: "arrow", label: "Arrow", shortcut: "A", icon: <PiArrowUpRight size={20} /> },
+  { id: "arc", label: "Arc", shortcut: "C", icon: <PiBezierCurve size={20} /> },
   { id: "booth", label: "Booth", shortcut: "B", icon: <PiStorefront size={20} /> },
   { id: "text", label: "Text", shortcut: "T", icon: <PiTextT size={20} /> },
   { id: "icon", label: "Icon", shortcut: "I", icon: <PiSticker size={20} /> },

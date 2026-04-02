@@ -866,6 +866,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
             <PropertiesPanel
               element={selectedElement}
               selectedCount={selectedIds.size}
+              dimensions={data.dimensions}
               backgroundImage={data.backgroundImage}
               backgroundColor={data.backgroundColor}
               activeLayerId={activeLayerId}
@@ -920,6 +921,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
         <CanvasResizeDialog
           width={data.dimensions.width}
           height={data.dimensions.height}
+          dimensions={data.dimensions}
           elements={data.elements}
           onConfirm={handleCanvasResize}
           onClose={() => setShowResizeDialog(false)}

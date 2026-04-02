@@ -1,12 +1,16 @@
 import { useState, useRef } from "react";
-import { PiMagnifyingGlass, PiX, PiArrowsDownUp } from "react-icons/pi";
+import { PiMagnifyingGlass, PiX, PiArrowsDownUp, PiFootprints } from "react-icons/pi";
 import type { SearchResult } from "../hooks/useSearch";
 import type { DirectionsLocation, RouteStatus } from "../hooks/useDirections";
+import type { Dimensions } from "../../types";
+import { formatRouteDistance, pathDistance, pxToReal, estimateWalkingTime, formatWalkingTime } from "../../utils/unitConversion";
 
 interface DirectionsPanelProps {
   startLocation: DirectionsLocation | null;
   endLocation: DirectionsLocation | null;
   routeStatus: RouteStatus;
+  routePath: { x: number; y: number }[] | null;
+  dimensions: Dimensions;
   onSearch: (query: string) => SearchResult[];
   onSelectStart: (result: SearchResult) => void;
   onSelectEnd: (result: SearchResult) => void;
@@ -113,6 +117,8 @@ export function DirectionsPanel({
   startLocation,
   endLocation,
   routeStatus,
+  routePath,
+  dimensions,
   onSearch,
   onSelectStart,
   onSelectEnd,
@@ -168,6 +174,18 @@ export function DirectionsPanel({
       {routeStatus === "same-location" && (
         <div className="text-xs text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
           You&apos;re already there!
+        </div>
+      )}
+      {routeStatus === "ready" && routePath && routePath.length > 1 && (
+        <div className="flex items-center gap-2 text-xs text-gray-600 bg-gray-50 rounded-lg px-3 py-2">
+          <PiFootprints size={14} className="text-gray-400 shrink-0" />
+          <span>{formatRouteDistance(routePath, dimensions)}</span>
+          {(() => {
+            const pxDist = pathDistance(routePath);
+            const realDist = pxToReal(pxDist, dimensions.pixelsPerUnit);
+            const est = estimateWalkingTime(realDist, dimensions.unit);
+            return est ? <span className="text-gray-400">&middot; {formatWalkingTime(est)}</span> : null;
+          })()}
         </div>
       )}
     </div>

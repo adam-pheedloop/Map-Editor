@@ -150,7 +150,7 @@ export function PropertiesPanel({
   }
 
   const geo = element.geometry;
-  const config = getShapeConfig(geo.shape, element.type);
+  const config = getShapeConfig(geo.shape, element.type, element.properties);
   const fields = new Set<PropertiesPanelField>(config.propertiesPanel);
   const dims = getDimensions(element);
   const canConvertToBooth = element.type === "shape" && geo.shape === "rect";
@@ -177,7 +177,7 @@ export function PropertiesPanel({
     <div className="w-60 shrink-0 border-l border-gray-200 bg-white flex flex-col">
       <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200">
         <span className="text-xs font-medium text-gray-600 capitalize">
-          {element.type === "shape" ? geo.shape : element.type}
+          {element.type === "shape" ? (element.properties.arrowHead ? "arrow" : geo.shape) : element.type}
         </span>
         {debug && (
           <TabBar
@@ -319,6 +319,44 @@ export function PropertiesPanel({
             <div className="px-2 py-1 text-xs text-gray-600 bg-gray-50 rounded border border-gray-200">
               {formatMeasurement(dims.length, dimensions)}
             </div>
+          </div>
+        )}
+
+        {fields.has("arrowHeadStyle") && element.properties.arrowHead && (
+          <div className="flex flex-col gap-1.5">
+            <SectionLabel>Arrow Style</SectionLabel>
+            <div className="flex">
+              {(["triangle", "chevron"] as const).map((style) => (
+                <Button
+                  key={style}
+                  variant="outline"
+                  color="neutral"
+                  active={element.properties.arrowHead?.style === style}
+                  className={`flex-1 py-1 capitalize ${
+                    style === "triangle" ? "rounded-r-none" : "rounded-l-none"
+                  }`}
+                  onClick={() => onUpdateProperties(element.id, {
+                    arrowHead: { ...element.properties.arrowHead!, style },
+                  })}
+                >
+                  {style}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {fields.has("arrowHeadSize") && element.properties.arrowHead && (
+          <div className="flex flex-col gap-1.5">
+            <SectionLabel>Arrow Size</SectionLabel>
+            <FieldRow label="px">
+              <NumberInput
+                value={element.properties.arrowHead.size}
+                onChange={(v) => onUpdateProperties(element.id, {
+                  arrowHead: { ...element.properties.arrowHead!, size: Math.max(4, v) },
+                })}
+              />
+            </FieldRow>
           </div>
         )}
 

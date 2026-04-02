@@ -113,14 +113,17 @@
     {
       "id": 9,
       "title": "New Drawing Tools, Labels & Opacity",
-      "summary": "Arrow and arc tools, full label customization (color, position, font, hide/show), and per-element opacity.",
+      "summary": "Arrow, arc, and freeform polygon drawing tools, label customization with 9-point positioning, bulk label edit for multi-select, and per-element opacity. ~26 story points across 8 steps.",
       "status": "planned",
       "tasks": [
-        "Arrow tool",
-        "Arc / curve tool",
-        "Label color, font & position controls",
-        "Show / hide label per element",
-        "Per-element opacity slider"
+        "Arrow tool (extends line pattern, Konva Arrow component, shortcut A)",
+        "Arc geometry type + Bézier rendering (Konva Line with bezier: true)",
+        "Arc drawing tool (click-click-drag UX) + control point editing",
+        "Freeform polygon tool (multi-click vertex placement, snap-to-close, shortcut P)",
+        "Label schema + per-element customization (position, color, font, background, visibility with editor ghost indicator)",
+        "Bulk label edit for multi-select (batch update as single undo entry)",
+        "Per-element opacity slider (0-100%, single and multi-select)",
+        "Shape configs + integration cleanup (shortcuts, copy/paste, flip arrow direction)"
       ]
     },
     {

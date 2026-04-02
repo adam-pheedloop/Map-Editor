@@ -122,6 +122,8 @@ export interface ElementProperties {
   textAlign?: "left" | "center" | "right";
   // Icon-specific
   iconName?: string;
+  // Arrow-specific
+  arrowHead?: { style: "triangle" | "chevron"; size: number };
 }
 
 export interface FloorPlanElement {

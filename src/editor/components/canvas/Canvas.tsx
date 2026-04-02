@@ -22,7 +22,7 @@ import { MeasurePreview } from "./MeasurePreview";
 import type { CalibrationState } from "../../hooks/useCalibration";
 import type { MeasureState } from "../../hooks/useMeasureTool";
 import { useAlignmentGuides } from "../../hooks/useAlignmentGuides";
-import { getElementBounds } from "../../utils/bounds";
+import { getElementBounds, lineIntersectsRect } from "../../utils/bounds";
 
 interface CanvasProps {
   data: FloorPlanData;
@@ -131,7 +131,7 @@ export function Canvas({
   const isSelectMode = activeTool === "select";
   const isMeasureTool = activeTool === "measure";
   const isDrawing = !isSelectMode && !isMeasureTool;
-  const isLineTool = activeTool === "line";
+  const isLineTool = activeTool === "line" || activeTool === "arrow";
   const isTextTool = activeTool === "text";
   const isIconTool = activeTool === "icon";
   const isClickPlaceTool = isTextTool || isIconTool;
@@ -329,6 +329,17 @@ export function Canvas({
           if (elLayer !== activeLayerId) return false;
 
           const b = getElementBounds(el);
+
+          // Lines have zero-area bounding boxes — use segment-rect intersection
+          if (el.geometry.shape === "line") {
+            const geo = el.geometry;
+            const [x1, y1, x2, y2] = geo.points;
+            return lineIntersectsRect(
+              geo.x + x1, geo.y + y1, geo.x + x2, geo.y + y2,
+              rect.x, rect.y, rect.width, rect.height
+            );
+          }
+
           const elWidth = b.right - b.left;
           const elHeight = b.bottom - b.top;
           if (elWidth <= 0 || elHeight <= 0) return false;
@@ -420,13 +431,19 @@ export function Canvas({
             geometry: { ...geo, x, y } as typeof geo,
           });
 
+          // Offset between anchor position and bounds edges
+          // For rects: anchor is top-left so offset is 0.
+          // For lines: anchor is midpoint so offset is non-zero.
+          const anchorOffsetX = x - proposedBounds.left;
+          const anchorOffsetY = y - proposedBounds.top;
+
           const snapped = snapPosition(id, proposedBounds);
           if (snapped.x !== proposedBounds.left) {
-            finalX = snapped.x;
+            finalX = snapped.x + anchorOffsetX;
             guidesSnappedX = true;
           }
           if (snapped.y !== proposedBounds.top) {
-            finalY = snapped.y;
+            finalY = snapped.y + anchorOffsetY;
             guidesSnappedY = true;
           }
         }

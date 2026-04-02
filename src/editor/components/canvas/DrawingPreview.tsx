@@ -1,4 +1,4 @@
-import { Rect, Ellipse, Line } from "react-konva";
+import { Rect, Ellipse, Line, Arrow } from "react-konva";
 import type { DrawingRect } from "../../hooks/useDrawingTool";
 import type { LinePreview } from "../../hooks/useLineTool";
 import type { ActiveTool } from "../../types";
@@ -31,18 +31,20 @@ export function DrawingPreview({
   linePreview,
   activeTool,
 }: DrawingPreviewProps) {
-  if (activeTool === "line" && linePreview) {
-    return (
-      <Line
-        points={[
-          linePreview.x1,
-          linePreview.y1,
-          linePreview.x2,
-          linePreview.y2,
-        ]}
-        {...linePreviewStyle}
-      />
-    );
+  if ((activeTool === "line" || activeTool === "arrow") && linePreview) {
+    const points = [linePreview.x1, linePreview.y1, linePreview.x2, linePreview.y2];
+    if (activeTool === "arrow") {
+      return (
+        <Arrow
+          points={points}
+          pointerLength={12}
+          pointerWidth={10}
+          fill="#475569"
+          {...linePreviewStyle}
+        />
+      );
+    }
+    return <Line points={points} {...linePreviewStyle} />;
   }
 
   if (!rectPreview) return null;

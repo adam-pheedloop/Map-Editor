@@ -1,5 +1,5 @@
 import { useRef, useState, useEffect } from "react";
-import { Stage, Layer, Rect, Group, Text, Ellipse, Line, Image as KonvaImage } from "react-konva";
+import { Stage, Layer, Rect, Group, Text, Ellipse, Line, Arrow, Image as KonvaImage } from "react-konva";
 import type {
   FloorPlanData,
   FloorPlanElement,
@@ -156,11 +156,22 @@ function ViewerElement({
           )}
         </>
       )}
-      {geo.shape === "line" && (
+      {geo.shape === "line" && !element.properties.arrowHead && (
         <Line
           points={[...(geo as LineGeometry).points]}
           stroke={color}
           strokeWidth={strokeWidth}
+          lineCap="round"
+        />
+      )}
+      {geo.shape === "line" && element.properties.arrowHead && (
+        <Arrow
+          points={[...(geo as LineGeometry).points]}
+          stroke={color}
+          strokeWidth={strokeWidth}
+          pointerLength={element.properties.arrowHead.size}
+          pointerWidth={element.properties.arrowHead.size * 0.8}
+          fill={element.properties.arrowHead.style === "triangle" ? color : ""}
           lineCap="round"
         />
       )}

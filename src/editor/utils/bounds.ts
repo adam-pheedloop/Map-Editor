@@ -55,3 +55,57 @@ export function getElementBounds(element: FloorPlanElement): ElementBounds {
   const y = "y" in geo ? geo.y : 0;
   return { left: x, right: x, top: y, bottom: y, centerX: x, centerY: y };
 }
+
+/** Check if a line segment intersects an axis-aligned rectangle. */
+export function lineIntersectsRect(
+  x1: number, y1: number, x2: number, y2: number,
+  rx: number, ry: number, rw: number, rh: number
+): boolean {
+  // If either endpoint is inside the rect, it intersects
+  if (x1 >= rx && x1 <= rx + rw && y1 >= ry && y1 <= ry + rh) return true;
+  if (x2 >= rx && x2 <= rx + rw && y2 >= ry && y2 <= ry + rh) return true;
+
+  // Check if line segment intersects any of the 4 rect edges
+  const edges: [number, number, number, number][] = [
+    [rx, ry, rx + rw, ry],           // top
+    [rx, ry + rh, rx + rw, ry + rh], // bottom
+    [rx, ry, rx, ry + rh],           // left
+    [rx + rw, ry, rx + rw, ry + rh], // right
+  ];
+
+  for (const [ex1, ey1, ex2, ey2] of edges) {
+    if (segmentsIntersect(x1, y1, x2, y2, ex1, ey1, ex2, ey2)) return true;
+  }
+  return false;
+}
+
+function segmentsIntersect(
+  ax1: number, ay1: number, ax2: number, ay2: number,
+  bx1: number, by1: number, bx2: number, by2: number
+): boolean {
+  const d1 = cross(bx1, by1, bx2, by2, ax1, ay1);
+  const d2 = cross(bx1, by1, bx2, by2, ax2, ay2);
+  const d3 = cross(ax1, ay1, ax2, ay2, bx1, by1);
+  const d4 = cross(ax1, ay1, ax2, ay2, bx2, by2);
+
+  if (((d1 > 0 && d2 < 0) || (d1 < 0 && d2 > 0)) &&
+      ((d3 > 0 && d4 < 0) || (d3 < 0 && d4 > 0))) {
+    return true;
+  }
+
+  if (d1 === 0 && onSegment(bx1, by1, bx2, by2, ax1, ay1)) return true;
+  if (d2 === 0 && onSegment(bx1, by1, bx2, by2, ax2, ay2)) return true;
+  if (d3 === 0 && onSegment(ax1, ay1, ax2, ay2, bx1, by1)) return true;
+  if (d4 === 0 && onSegment(ax1, ay1, ax2, ay2, bx2, by2)) return true;
+
+  return false;
+}
+
+function cross(ox: number, oy: number, ax: number, ay: number, bx: number, by: number): number {
+  return (ax - ox) * (by - oy) - (ay - oy) * (bx - ox);
+}
+
+function onSegment(px: number, py: number, qx: number, qy: number, rx: number, ry: number): boolean {
+  return rx >= Math.min(px, qx) && rx <= Math.max(px, qx) &&
+         ry >= Math.min(py, qy) && ry <= Math.max(py, qy);
+}

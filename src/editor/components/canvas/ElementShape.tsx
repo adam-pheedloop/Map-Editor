@@ -3,6 +3,7 @@ import type { FloorPlanElement } from "../../../types";
 import { RectShape } from "./elements/RectShape";
 import { EllipseShape } from "./elements/EllipseShape";
 import { LineShape } from "./elements/LineShape";
+import { ArrowShape } from "./elements/ArrowShape";
 import { BoothShape } from "./elements/BoothShape";
 import { TextShape } from "./elements/TextShape";
 import { IconShape } from "./elements/IconShape";
@@ -102,8 +103,16 @@ export function ElementShape({
       {geo.shape === "ellipse" && (
         <EllipseShape geo={geo} color={color} strokeColor={strokeColor} strokeWidth={strokeWidth} label={label} />
       )}
-      {geo.shape === "line" && (
+      {geo.shape === "line" && !element.properties.arrowHead && (
         <LineShape geo={geo} color={color} strokeWidth={strokeWidth} />
+      )}
+      {geo.shape === "line" && element.properties.arrowHead && (
+        <ArrowShape
+          geo={geo}
+          color={color}
+          strokeWidth={strokeWidth}
+          arrowHead={element.properties.arrowHead}
+        />
       )}
     </Group>
   );

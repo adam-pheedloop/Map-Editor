@@ -377,16 +377,19 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           points: [x1 - anchorX, y1 - anchorY, x2 - anchorX, y2 - anchorY],
         },
         properties: {
-          name: "Line",
+          name: activeTool === "arrow" ? "Arrow" : "Line",
           color: defaults.stroke,
           strokeWidth: defaults.strokeWidth,
           zIndex: 1,
+          ...(activeTool === "arrow" && {
+            arrowHead: { style: "triangle" as const, size: 12 },
+          }),
         },
       });
       selectOne(id);
       setActiveTool("select");
     },
-    [addElement, defaults, selectOne]
+    [activeTool, addElement, defaults, selectOne]
   );
 
   const handleClickPlace = useCallback(
@@ -526,7 +529,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     const element = data.elements.find((el) => el.id === contextMenu.elementId);
     if (!element) return [];
 
-    const config = getShapeConfig(element.geometry.shape, element.type);
+    const config = getShapeConfig(element.geometry.shape, element.type, element.properties);
     const items: ContextMenuItem[] = [];
 
     // Z-ordering actions
@@ -787,8 +790,9 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
               defaults={activeDefaults}
               config={getShapeConfig(
                 selectedElement?.geometry.shape
-                  ?? (activeTool === "line" ? "line" : activeTool === "ellipse" ? "ellipse" : "rect"),
-                selectedElement?.type ?? (activeTool === "booth" ? "booth" : activeTool === "text" ? "label" : activeTool === "icon" ? "icon" : undefined)
+                  ?? (activeTool === "line" || activeTool === "arrow" ? "line" : activeTool === "ellipse" ? "ellipse" : "rect"),
+                selectedElement?.type ?? (activeTool === "booth" ? "booth" : activeTool === "text" ? "label" : activeTool === "icon" ? "icon" : undefined),
+                selectedElement?.properties
               )}
               onDefaultsChange={handleDefaultsChange}
             />

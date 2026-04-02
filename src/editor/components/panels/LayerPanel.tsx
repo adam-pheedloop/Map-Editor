@@ -8,6 +8,7 @@ interface LayerPanelProps {
   activeLayerId: LayerId;
   onSetActiveLayer: (id: LayerId) => void;
   onToggleVisibility: (id: LayerId) => void;
+  topOffset?: number;
 }
 
 const LAYER_COLORS: Record<LayerId, string> = {
@@ -22,6 +23,7 @@ export function LayerPanel({
   activeLayerId,
   onSetActiveLayer,
   onToggleVisibility,
+  topOffset = 8,
 }: LayerPanelProps) {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -48,7 +50,7 @@ export function LayerPanel({
   const activeLayer = layers.find((l) => l.id === activeLayerId);
 
   return (
-    <div ref={panelRef} className="absolute top-2 right-2 z-[9001]">
+    <div ref={panelRef} className="absolute right-2 z-[9001]" style={{ top: topOffset }}>
       <div className="flex items-center gap-1.5">
         {activeLayer && (
           <div className="flex items-center gap-1.5 px-2 py-1 bg-white border border-gray-200 rounded-lg shadow-md text-xs text-gray-600">

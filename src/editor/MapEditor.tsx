@@ -25,6 +25,7 @@ import { HelpDialog } from "./components/panels/HelpDialog";
 import { CanvasResizeDialog } from "./components/panels/CanvasResizeDialog";
 import { CalibrationDialog } from "./components/panels/CalibrationDialog";
 import { LayerPanel } from "./components/panels/LayerPanel";
+import { Rulers } from "./components/Rulers";
 import type { FloorPlanData, LayerId, LayerDefinition } from "../types";
 import { DEFAULT_LAYERS, ELEMENT_TYPE_TO_LAYER } from "../types";
 
@@ -63,6 +64,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     setWalkableGridResolution,
     setWalkableGrid,
     setCalibration,
+    setDisplayUnit,
     undo,
     redo,
     canUndo,
@@ -784,7 +786,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           )}
           <div className="flex flex-1 overflow-hidden">
             <div className="flex flex-col flex-1 min-w-0">
-              <div className="relative flex-1 flex flex-col min-h-0">
+              <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden">
                 <Canvas
                   data={data}
                   activeTool={activeTool}
@@ -825,14 +827,28 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   onCalibrationClick={calibration.handleMouseDown}
                   onCalibrationMouseMove={calibration.handleMouseMove}
                 />
+                <Rulers
+                  visible={showRulers}
+                  scale={scale}
+                  position={position}
+                  stageSize={stageSize}
+                  dimensions={data.dimensions}
+                />
                 <LayerPanel
                   layers={layers}
                   activeLayerId={activeLayerId}
                   onSetActiveLayer={setActiveLayerId}
                   onToggleVisibility={toggleLayerVisibility}
+                  topOffset={showRulers ? 26 : 8}
                 />
               </div>
-              <StatusBar scale={scale} onZoomReset={zoomReset} />
+              <StatusBar
+                scale={scale}
+                onZoomReset={zoomReset}
+                unit={data.dimensions.unit}
+                isCalibrated={data.dimensions.unit !== "px" && data.dimensions.pixelsPerUnit > 0}
+                onUnitChange={setDisplayUnit}
+              />
             </div>
             <PropertiesPanel
               element={selectedElement}

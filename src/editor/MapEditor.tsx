@@ -8,6 +8,7 @@ import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useClipboard } from "./hooks/useClipboard";
 import { usePathingTool } from "./hooks/usePathingTool";
 import { useCalibration } from "./hooks/useCalibration";
+import { useMeasureTool } from "./hooks/useMeasureTool";
 import { Canvas } from "./components/canvas/Canvas";
 import { ToolSidebar } from "./components/panels/ToolSidebar";
 import { TopBar } from "./components/TopBar";
@@ -184,6 +185,14 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     activePathingTool,
     onPaintStroke: setWalkableCells,
     onRectFill: setWalkableCellRange,
+  });
+
+  // Measure tool
+  const measure = useMeasureTool({
+    stageRef,
+    position,
+    scale,
+    isActive: activeTool === "measure",
   });
 
   // Scale calibration
@@ -826,6 +835,10 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   existingCalibration={data.scaleCalibration}
                   onCalibrationClick={calibration.handleMouseDown}
                   onCalibrationMouseMove={calibration.handleMouseMove}
+                  measureState={measure.state}
+                  onMeasureMouseDown={measure.handleMouseDown}
+                  onMeasureMouseMove={measure.handleMouseMove}
+                  onMeasureMouseUp={measure.handleMouseUp}
                 />
                 <Rulers
                   visible={showRulers}

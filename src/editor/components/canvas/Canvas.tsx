@@ -17,6 +17,8 @@ import { SelectionRect } from "./SelectionRect";
 import { MultiSelectBounds } from "./MultiSelectBounds";
 import { GridLayer } from "./GridLayer";
 import { WalkableGridOverlay } from "./WalkableGridOverlay";
+import { CalibrationPreview } from "./CalibrationPreview";
+import type { CalibrationState } from "../../hooks/useCalibration";
 import { useAlignmentGuides } from "../../hooks/useAlignmentGuides";
 import { getElementBounds } from "../../utils/bounds";
 
@@ -67,6 +69,12 @@ interface CanvasProps {
   pathingRectPreview?: { startCol: number; startRow: number; endCol: number; endRow: number } | null;
   pendingCells?: Set<string>;
   pendingValue?: 0 | 1;
+  // Scale calibration
+  isCalibrating?: boolean;
+  calibrationState?: CalibrationState;
+  existingCalibration?: FloorPlanData["scaleCalibration"];
+  onCalibrationClick?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
+  onCalibrationMouseMove?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
 }
 
 export function Canvas({
@@ -103,6 +111,11 @@ export function Canvas({
   pathingRectPreview,
   pendingCells,
   pendingValue,
+  isCalibrating,
+  calibrationState,
+  existingCalibration,
+  onCalibrationClick,
+  onCalibrationMouseMove,
 }: CanvasProps) {
   const isSelectMode = activeTool === "select";
   const isDrawing = !isSelectMode;
@@ -190,6 +203,12 @@ export function Canvas({
     // Space held = pan mode, let stage draggable handle it
     if (isPanMode) return;
 
+    // Calibration mode: intercept before everything else
+    if (isCalibrating && onCalibrationClick) {
+      onCalibrationClick(e);
+      return;
+    }
+
     // Pathing mode: delegate to pathing handlers
     if (isPathingMode && onPathingMouseDown) {
       onPathingMouseDown();
@@ -226,6 +245,12 @@ export function Canvas({
   };
 
   const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    // Calibration mode: intercept before everything else
+    if (isCalibrating && onCalibrationMouseMove) {
+      onCalibrationMouseMove(e);
+      return;
+    }
+
     // Pathing mode: delegate to pathing handlers
     if (isPathingMode && onPathingMouseMove) {
       onPathingMouseMove();
@@ -440,7 +465,7 @@ export function Canvas({
     <div
       ref={containerRef}
       className="flex-1 min-w-0 bg-gray-200 overflow-hidden"
-      style={{ cursor: isPanMode ? "grab" : isPathingMode ? "crosshair" : isDrawing ? "crosshair" : "default" }}
+      style={{ cursor: isPanMode ? "grab" : isCalibrating ? "crosshair" : isPathingMode ? "crosshair" : isDrawing ? "crosshair" : "default" }}
     >
       <Stage
         ref={stageRef}
@@ -551,6 +576,13 @@ export function Canvas({
             canvasHeight={data.dimensions.height}
           />
           <SelectionRect rect={dragSelectRect} />
+          {isCalibrating && calibrationState && (
+            <CalibrationPreview
+              calibrationState={calibrationState}
+              existingCalibration={existingCalibration}
+              scale={scale}
+            />
+          )}
           {pathingRectPreview && data.walkableLayer && (
             <Rect
               x={Math.min(pathingRectPreview.startCol, pathingRectPreview.endCol) * data.walkableLayer.cellSize}

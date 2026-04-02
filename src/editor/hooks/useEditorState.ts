@@ -1,7 +1,8 @@
 import { useCallback, useEffect } from "react";
-import type { FloorPlanData, FloorPlanElement, ElementType, Geometry, ElementProperties, BackgroundImage, Dimensions, WalkableGrid } from "../../types";
+import type { FloorPlanData, FloorPlanElement, ElementType, Geometry, ElementProperties, BackgroundImage, Dimensions, WalkableGrid, ScaleCalibration } from "../../types";
 import { ELEMENT_TYPE_TO_LAYER } from "../../types";
 import { createWalkableGrid } from "../utils/walkableGrid";
+import { derivePixelsPerUnit } from "../../utils/unitConversion";
 import { useHistory } from "./useHistory";
 
 const STORAGE_KEY = "map-editor:floorplan";
@@ -278,6 +279,25 @@ export function useEditorState(
     setData((prev) => ({ ...prev, walkableLayer: grid }));
   }, []);
 
+  // --- Scale calibration ---
+
+  const setCalibration = useCallback((cal: ScaleCalibration) => {
+    const ppu = derivePixelsPerUnit(cal.p1, cal.p2, cal.distance);
+    setData((prev) => ({
+      ...prev,
+      scaleCalibration: cal,
+      dimensions: { ...prev.dimensions, pixelsPerUnit: ppu, unit: cal.unit },
+    }));
+  }, []);
+
+  const clearCalibration = useCallback(() => {
+    setData((prev) => ({
+      ...prev,
+      scaleCalibration: undefined,
+      dimensions: { ...prev.dimensions, pixelsPerUnit: 1, unit: "px" },
+    }));
+  }, []);
+
   return {
     data,
     addElement,
@@ -300,6 +320,9 @@ export function useEditorState(
     clearWalkableGrid,
     setWalkableGridResolution,
     setWalkableGrid,
+    // Scale calibration
+    setCalibration,
+    clearCalibration,
     undo,
     redo,
     canUndo,

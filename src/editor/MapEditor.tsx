@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useMemo } from "react";
+import { useRef, useState, useCallback, useMemo, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import type { ActiveTool, PathingTool } from "./types";
 import type { DrawingDefaults } from "./components/panels/OptionsBar";
@@ -7,6 +7,7 @@ import { useEditorState } from "./hooks/useEditorState";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useClipboard } from "./hooks/useClipboard";
 import { usePathingTool } from "./hooks/usePathingTool";
+import { useCalibration } from "./hooks/useCalibration";
 import { Canvas } from "./components/canvas/Canvas";
 import { ToolSidebar } from "./components/panels/ToolSidebar";
 import { TopBar } from "./components/TopBar";
@@ -22,6 +23,7 @@ import { BackgroundImageDialog } from "./components/panels/BackgroundImageDialog
 import { GridSettingsDialog } from "./components/panels/GridSettingsDialog";
 import { HelpDialog } from "./components/panels/HelpDialog";
 import { CanvasResizeDialog } from "./components/panels/CanvasResizeDialog";
+import { CalibrationDialog } from "./components/panels/CalibrationDialog";
 import { LayerPanel } from "./components/panels/LayerPanel";
 import type { FloorPlanData, LayerId, LayerDefinition } from "../types";
 import { DEFAULT_LAYERS, ELEMENT_TYPE_TO_LAYER } from "../types";
@@ -60,6 +62,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     clearWalkableGrid,
     setWalkableGridResolution,
     setWalkableGrid,
+    setCalibration,
     undo,
     redo,
     canUndo,
@@ -105,6 +108,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   const [walkableGridOpacity, setWalkableGridOpacity] = useState(0.3);
   const [showGridDialog, setShowGridDialog] = useState(false);
   const [showResizeDialog, setShowResizeDialog] = useState(false);
+  const [isCalibrating, setIsCalibrating] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
     elementId: string;
     x: number;
@@ -178,6 +182,40 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     onPaintStroke: setWalkableCells,
     onRectFill: setWalkableCellRange,
   });
+
+  // Scale calibration
+  const calibration = useCalibration({
+    stageRef,
+    position,
+    scale,
+    isActive: isCalibrating,
+    onComplete: (cal) => {
+      setCalibration(cal);
+      setIsCalibrating(false);
+    },
+  });
+
+  const handleStartCalibration = useCallback(() => {
+    setIsCalibrating(true);
+    calibration.start();
+  }, [calibration]);
+
+  const handleCancelCalibration = useCallback(() => {
+    calibration.handleCancel();
+    setIsCalibrating(false);
+  }, [calibration]);
+
+  // Escape key cancels calibration mode
+  useEffect(() => {
+    if (!isCalibrating) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        handleCancelCalibration();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isCalibrating, handleCancelCalibration]);
 
   const handleCopy = useCallback(() => {
     if (selectedElements.length > 0) copy(selectedElements);
@@ -700,6 +738,10 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
             label: "Canvas Size...",
             onClick: () => setShowResizeDialog(true),
           },
+          {
+            label: "Set Scale...",
+            onClick: handleStartCalibration,
+          },
         ]}
       />
       <div className="flex flex-1 overflow-hidden">
@@ -771,6 +813,11 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   pathingRectPreview={pathingTool.rectPreview}
                   pendingCells={pathingTool.pendingCells}
                   pendingValue={pathingTool.pendingValue}
+                  isCalibrating={isCalibrating}
+                  calibrationState={calibration.state}
+                  existingCalibration={data.scaleCalibration}
+                  onCalibrationClick={calibration.handleMouseDown}
+                  onCalibrationMouseMove={calibration.handleMouseMove}
                 />
                 <LayerPanel
                   layers={layers}
@@ -845,6 +892,14 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
       )}
       {showHelp && (
         <HelpDialog onClose={() => setShowHelp(false)} />
+      )}
+      {calibration.state.step === "confirming" && calibration.pixelDistance != null && (
+        <CalibrationDialog
+          pixelDistance={calibration.pixelDistance}
+          existingUnit={data.dimensions.unit}
+          onConfirm={calibration.handleConfirm}
+          onClose={handleCancelCalibration}
+        />
       )}
       {contextMenu && contextMenuItems.length > 0 && (
         <ContextMenu

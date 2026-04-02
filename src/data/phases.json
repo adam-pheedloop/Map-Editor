@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-01",
+  "lastUpdated": "2026-04-02",
   "phases": [
     {
       "id": 1,
@@ -95,15 +95,19 @@
     },
     {
       "id": 8,
-      "title": "Scale Calibration & Real Dimensions",
-      "summary": "Two-point scale calibration tool so maps have real-world units. Booth areas in sq ft/m, scale bar on canvas.",
-      "status": "planned",
+      "title": "Scale Calibration, Dimensions & Rulers",
+      "summary": "Two-point calibration tool, X/Y rulers (HTML overlays, toggleable), transient measurement tool, View menu for display toggles, real-unit display propagation, and viewer scale bar. ~20 story points across 6 steps.",
+      "status": "done",
       "tasks": [
-        "Two-point scale calibration tool",
-        "Real-world unit storage (ft / m)",
-        "Booth area display in real units",
-        "Scale bar overlay on canvas",
-        "Unit preference setting (imperial / metric)"
+        "Schema updates + unit conversion utilities (formatMeasurement, formatArea, derivePixelsPerUnit)",
+        "Two-point scale calibration tool with persistent reference points (visible only when calibrating)",
+        "View menu (new top-level menu) — migrate grid/snap toggles from Tools, add ruler toggle",
+        "X/Y rulers as HTML Canvas 2D overlays outside Konva Stage (toggleable, off by default, unit-aware)",
+        "Transient measurement tool (click two points, show distance, disappears on tool switch)",
+        "Unit display propagation (Properties Panel, Canvas Resize Dialog, booth area) + viewer scale bar",
+        "Walking time estimates on wayfinding routes (~1.0 m/s indoor event pace, shown when calibrated)",
+        "Display unit switcher in status bar (calibrate in inches, display in metres)",
+        "Shift-snap for calibration and measurement tools (horizontal/vertical/45°)"
       ]
     },
     {

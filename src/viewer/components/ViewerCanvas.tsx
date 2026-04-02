@@ -13,6 +13,7 @@ import { useCanvasControls } from "../../editor/hooks/useCanvasControls";
 import { BackgroundImage } from "../../editor/components/canvas/BackgroundImage";
 import type { ViewerMode } from "../types";
 import { RouteOverlay } from "./RouteOverlay";
+import { ScaleBar } from "./ScaleBar";
 
 interface ViewerCanvasProps {
   data: FloorPlanData;
@@ -195,7 +196,7 @@ export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedBoothC
   const hasHighlight = highlightedBoothCode !== null;
 
   return (
-    <div ref={containerRef} className="flex-1 min-w-0 bg-gray-200 overflow-hidden">
+    <div ref={containerRef} className="relative flex-1 min-w-0 bg-gray-200 overflow-hidden">
       <Stage
         ref={stageRef}
         width={stageSize.width}
@@ -265,6 +266,7 @@ export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedBoothC
 
         {routePath && <RouteOverlay path={routePath} />}
       </Stage>
+      <ScaleBar dimensions={data.dimensions} scale={scale} />
     </div>
   );
 }

@@ -1,7 +1,8 @@
 import { useCallback, useEffect } from "react";
-import type { FloorPlanData, FloorPlanElement, ElementType, Geometry, ElementProperties, BackgroundImage, Dimensions, WalkableGrid } from "../../types";
+import type { FloorPlanData, FloorPlanElement, ElementType, Geometry, ElementProperties, BackgroundImage, Dimensions, WalkableGrid, ScaleCalibration, Unit } from "../../types";
 import { ELEMENT_TYPE_TO_LAYER } from "../../types";
 import { createWalkableGrid } from "../utils/walkableGrid";
+import { derivePixelsPerUnit } from "../../utils/unitConversion";
 import { useHistory } from "./useHistory";
 
 const STORAGE_KEY = "map-editor:floorplan";
@@ -278,6 +279,59 @@ export function useEditorState(
     setData((prev) => ({ ...prev, walkableLayer: grid }));
   }, []);
 
+  // --- Scale calibration ---
+
+  const setCalibration = useCallback((cal: ScaleCalibration) => {
+    const ppu = derivePixelsPerUnit(cal.p1, cal.p2, cal.distance);
+    setData((prev) => ({
+      ...prev,
+      scaleCalibration: cal,
+      dimensions: { ...prev.dimensions, pixelsPerUnit: ppu, unit: cal.unit },
+    }));
+  }, []);
+
+  const clearCalibration = useCallback(() => {
+    setData((prev) => ({
+      ...prev,
+      scaleCalibration: undefined,
+      dimensions: { ...prev.dimensions, pixelsPerUnit: 1, unit: "px" },
+    }));
+  }, []);
+
+  /** Change the display unit while keeping calibration intact. Recomputes pixelsPerUnit for the new unit. */
+  const setDisplayUnit = useCallback((newUnit: Unit) => {
+    setData((prev) => {
+      const cal = prev.scaleCalibration;
+      if (!cal || newUnit === "px") return prev;
+
+      // Pixel distance from the calibration reference points
+      const dx = cal.p2.x - cal.p1.x;
+      const dy = cal.p2.y - cal.p1.y;
+      const pxDist = Math.sqrt(dx * dx + dy * dy);
+
+      // Convert calibration distance to the new display unit
+      const FEET_PER_METER = 3.28084;
+      let calDistInNewUnit: number;
+      if (cal.unit === newUnit) {
+        calDistInNewUnit = cal.distance;
+      } else if (cal.unit === "ft" && newUnit === "m") {
+        calDistInNewUnit = cal.distance / FEET_PER_METER;
+      } else {
+        // cal.unit === "m" && newUnit === "ft"
+        calDistInNewUnit = cal.distance * FEET_PER_METER;
+      }
+
+      return {
+        ...prev,
+        dimensions: {
+          ...prev.dimensions,
+          unit: newUnit,
+          pixelsPerUnit: pxDist / calDistInNewUnit,
+        },
+      };
+    });
+  }, []);
+
   return {
     data,
     addElement,
@@ -300,6 +354,10 @@ export function useEditorState(
     clearWalkableGrid,
     setWalkableGridResolution,
     setWalkableGrid,
+    // Scale calibration
+    setCalibration,
+    clearCalibration,
+    setDisplayUnit,
     undo,
     redo,
     canUndo,

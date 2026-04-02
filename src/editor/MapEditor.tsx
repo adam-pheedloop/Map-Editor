@@ -1,4 +1,4 @@
-import { useRef, useState, useCallback, useMemo } from "react";
+import { useRef, useState, useCallback, useMemo, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import type { ActiveTool, PathingTool } from "./types";
 import type { DrawingDefaults } from "./components/panels/OptionsBar";
@@ -7,6 +7,8 @@ import { useEditorState } from "./hooks/useEditorState";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useClipboard } from "./hooks/useClipboard";
 import { usePathingTool } from "./hooks/usePathingTool";
+import { useCalibration } from "./hooks/useCalibration";
+import { useMeasureTool } from "./hooks/useMeasureTool";
 import { Canvas } from "./components/canvas/Canvas";
 import { ToolSidebar } from "./components/panels/ToolSidebar";
 import { TopBar } from "./components/TopBar";
@@ -22,7 +24,9 @@ import { BackgroundImageDialog } from "./components/panels/BackgroundImageDialog
 import { GridSettingsDialog } from "./components/panels/GridSettingsDialog";
 import { HelpDialog } from "./components/panels/HelpDialog";
 import { CanvasResizeDialog } from "./components/panels/CanvasResizeDialog";
+import { CalibrationDialog } from "./components/panels/CalibrationDialog";
 import { LayerPanel } from "./components/panels/LayerPanel";
+import { Rulers } from "./components/Rulers";
 import type { FloorPlanData, LayerId, LayerDefinition } from "../types";
 import { DEFAULT_LAYERS, ELEMENT_TYPE_TO_LAYER } from "../types";
 
@@ -60,6 +64,8 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     clearWalkableGrid,
     setWalkableGridResolution,
     setWalkableGrid,
+    setCalibration,
+    setDisplayUnit,
     undo,
     redo,
     canUndo,
@@ -103,8 +109,10 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   });
   const [snapToObjects, setSnapToObjects] = useState(true);
   const [walkableGridOpacity, setWalkableGridOpacity] = useState(0.3);
+  const [showRulers, setShowRulers] = useState(false);
   const [showGridDialog, setShowGridDialog] = useState(false);
   const [showResizeDialog, setShowResizeDialog] = useState(false);
+  const [isCalibrating, setIsCalibrating] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
     elementId: string;
     x: number;
@@ -178,6 +186,48 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     onPaintStroke: setWalkableCells,
     onRectFill: setWalkableCellRange,
   });
+
+  // Measure tool
+  const measure = useMeasureTool({
+    stageRef,
+    position,
+    scale,
+    isActive: activeTool === "measure",
+  });
+
+  // Scale calibration
+  const calibration = useCalibration({
+    stageRef,
+    position,
+    scale,
+    isActive: isCalibrating,
+    onComplete: (cal) => {
+      setCalibration(cal);
+      setIsCalibrating(false);
+    },
+  });
+
+  const handleStartCalibration = useCallback(() => {
+    setIsCalibrating(true);
+    calibration.start();
+  }, [calibration]);
+
+  const handleCancelCalibration = useCallback(() => {
+    calibration.handleCancel();
+    setIsCalibrating(false);
+  }, [calibration]);
+
+  // Escape key cancels calibration mode
+  useEffect(() => {
+    if (!isCalibrating) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        handleCancelCalibration();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isCalibrating, handleCancelCalibration]);
 
   const handleCopy = useCallback(() => {
     if (selectedElements.length > 0) copy(selectedElements);
@@ -678,7 +728,11 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           { label: "Paste", shortcut: `${modKey}V`, disabled: !hasBuffer, onClick: handlePaste },
           { label: "Duplicate", shortcut: `${modKey}D`, disabled: !hasSelection, onClick: handleDuplicate },
         ]}
-        toolsMenuItems={[
+        viewMenuItems={[
+          {
+            label: `${showRulers ? "✓ " : "   "}Show Rulers`,
+            onClick: () => setShowRulers((s) => !s),
+          },
           {
             label: `${gridSettings.showGrid ? "✓ " : "   "}Show Grid`,
             onClick: () => setGridSettings((s) => ({ ...s, showGrid: !s.showGrid })),
@@ -691,7 +745,8 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
             label: `${snapToObjects ? "✓ " : "   "}Snap to Objects`,
             onClick: () => setSnapToObjects((s) => !s),
           },
-          { type: "divider" as const },
+        ]}
+        toolsMenuItems={[
           {
             label: "Configure Grid...",
             onClick: () => setShowGridDialog(true),
@@ -699,6 +754,10 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           {
             label: "Canvas Size...",
             onClick: () => setShowResizeDialog(true),
+          },
+          {
+            label: "Set Scale...",
+            onClick: handleStartCalibration,
           },
         ]}
       />
@@ -736,7 +795,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           )}
           <div className="flex flex-1 overflow-hidden">
             <div className="flex flex-col flex-1 min-w-0">
-              <div className="relative flex-1 flex flex-col min-h-0">
+              <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden">
                 <Canvas
                   data={data}
                   activeTool={activeTool}
@@ -771,19 +830,43 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   pathingRectPreview={pathingTool.rectPreview}
                   pendingCells={pathingTool.pendingCells}
                   pendingValue={pathingTool.pendingValue}
+                  isCalibrating={isCalibrating}
+                  calibrationState={calibration.state}
+                  existingCalibration={data.scaleCalibration}
+                  onCalibrationClick={calibration.handleMouseDown}
+                  onCalibrationMouseMove={calibration.handleMouseMove}
+                  measureState={measure.state}
+                  onMeasureMouseDown={measure.handleMouseDown}
+                  onMeasureMouseMove={measure.handleMouseMove}
+                  onMeasureMouseUp={measure.handleMouseUp}
+                />
+                <Rulers
+                  visible={showRulers}
+                  scale={scale}
+                  position={position}
+                  stageSize={stageSize}
+                  dimensions={data.dimensions}
                 />
                 <LayerPanel
                   layers={layers}
                   activeLayerId={activeLayerId}
                   onSetActiveLayer={setActiveLayerId}
                   onToggleVisibility={toggleLayerVisibility}
+                  topOffset={showRulers ? 26 : 8}
                 />
               </div>
-              <StatusBar scale={scale} onZoomReset={zoomReset} />
+              <StatusBar
+                scale={scale}
+                onZoomReset={zoomReset}
+                unit={data.dimensions.unit}
+                isCalibrated={data.dimensions.unit !== "px" && data.dimensions.pixelsPerUnit > 0}
+                onUnitChange={setDisplayUnit}
+              />
             </div>
             <PropertiesPanel
               element={selectedElement}
               selectedCount={selectedIds.size}
+              dimensions={data.dimensions}
               backgroundImage={data.backgroundImage}
               backgroundColor={data.backgroundColor}
               activeLayerId={activeLayerId}
@@ -838,6 +921,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
         <CanvasResizeDialog
           width={data.dimensions.width}
           height={data.dimensions.height}
+          dimensions={data.dimensions}
           elements={data.elements}
           onConfirm={handleCanvasResize}
           onClose={() => setShowResizeDialog(false)}
@@ -845,6 +929,14 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
       )}
       {showHelp && (
         <HelpDialog onClose={() => setShowHelp(false)} />
+      )}
+      {calibration.state.step === "confirming" && calibration.pixelDistance != null && (
+        <CalibrationDialog
+          pixelDistance={calibration.pixelDistance}
+          existingUnit={data.dimensions.unit}
+          onConfirm={calibration.handleConfirm}
+          onClose={handleCancelCalibration}
+        />
       )}
       {contextMenu && contextMenuItems.length > 0 && (
         <ContextMenu

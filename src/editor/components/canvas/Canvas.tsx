@@ -17,6 +17,10 @@ import { SelectionRect } from "./SelectionRect";
 import { MultiSelectBounds } from "./MultiSelectBounds";
 import { GridLayer } from "./GridLayer";
 import { WalkableGridOverlay } from "./WalkableGridOverlay";
+import { CalibrationPreview } from "./CalibrationPreview";
+import { MeasurePreview } from "./MeasurePreview";
+import type { CalibrationState } from "../../hooks/useCalibration";
+import type { MeasureState } from "../../hooks/useMeasureTool";
 import { useAlignmentGuides } from "../../hooks/useAlignmentGuides";
 import { getElementBounds } from "../../utils/bounds";
 
@@ -67,6 +71,17 @@ interface CanvasProps {
   pathingRectPreview?: { startCol: number; startRow: number; endCol: number; endRow: number } | null;
   pendingCells?: Set<string>;
   pendingValue?: 0 | 1;
+  // Scale calibration
+  isCalibrating?: boolean;
+  calibrationState?: CalibrationState;
+  existingCalibration?: FloorPlanData["scaleCalibration"];
+  onCalibrationClick?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
+  onCalibrationMouseMove?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
+  // Measure tool
+  measureState?: MeasureState;
+  onMeasureMouseDown?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
+  onMeasureMouseMove?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
+  onMeasureMouseUp?: () => void;
 }
 
 export function Canvas({
@@ -103,9 +118,19 @@ export function Canvas({
   pathingRectPreview,
   pendingCells,
   pendingValue,
+  isCalibrating,
+  calibrationState,
+  existingCalibration,
+  onCalibrationClick,
+  onCalibrationMouseMove,
+  measureState,
+  onMeasureMouseDown,
+  onMeasureMouseMove,
+  onMeasureMouseUp,
 }: CanvasProps) {
   const isSelectMode = activeTool === "select";
-  const isDrawing = !isSelectMode;
+  const isMeasureTool = activeTool === "measure";
+  const isDrawing = !isSelectMode && !isMeasureTool;
   const isLineTool = activeTool === "line";
   const isTextTool = activeTool === "text";
   const isIconTool = activeTool === "icon";
@@ -190,6 +215,18 @@ export function Canvas({
     // Space held = pan mode, let stage draggable handle it
     if (isPanMode) return;
 
+    // Calibration mode: intercept before everything else
+    if (isCalibrating && onCalibrationClick) {
+      onCalibrationClick(e);
+      return;
+    }
+
+    // Measure tool
+    if (isMeasureTool && onMeasureMouseDown) {
+      onMeasureMouseDown(e);
+      return;
+    }
+
     // Pathing mode: delegate to pathing handlers
     if (isPathingMode && onPathingMouseDown) {
       onPathingMouseDown();
@@ -226,6 +263,18 @@ export function Canvas({
   };
 
   const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    // Calibration mode: intercept before everything else
+    if (isCalibrating && onCalibrationMouseMove) {
+      onCalibrationMouseMove(e);
+      return;
+    }
+
+    // Measure tool
+    if (isMeasureTool && onMeasureMouseMove) {
+      onMeasureMouseMove(e);
+      return;
+    }
+
     // Pathing mode: delegate to pathing handlers
     if (isPathingMode && onPathingMouseMove) {
       onPathingMouseMove();
@@ -257,6 +306,12 @@ export function Canvas({
   };
 
   const handleMouseUp = () => {
+    // Measure tool
+    if (isMeasureTool && onMeasureMouseUp) {
+      onMeasureMouseUp();
+      return;
+    }
+
     // Pathing mode: delegate to pathing handlers
     if (isPathingMode && onPathingMouseUp) {
       onPathingMouseUp();
@@ -440,7 +495,7 @@ export function Canvas({
     <div
       ref={containerRef}
       className="flex-1 min-w-0 bg-gray-200 overflow-hidden"
-      style={{ cursor: isPanMode ? "grab" : isPathingMode ? "crosshair" : isDrawing ? "crosshair" : "default" }}
+      style={{ cursor: isPanMode ? "grab" : isCalibrating ? "crosshair" : isMeasureTool ? "crosshair" : isPathingMode ? "crosshair" : isDrawing ? "crosshair" : "default" }}
     >
       <Stage
         ref={stageRef}
@@ -551,6 +606,20 @@ export function Canvas({
             canvasHeight={data.dimensions.height}
           />
           <SelectionRect rect={dragSelectRect} />
+          {measureState && (
+            <MeasurePreview
+              state={measureState}
+              scale={scale}
+              dimensions={data.dimensions}
+            />
+          )}
+          {isCalibrating && calibrationState && (
+            <CalibrationPreview
+              calibrationState={calibrationState}
+              existingCalibration={existingCalibration}
+              scale={scale}
+            />
+          )}
           {pathingRectPreview && data.walkableLayer && (
             <Rect
               x={Math.min(pathingRectPreview.startCol, pathingRectPreview.endCol) * data.walkableLayer.cellSize}

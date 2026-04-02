@@ -1,13 +1,15 @@
 import { useState } from "react";
-import type { FloorPlanElement, ElementProperties, Geometry, BackgroundImage, LayerId } from "../../../types";
+import type { FloorPlanElement, ElementProperties, Geometry, BackgroundImage, LayerId, Dimensions } from "../../../types";
 import { getShapeConfig } from "../canvas/elements";
 import type { PropertiesPanelField } from "../canvas/elements";
+import { formatMeasurement, formatArea } from "../../../utils/unitConversion";
 import { Button, TabBar, Slider, SectionLabel, FieldRow, NumberInput, TextInput, TextArea, ColorSwatch } from "../ui";
 import { JsonDebugView } from "../debug";
 
 interface PropertiesPanelProps {
   element: FloorPlanElement | null;
   selectedCount: number;
+  dimensions: Dimensions;
   backgroundImage?: BackgroundImage;
   backgroundColor?: string;
   activeLayerId: LayerId;
@@ -38,6 +40,7 @@ function getDimensions(element: FloorPlanElement): { width: number; height: numb
 export function PropertiesPanel({
   element,
   selectedCount,
+  dimensions,
   backgroundImage,
   backgroundColor,
   activeLayerId,
@@ -304,18 +307,18 @@ export function PropertiesPanel({
         {fields.has("area") && (
           <div className="flex flex-col gap-1.5">
             <SectionLabel>Area</SectionLabel>
-            <FieldRow label="sq">
-              <NumberInput value={dims.width * dims.height} onChange={() => {}} disabled />
-            </FieldRow>
+            <div className="px-2 py-1 text-xs text-gray-600 bg-gray-50 rounded border border-gray-200">
+              {formatArea(dims.width, dims.height, dimensions)}
+            </div>
           </div>
         )}
 
         {fields.has("length") && (
           <div className="flex flex-col gap-1.5">
             <SectionLabel>Length</SectionLabel>
-            <FieldRow label="L">
-              <NumberInput value={dims.length} onChange={() => {}} disabled />
-            </FieldRow>
+            <div className="px-2 py-1 text-xs text-gray-600 bg-gray-50 rounded border border-gray-200">
+              {formatMeasurement(dims.length, dimensions)}
+            </div>
           </div>
         )}
 

@@ -1,11 +1,13 @@
 import { useState, useMemo } from "react";
 import { Button, Dialog, SectionLabel, NumberInput } from "../ui";
-import type { FloorPlanElement } from "../../../types";
+import type { FloorPlanElement, Dimensions } from "../../../types";
+import { formatMeasurement } from "../../../utils/unitConversion";
 import { getElementBounds } from "../../utils/bounds";
 
 interface CanvasResizeDialogProps {
   width: number;
   height: number;
+  dimensions: Dimensions;
   elements: FloorPlanElement[];
   onConfirm: (width: number, height: number, mode: "preserve" | "scale") => void;
   onClose: () => void;
@@ -14,6 +16,7 @@ interface CanvasResizeDialogProps {
 export function CanvasResizeDialog({
   width,
   height,
+  dimensions,
   elements,
   onConfirm,
   onClose,
@@ -48,6 +51,9 @@ export function CanvasResizeDialog({
             value={newWidth}
             onChange={(v) => setNewWidth(Math.max(100, v))}
           />
+          {dimensions.unit !== "px" && (
+            <span className="text-[11px] text-gray-400">{formatMeasurement(newWidth, dimensions)}</span>
+          )}
         </div>
 
         <div className="flex flex-col gap-1.5">
@@ -56,6 +62,9 @@ export function CanvasResizeDialog({
             value={newHeight}
             onChange={(v) => setNewHeight(Math.max(100, v))}
           />
+          {dimensions.unit !== "px" && (
+            <span className="text-[11px] text-gray-400">{formatMeasurement(newHeight, dimensions)}</span>
+          )}
         </div>
 
         <div className="flex flex-col gap-1.5">

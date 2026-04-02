@@ -1,13 +1,30 @@
 import { IconButton } from "./ui";
+import type { Unit } from "../../types";
 
 interface StatusBarProps {
   scale: number;
   onZoomReset: () => void;
+  unit: Unit;
+  isCalibrated: boolean;
+  onUnitChange: (unit: Unit) => void;
 }
 
-export function StatusBar({ scale, onZoomReset }: StatusBarProps) {
+export function StatusBar({ scale, onZoomReset, unit, isCalibrated, onUnitChange }: StatusBarProps) {
   return (
-    <div className="flex items-center justify-end px-3 py-1.5 bg-white border-t border-gray-200 text-xs text-gray-500">
+    <div className="relative z-20 flex items-center justify-between px-3 py-1.5 bg-white border-t border-gray-200 text-xs text-gray-500">
+      <div className="flex items-center gap-2">
+        {isCalibrated && (
+          <select
+            value={unit}
+            onChange={(e) => onUnitChange(e.target.value as Unit)}
+            className="px-1.5 py-0.5 text-xs border border-gray-200 rounded bg-white cursor-pointer hover:border-gray-300"
+            title="Map display unit"
+          >
+            <option value="ft">Feet</option>
+            <option value="m">Meters</option>
+          </select>
+        )}
+      </div>
       <IconButton
         size="sm"
         onClick={onZoomReset}

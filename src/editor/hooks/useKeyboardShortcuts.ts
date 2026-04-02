@@ -114,6 +114,9 @@ export function useKeyboardShortcuts({
         case "i":
           setActiveTool("icon");
           break;
+        case "m":
+          setActiveTool("measure");
+          break;
         case "escape":
           onDeselect();
           setActiveTool("select");

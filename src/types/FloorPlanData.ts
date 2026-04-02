@@ -157,6 +157,17 @@ export interface Dimensions {
   pixelsPerUnit: number;
 }
 
+export interface ScaleCalibration {
+  /** First reference point in canvas pixels */
+  p1: Point;
+  /** Second reference point in canvas pixels */
+  p2: Point;
+  /** Known real-world distance between p1 and p2 */
+  distance: number;
+  /** Unit of the known distance */
+  unit: Unit;
+}
+
 export interface FloorPlanMetadata {
   createdAt: string;
   updatedAt: string;
@@ -184,5 +195,6 @@ export interface FloorPlanData {
   backgroundImage?: BackgroundImage;
   backgroundColor?: string;
   walkableLayer?: WalkableGrid;
+  scaleCalibration?: ScaleCalibration;
   metadata: FloorPlanMetadata;
 }

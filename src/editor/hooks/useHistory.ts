@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 
-const MAX_HISTORY = 20;
+const MAX_HISTORY = 40;
 
 interface HistoryState<T> {
   past: T[];

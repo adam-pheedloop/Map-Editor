@@ -12,6 +12,7 @@ interface TopBarProps {
   onHelpClick?: () => void;
   fileMenuItems?: MenuEntry[];
   editMenuItems?: MenuEntry[];
+  viewMenuItems?: MenuEntry[];
   toolsMenuItems?: MenuEntry[];
 }
 
@@ -21,15 +22,18 @@ export function TopBar({
   onHelpClick,
   fileMenuItems = [],
   editMenuItems = [],
+  viewMenuItems = [],
   toolsMenuItems = [],
 }: TopBarProps) {
   const [fileOpen, setFileOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
+  const [viewOpen, setViewOpen] = useState(false);
   const [toolsOpen, setToolsOpen] = useState(false);
 
   const closeAll = () => {
     setFileOpen(false);
     setEditOpen(false);
+    setViewOpen(false);
     setToolsOpen(false);
   };
 
@@ -49,6 +53,12 @@ export function TopBar({
           Edit
         </MenuButton>
         {editOpen && <DropdownMenu items={editMenuItems} onClose={() => setEditOpen(false)} />}
+      </div>
+      <div className="relative">
+        <MenuButton open={viewOpen} onMouseDown={(e) => { e.stopPropagation(); closeAll(); setViewOpen((prev) => !prev); }}>
+          View
+        </MenuButton>
+        {viewOpen && <DropdownMenu items={viewMenuItems} onClose={() => setViewOpen(false)} />}
       </div>
       <div className="relative">
         <MenuButton open={toolsOpen} onMouseDown={(e) => { e.stopPropagation(); closeAll(); setToolsOpen((prev) => !prev); }}>

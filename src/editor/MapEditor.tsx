@@ -106,6 +106,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   });
   const [snapToObjects, setSnapToObjects] = useState(true);
   const [walkableGridOpacity, setWalkableGridOpacity] = useState(0.3);
+  const [showRulers, setShowRulers] = useState(false);
   const [showGridDialog, setShowGridDialog] = useState(false);
   const [showResizeDialog, setShowResizeDialog] = useState(false);
   const [isCalibrating, setIsCalibrating] = useState(false);
@@ -716,7 +717,11 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           { label: "Paste", shortcut: `${modKey}V`, disabled: !hasBuffer, onClick: handlePaste },
           { label: "Duplicate", shortcut: `${modKey}D`, disabled: !hasSelection, onClick: handleDuplicate },
         ]}
-        toolsMenuItems={[
+        viewMenuItems={[
+          {
+            label: `${showRulers ? "✓ " : "   "}Show Rulers`,
+            onClick: () => setShowRulers((s) => !s),
+          },
           {
             label: `${gridSettings.showGrid ? "✓ " : "   "}Show Grid`,
             onClick: () => setGridSettings((s) => ({ ...s, showGrid: !s.showGrid })),
@@ -729,7 +734,8 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
             label: `${snapToObjects ? "✓ " : "   "}Snap to Objects`,
             onClick: () => setSnapToObjects((s) => !s),
           },
-          { type: "divider" as const },
+        ]}
+        toolsMenuItems={[
           {
             label: "Configure Grid...",
             onClick: () => setShowGridDialog(true),

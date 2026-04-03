@@ -7,6 +7,7 @@ import type {
   EllipseGeometry,
   LineGeometry,
   ArcGeometry,
+  PolygonGeometry,
 } from "../../types";
 import { getIconEntry } from "../../editor/utils/iconRegistry";
 import { iconToImage } from "../../editor/utils/iconToImage";
@@ -193,6 +194,15 @@ function ViewerElement({
           />
         );
       })()}
+      {geo.shape === "polygon" && (
+        <Line
+          points={[...(geo as PolygonGeometry).points]}
+          closed
+          fill={color}
+          stroke={strokeColor}
+          strokeWidth={strokeWidth}
+        />
+      )}
       {element.type === "icon" && geo.shape === "rect" && element.properties.iconName && (
         <ViewerIcon
           iconName={element.properties.iconName}

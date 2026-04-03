@@ -5,6 +5,7 @@ import { EllipseShape } from "./elements/EllipseShape";
 import { LineShape } from "./elements/LineShape";
 import { ArrowShape } from "./elements/ArrowShape";
 import { ArcShape } from "./elements/ArcShape";
+import { PolygonShape } from "./elements/PolygonShape";
 import { BoothShape } from "./elements/BoothShape";
 import { TextShape } from "./elements/TextShape";
 import { IconShape } from "./elements/IconShape";
@@ -117,6 +118,9 @@ export function ElementShape({
       )}
       {geo.shape === "arc" && (
         <ArcShape geo={geo} color={color} strokeWidth={strokeWidth} />
+      )}
+      {geo.shape === "polygon" && (
+        <PolygonShape geo={geo} color={color} strokeColor={strokeColor} strokeWidth={strokeWidth} />
       )}
     </Group>
   );

@@ -3,6 +3,7 @@ export { EllipseShape, ellipseConfig } from "./EllipseShape";
 export { LineShape, lineConfig } from "./LineShape";
 export { ArrowShape, arrowConfig } from "./ArrowShape";
 export { ArcShape, arcConfig } from "./ArcShape";
+export { PolygonShape, polygonConfig } from "./PolygonShape";
 export { BoothShape, boothConfig } from "./BoothShape";
 export { TextShape, textConfig } from "./TextShape";
 export { IconShape, iconConfig } from "./IconShape";
@@ -14,6 +15,7 @@ import { ellipseConfig } from "./EllipseShape";
 import { lineConfig } from "./LineShape";
 import { arrowConfig } from "./ArrowShape";
 import { arcConfig } from "./ArcShape";
+import { polygonConfig } from "./PolygonShape";
 import { boothConfig } from "./BoothShape";
 import { textConfig } from "./TextShape";
 import { iconConfig } from "./IconShape";
@@ -31,6 +33,7 @@ const geometryConfigs: Record<string, ShapeConfig> = {
   ellipse: ellipseConfig,
   line: lineConfig,
   arc: arcConfig,
+  polygon: polygonConfig,
 };
 
 /**

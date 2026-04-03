@@ -50,6 +50,27 @@ export function getElementBounds(element: FloorPlanElement): ElementBounds {
     };
   }
 
+  if (geo.shape === "polygon") {
+    const pts = geo.points;
+    let left = Infinity, right = -Infinity, top = Infinity, bottom = -Infinity;
+    for (let i = 0; i < pts.length; i += 2) {
+      const ax = geo.x + pts[i];
+      const ay = geo.y + pts[i + 1];
+      if (ax < left) left = ax;
+      if (ax > right) right = ax;
+      if (ay < top) top = ay;
+      if (ay > bottom) bottom = ay;
+    }
+    return {
+      left,
+      right,
+      top,
+      bottom,
+      centerX: (left + right) / 2,
+      centerY: (top + bottom) / 2,
+    };
+  }
+
   if (geo.shape === "arc") {
     const [x1, y1, cx, cy, x2, y2] = geo.points;
     const absX1 = geo.x + x1;

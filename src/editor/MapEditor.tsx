@@ -500,6 +500,45 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     [data.elements, updateElement]
   );
 
+  const handlePolygonDrawEnd = useCallback(
+    (points: number[], anchorX: number, anchorY: number) => {
+      const id = uuidv4();
+      addElement({
+        id,
+        type: "shape",
+        geometry: {
+          shape: "polygon",
+          x: anchorX,
+          y: anchorY,
+          points,
+        },
+        properties: {
+          name: "Polygon",
+          color: defaults.fill,
+          strokeColor: defaults.stroke,
+          strokeWidth: defaults.strokeWidth,
+          zIndex: 1,
+        },
+      });
+      selectOne(id);
+      setActiveTool("select");
+    },
+    [addElement, defaults, selectOne]
+  );
+
+  const handlePolygonVertexMove = useCallback(
+    (id: string, vertexIndex: number, x: number, y: number) => {
+      const element = data.elements.find((el) => el.id === id);
+      if (!element || element.geometry.shape !== "polygon") return;
+      const geo = element.geometry;
+      const newPoints = [...geo.points];
+      newPoints[vertexIndex * 2] = x - geo.x;
+      newPoints[vertexIndex * 2 + 1] = y - geo.y;
+      updateElement(id, { points: newPoints });
+    },
+    [data.elements, updateElement]
+  );
+
   const handleElementMove = useCallback(
     (id: string, x: number, y: number) => {
       updateElement(id, { x, y });
@@ -839,7 +878,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
               defaults={activeDefaults}
               config={getShapeConfig(
                 selectedElement?.geometry.shape
-                  ?? (activeTool === "line" || activeTool === "arrow" ? "line" : activeTool === "ellipse" ? "ellipse" : "rect"),
+                  ?? (activeTool === "line" || activeTool === "arrow" ? "line" : activeTool === "arc" ? "arc" : activeTool === "polygon" ? "polygon" : activeTool === "ellipse" ? "ellipse" : "rect"),
                 selectedElement?.type ?? (activeTool === "booth" ? "booth" : activeTool === "text" ? "label" : activeTool === "icon" ? "icon" : undefined),
                 selectedElement?.properties
               )}
@@ -869,6 +908,8 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   onEndpointMove={handleEndpointMove}
                   onArcDrawEnd={handleArcDrawEnd}
                   onArcControlPointMove={handleArcControlPointMove}
+                  onPolygonDrawEnd={handlePolygonDrawEnd}
+                  onPolygonVertexMove={handlePolygonVertexMove}
                   onElementResize={handleElementResize}
                   onElementContextMenu={handleElementContextMenu}
                   onClickPlace={handleClickPlace}

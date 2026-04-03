@@ -20,10 +20,15 @@ export function getElementCenter(geometry: Geometry): { x: number; y: number } {
     case "circle":
       return { x: geometry.x, y: geometry.y };
     case "polygon": {
-      const coords = geometry.coordinates;
-      const cx = coords.reduce((s, p) => s + p.x, 0) / coords.length;
-      const cy = coords.reduce((s, p) => s + p.y, 0) / coords.length;
-      return { x: cx, y: cy };
+      const pts = geometry.points;
+      const count = pts.length / 2;
+      if (count === 0) return { x: geometry.x, y: geometry.y };
+      let sx = 0, sy = 0;
+      for (let i = 0; i < pts.length; i += 2) {
+        sx += pts[i];
+        sy += pts[i + 1];
+      }
+      return { x: geometry.x + sx / count, y: geometry.y + sy / count };
     }
     case "line":
       return {

@@ -64,7 +64,9 @@ export interface RectGeometry {
 
 export interface PolygonGeometry {
   shape: "polygon";
-  coordinates: Point[];
+  x: number;
+  y: number;
+  points: number[]; // flat array [x1, y1, x2, y2, ...] relative to anchor
 }
 
 export interface CircleGeometry {

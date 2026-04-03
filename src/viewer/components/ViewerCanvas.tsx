@@ -72,7 +72,8 @@ function ViewerElement({
   const strokeWidth = active
     ? Math.max((element.properties.strokeWidth ?? 1) * 2, 3)
     : (element.properties.strokeWidth ?? (geo.shape === "line" ? 2 : 1));
-  const opacity = isDimmed ? 0.4 : 0.9;
+  const baseOpacity = element.properties.opacity ?? 1;
+  const opacity = isDimmed ? baseOpacity * 0.4 : baseOpacity;
 
   const x = "x" in geo ? geo.x : 0;
   const y = "y" in geo ? geo.y : 0;

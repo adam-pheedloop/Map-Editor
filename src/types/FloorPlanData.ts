@@ -134,6 +134,8 @@ export interface ElementProperties {
   textAlign?: "left" | "center" | "right";
   // Icon-specific
   iconName?: string;
+  // Element opacity
+  opacity?: number; // 0.0–1.0, default 1.0
   // Arrow-specific
   arrowHead?: { style: "triangle" | "chevron"; size: number };
   // Label customization

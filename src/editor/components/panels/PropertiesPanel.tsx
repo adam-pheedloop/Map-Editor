@@ -217,6 +217,22 @@ export function PropertiesPanel({
           </div>
         )}
 
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between">
+            <SectionLabel>Opacity</SectionLabel>
+            <span className="text-[11px] text-gray-400">
+              {Math.round((element.properties.opacity ?? 1) * 100)}%
+            </span>
+          </div>
+          <Slider
+            min={0}
+            max={100}
+            value={Math.round((element.properties.opacity ?? 1) * 100)}
+            onChange={(e) => onUpdateProperties(element.id, { opacity: Number(e.target.value) / 100 })}
+            className="w-full"
+          />
+        </div>
+
         {(geo.shape === "rect" || geo.shape === "ellipse") && element.type !== "label" && element.type !== "icon" && (
           <LabelSection
             properties={element.properties}

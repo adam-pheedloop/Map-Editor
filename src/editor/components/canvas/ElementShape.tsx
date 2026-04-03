@@ -54,6 +54,7 @@ export function ElementShape({
       x={x}
       y={y}
       rotation={rotation}
+      opacity={element.properties.opacity ?? 1}
       draggable={isSelectMode}
       onClick={(e) => {
         if (!isSelectMode) return;

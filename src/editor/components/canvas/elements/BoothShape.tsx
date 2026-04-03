@@ -1,6 +1,8 @@
-import { Rect, Text } from "react-konva";
-import type { RectGeometry } from "../../../../types";
+import { Rect, Text, Group } from "react-konva";
+import type { RectGeometry, ElementProperties } from "../../../../types";
 import type { ShapeConfig } from "./types";
+import { getLabelXY, getLabelFontStyle, getLabelRenderProps } from "./labelUtils";
+import { LabelWithBackground } from "./LabelWithBackground";
 
 export const boothConfig: ShapeConfig = {
   optionsBar: ["fill", "stroke", "strokeWidth"],
@@ -14,9 +16,14 @@ interface BoothShapeProps {
   strokeColor: string;
   strokeWidth: number;
   boothCode: string;
+  properties: ElementProperties;
 }
 
-export function BoothShape({ geo, color, strokeColor, strokeWidth, boothCode }: BoothShapeProps) {
+export function BoothShape({ geo, color, strokeColor, strokeWidth, boothCode, properties }: BoothShapeProps) {
+  const lp = getLabelRenderProps(properties);
+  const labelPos = getLabelXY(lp.labelPositionV, lp.labelPositionH, geo.width, geo.height);
+  const fontStyle = getLabelFontStyle(lp.labelBold, lp.labelItalic);
+
   return (
     <>
       <Rect
@@ -36,17 +43,17 @@ export function BoothShape({ geo, color, strokeColor, strokeWidth, boothCode }: 
         listening={false}
       />
       {boothCode && (
-        <Text
-          text={boothCode}
-          width={geo.width}
-          height={geo.height}
-          align="center"
-          verticalAlign="middle"
-          fontSize={12}
-          fill="#fff"
-          fontStyle="bold"
-          listening={false}
-        />
+        <Group opacity={lp.labelVisible ? 1 : 0.35} listening={false}>
+          <LabelWithBackground
+            text={lp.labelVisible ? boothCode : `${boothCode} ⊘`}
+            labelPos={labelPos}
+            fontSize={lp.labelFontSize}
+            fill={lp.labelColor}
+            fontStyle={fontStyle}
+            underline={lp.labelUnderline}
+            background={lp.labelBackground}
+          />
+        </Group>
       )}
     </>
   );

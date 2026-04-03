@@ -38,7 +38,7 @@ export function useEditorState(
   { persist = false }: UseEditorStateOptions = {}
 ) {
   const loadedData = backfillLayers(persist ? loadFromStorage() ?? initialData : initialData);
-  const { present: data, set: setData, undo, redo, canUndo, canRedo } = useHistory<FloorPlanData>(loadedData);
+  const { present: data, set: setData, replace: replaceData, undo, redo, canUndo, canRedo } = useHistory<FloorPlanData>(loadedData);
 
   // Auto-save to localStorage
   useEffect(() => {
@@ -53,6 +53,18 @@ export function useEditorState(
     setData((prev) => ({
       ...prev,
       elements: [...prev.elements, withLayer],
+    }));
+  }, []);
+
+  const addElements = useCallback((elements: FloorPlanElement[]) => {
+    setData((prev) => ({
+      ...prev,
+      elements: [
+        ...prev.elements,
+        ...elements.map((el) =>
+          el.layer ? el : { ...el, layer: ELEMENT_TYPE_TO_LAYER[el.type] }
+        ),
+      ],
     }));
   }, []);
 
@@ -80,6 +92,38 @@ export function useEditorState(
             : el
         ),
       }));
+    },
+    []
+  );
+
+  /** Update properties without pushing to undo stack. Use for live slider previews. */
+  const previewProperties = useCallback(
+    (id: string, properties: Partial<ElementProperties>) => {
+      replaceData((prev) => ({
+        ...prev,
+        elements: prev.elements.map((el) =>
+          el.id === id
+            ? { ...el, properties: { ...el.properties, ...properties } }
+            : el
+        ),
+      }));
+    },
+    []
+  );
+
+  const batchUpdateProperties = useCallback(
+    (updates: Array<{ id: string; properties: Partial<ElementProperties> }>) => {
+      setData((prev) => {
+        const updateMap = new Map(updates.map((u) => [u.id, u.properties]));
+        return {
+          ...prev,
+          elements: prev.elements.map((el) => {
+            const props = updateMap.get(el.id);
+            if (!props) return el;
+            return { ...el, properties: { ...el.properties, ...props } };
+          }),
+        };
+      });
     },
     []
   );
@@ -335,8 +379,11 @@ export function useEditorState(
   return {
     data,
     addElement,
+    addElements,
     updateElement,
     updateProperties,
+    previewProperties,
+    batchUpdateProperties,
     deleteElement,
     deleteElements,
     moveElements,

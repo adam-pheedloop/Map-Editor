@@ -105,6 +105,15 @@ export function useKeyboardShortcuts({
         case "l":
           setActiveTool("line");
           break;
+        case "a":
+          setActiveTool("arrow");
+          break;
+        case "c":
+          setActiveTool("arc");
+          break;
+        case "p":
+          setActiveTool("polygon");
+          break;
         case "b":
           setActiveTool("booth");
           break;

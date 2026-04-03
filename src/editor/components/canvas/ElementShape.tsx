@@ -3,6 +3,9 @@ import type { FloorPlanElement } from "../../../types";
 import { RectShape } from "./elements/RectShape";
 import { EllipseShape } from "./elements/EllipseShape";
 import { LineShape } from "./elements/LineShape";
+import { ArrowShape } from "./elements/ArrowShape";
+import { ArcShape } from "./elements/ArcShape";
+import { PolygonShape } from "./elements/PolygonShape";
 import { BoothShape } from "./elements/BoothShape";
 import { TextShape } from "./elements/TextShape";
 import { IconShape } from "./elements/IconShape";
@@ -51,6 +54,7 @@ export function ElementShape({
       x={x}
       y={y}
       rotation={rotation}
+      opacity={element.properties.opacity ?? 1}
       draggable={isSelectMode}
       onClick={(e) => {
         if (!isSelectMode) return;
@@ -79,6 +83,7 @@ export function ElementShape({
           strokeColor={strokeColor}
           strokeWidth={strokeWidth}
           boothCode={element.properties.boothCode || element.id.slice(0, 6)}
+          properties={element.properties}
         />
       )}
       {element.type === "label" && geo.shape === "rect" && (
@@ -97,13 +102,27 @@ export function ElementShape({
         <IconShape geo={geo} iconName={element.properties.iconName} color={color} />
       )}
       {element.type !== "booth" && element.type !== "label" && element.type !== "icon" && geo.shape === "rect" && (
-        <RectShape geo={geo} color={color} strokeColor={strokeColor} strokeWidth={strokeWidth} label={label} />
+        <RectShape geo={geo} color={color} strokeColor={strokeColor} strokeWidth={strokeWidth} label={label} properties={element.properties} />
       )}
       {geo.shape === "ellipse" && (
-        <EllipseShape geo={geo} color={color} strokeColor={strokeColor} strokeWidth={strokeWidth} label={label} />
+        <EllipseShape geo={geo} color={color} strokeColor={strokeColor} strokeWidth={strokeWidth} label={label} properties={element.properties} />
       )}
-      {geo.shape === "line" && (
+      {geo.shape === "line" && !element.properties.arrowHead && (
         <LineShape geo={geo} color={color} strokeWidth={strokeWidth} />
+      )}
+      {geo.shape === "line" && element.properties.arrowHead && (
+        <ArrowShape
+          geo={geo}
+          color={color}
+          strokeWidth={strokeWidth}
+          arrowHead={element.properties.arrowHead}
+        />
+      )}
+      {geo.shape === "arc" && (
+        <ArcShape geo={geo} color={color} strokeWidth={strokeWidth} />
+      )}
+      {geo.shape === "polygon" && (
+        <PolygonShape geo={geo} color={color} strokeColor={strokeColor} strokeWidth={strokeWidth} />
       )}
     </Group>
   );

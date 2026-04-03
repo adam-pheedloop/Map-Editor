@@ -1,11 +1,13 @@
 import { useRef, useState, useEffect } from "react";
-import { Stage, Layer, Rect, Group, Text, Ellipse, Line, Image as KonvaImage } from "react-konva";
+import { Stage, Layer, Rect, Group, Text, Ellipse, Line, Arrow, Shape, Image as KonvaImage } from "react-konva";
 import type {
   FloorPlanData,
   FloorPlanElement,
   RectGeometry,
   EllipseGeometry,
   LineGeometry,
+  ArcGeometry,
+  PolygonGeometry,
 } from "../../types";
 import { getIconEntry } from "../../editor/utils/iconRegistry";
 import { iconToImage } from "../../editor/utils/iconToImage";
@@ -70,7 +72,8 @@ function ViewerElement({
   const strokeWidth = active
     ? Math.max((element.properties.strokeWidth ?? 1) * 2, 3)
     : (element.properties.strokeWidth ?? (geo.shape === "line" ? 2 : 1));
-  const opacity = isDimmed ? 0.4 : 0.9;
+  const baseOpacity = element.properties.opacity ?? 1;
+  const opacity = isDimmed ? baseOpacity * 0.4 : baseOpacity;
 
   const x = "x" in geo ? geo.x : 0;
   const y = "y" in geo ? geo.y : 0;
@@ -114,16 +117,18 @@ function ViewerElement({
             cornerRadius={2}
             opacity={0.9}
           />
-          {label && (
+          {label && element.properties.labelVisible !== false && (
             <Text
               text={label}
               width={geo.width}
               height={(geo as RectGeometry).height}
-              align="center"
-              verticalAlign="middle"
-              fontSize={12}
-              fill="#fff"
-              fontStyle="bold"
+              align={element.properties.labelPositionH ?? "center"}
+              verticalAlign={element.properties.labelPositionV ?? "middle"}
+              padding={4}
+              fontSize={element.properties.labelFontSize ?? 12}
+              fill={element.properties.labelColor ?? "#fff"}
+              fontStyle={`${element.properties.labelBold !== false ? "bold" : ""}${element.properties.labelItalic ? " italic" : ""}`.trim() || "normal"}
+              textDecoration={element.properties.labelUnderline ? "underline" : ""}
               listening={false}
             />
           )}
@@ -141,27 +146,66 @@ function ViewerElement({
             strokeWidth={strokeWidth}
             opacity={0.9}
           />
-          {label && (
+          {label && element.properties.labelVisible !== false && (
             <Text
               width={(geo as EllipseGeometry).radiusX * 2}
               height={(geo as EllipseGeometry).radiusY * 2}
-              align="center"
-              verticalAlign="middle"
+              align={element.properties.labelPositionH ?? "center"}
+              verticalAlign={element.properties.labelPositionV ?? "middle"}
+              padding={4}
               text={label}
-              fontSize={12}
-              fill="#fff"
-              fontStyle="bold"
+              fontSize={element.properties.labelFontSize ?? 12}
+              fill={element.properties.labelColor ?? "#fff"}
+              fontStyle={`${element.properties.labelBold !== false ? "bold" : ""}${element.properties.labelItalic ? " italic" : ""}`.trim() || "normal"}
+              textDecoration={element.properties.labelUnderline ? "underline" : ""}
               listening={false}
             />
           )}
         </>
       )}
-      {geo.shape === "line" && (
+      {geo.shape === "line" && !element.properties.arrowHead && (
         <Line
           points={[...(geo as LineGeometry).points]}
           stroke={color}
           strokeWidth={strokeWidth}
           lineCap="round"
+        />
+      )}
+      {geo.shape === "line" && element.properties.arrowHead && (
+        <Arrow
+          points={[...(geo as LineGeometry).points]}
+          stroke={color}
+          strokeWidth={strokeWidth}
+          pointerLength={element.properties.arrowHead.size}
+          pointerWidth={element.properties.arrowHead.size * 0.8}
+          fill={element.properties.arrowHead.style === "triangle" ? color : ""}
+          lineCap="round"
+        />
+      )}
+      {geo.shape === "arc" && (() => {
+        const arcGeo = geo as ArcGeometry;
+        const [x1, y1, cx, cy, x2, y2] = arcGeo.points;
+        return (
+          <Shape
+            sceneFunc={(ctx, shape) => {
+              ctx.beginPath();
+              ctx.moveTo(x1, y1);
+              ctx.quadraticCurveTo(cx, cy, x2, y2);
+              ctx.fillStrokeShape(shape);
+            }}
+            stroke={color}
+            strokeWidth={strokeWidth}
+            lineCap="round"
+          />
+        );
+      })()}
+      {geo.shape === "polygon" && (
+        <Line
+          points={[...(geo as PolygonGeometry).points]}
+          closed
+          fill={color}
+          stroke={strokeColor}
+          strokeWidth={strokeWidth}
         />
       )}
       {element.type === "icon" && geo.shape === "rect" && element.properties.iconName && (

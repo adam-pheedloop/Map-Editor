@@ -1,15 +1,19 @@
 import { useCallback, useState, useRef, useEffect } from "react";
 import { Stage, Layer, Rect } from "react-konva";
 import type Konva from "konva";
-import type { FloorPlanData, LineGeometry, LayerDefinition, LayerId } from "../../../types";
+import type { FloorPlanData, LineGeometry, ArcGeometry, PolygonGeometry, LayerDefinition, LayerId } from "../../../types";
 import { ELEMENT_TYPE_TO_LAYER } from "../../../types";
 import type { ActiveTool } from "../../types";
 import { isEmptySpaceClick, getCanvasPoint } from "../../utils/canvas";
 import { useDrawingTool } from "../../hooks/useDrawingTool";
 import { useLineTool } from "../../hooks/useLineTool";
+import { useArcTool } from "../../hooks/useArcTool";
+import { usePolygonTool } from "../../hooks/usePolygonTool";
 import { ElementShape } from "./ElementShape";
 import { SelectionTransformer } from "./SelectionTransformer";
 import { LineEndpointHandles } from "./LineEndpointHandles";
+import { ArcControlHandle } from "./ArcControlHandle";
+import { PolygonVertexHandles } from "./PolygonVertexHandles";
 import { DrawingPreview } from "./DrawingPreview";
 import { BackgroundImage } from "./BackgroundImage";
 import { AlignmentGuides } from "./AlignmentGuides";
@@ -22,7 +26,7 @@ import { MeasurePreview } from "./MeasurePreview";
 import type { CalibrationState } from "../../hooks/useCalibration";
 import type { MeasureState } from "../../hooks/useMeasureTool";
 import { useAlignmentGuides } from "../../hooks/useAlignmentGuides";
-import { getElementBounds } from "../../utils/bounds";
+import { getElementBounds, lineIntersectsRect } from "../../utils/bounds";
 
 interface CanvasProps {
   data: FloorPlanData;
@@ -50,6 +54,10 @@ interface CanvasProps {
     rotation: number
   ) => void;
   onEndpointMove: (id: string, pointIndex: 0 | 1, x: number, y: number) => void;
+  onArcDrawEnd: (x1: number, y1: number, cx: number, cy: number, x2: number, y2: number) => void;
+  onArcControlPointMove: (id: string, pointIndex: 0 | 1 | 2, x: number, y: number) => void;
+  onPolygonDrawEnd: (points: number[], anchorX: number, anchorY: number) => void;
+  onPolygonVertexMove: (id: string, vertexIndex: number, x: number, y: number) => void;
   onElementContextMenu: (id: string, screenX: number, screenY: number) => void;
   onClickPlace: (x: number, y: number) => void;
   gridSettings: {
@@ -102,6 +110,10 @@ export function Canvas({
   onElementMove,
   onMultiMove,
   onEndpointMove,
+  onArcDrawEnd,
+  onArcControlPointMove,
+  onPolygonDrawEnd,
+  onPolygonVertexMove,
   onElementResize,
   onElementContextMenu,
   onClickPlace,
@@ -131,7 +143,9 @@ export function Canvas({
   const isSelectMode = activeTool === "select";
   const isMeasureTool = activeTool === "measure";
   const isDrawing = !isSelectMode && !isMeasureTool;
-  const isLineTool = activeTool === "line";
+  const isLineTool = activeTool === "line" || activeTool === "arrow";
+  const isArcTool = activeTool === "arc";
+  const isPolygonTool = activeTool === "polygon";
   const isTextTool = activeTool === "text";
   const isIconTool = activeTool === "icon";
   const isClickPlaceTool = isTextTool || isIconTool;
@@ -170,7 +184,7 @@ export function Canvas({
     stageRef,
     position,
     scale,
-    isDrawing && !isLineTool,
+    isDrawing && !isLineTool && !isArcTool && !isPolygonTool,
     onDrawEnd
   );
 
@@ -180,6 +194,22 @@ export function Canvas({
     scale,
     isLineTool,
     onLineDrawEnd
+  );
+
+  const arcDrawing = useArcTool(
+    stageRef,
+    position,
+    scale,
+    isArcTool,
+    onArcDrawEnd
+  );
+
+  const polygonDrawing = usePolygonTool(
+    stageRef,
+    position,
+    scale,
+    isPolygonTool,
+    onPolygonDrawEnd
   );
 
   const { activeGuides, startDrag, endDrag, snapPosition } = useAlignmentGuides(data.elements);
@@ -210,6 +240,8 @@ export function Canvas({
     ? data.elements.find((el) => selectedIds.has(el.id))
     : undefined;
   const isSelectedLine = selectedElement?.geometry.shape === "line";
+  const isSelectedArc = selectedElement?.geometry.shape === "arc";
+  const isSelectedPolygon = selectedElement?.geometry.shape === "polygon";
 
   const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
     // Space held = pan mode, let stage draggable handle it
@@ -255,12 +287,24 @@ export function Canvas({
       if (point) onClickPlace(point.x, point.y);
       return;
     }
-    if (isLineTool) {
+    if (isPolygonTool) {
+      polygonDrawing.handleMouseDown(e);
+    } else if (isArcTool) {
+      arcDrawing.handleMouseDown(e);
+    } else if (isLineTool) {
       lineDrawing.handleMouseDown(e);
     } else {
       shapeDrawing.handleMouseDown(e);
     }
   };
+
+  // Arc tool escape key listener
+  useEffect(() => {
+    if (!isArcTool) return;
+    const handler = arcDrawing.handleKeyDown;
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [isArcTool, arcDrawing.handleKeyDown]);
 
   const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
     // Calibration mode: intercept before everything else
@@ -298,7 +342,11 @@ export function Canvas({
       return;
     }
 
-    if (isLineTool) {
+    if (isPolygonTool) {
+      polygonDrawing.handleMouseMove(e);
+    } else if (isArcTool) {
+      arcDrawing.handleMouseMove(e);
+    } else if (isLineTool) {
       lineDrawing.handleMouseMove(e);
     } else {
       shapeDrawing.handleMouseMove(e);
@@ -329,6 +377,17 @@ export function Canvas({
           if (elLayer !== activeLayerId) return false;
 
           const b = getElementBounds(el);
+
+          // Lines have zero-area bounding boxes — use segment-rect intersection
+          if (el.geometry.shape === "line") {
+            const geo = el.geometry;
+            const [x1, y1, x2, y2] = geo.points;
+            return lineIntersectsRect(
+              geo.x + x1, geo.y + y1, geo.x + x2, geo.y + y2,
+              rect.x, rect.y, rect.width, rect.height
+            );
+          }
+
           const elWidth = b.right - b.left;
           const elHeight = b.bottom - b.top;
           if (elWidth <= 0 || elHeight <= 0) return false;
@@ -420,13 +479,19 @@ export function Canvas({
             geometry: { ...geo, x, y } as typeof geo,
           });
 
+          // Offset between anchor position and bounds edges
+          // For rects: anchor is top-left so offset is 0.
+          // For lines: anchor is midpoint so offset is non-zero.
+          const anchorOffsetX = x - proposedBounds.left;
+          const anchorOffsetY = y - proposedBounds.top;
+
           const snapped = snapPosition(id, proposedBounds);
           if (snapped.x !== proposedBounds.left) {
-            finalX = snapped.x;
+            finalX = snapped.x + anchorOffsetX;
             guidesSnappedX = true;
           }
           if (snapped.y !== proposedBounds.top) {
-            finalY = snapped.y;
+            finalY = snapped.y + anchorOffsetY;
             guidesSnappedY = true;
           }
         }
@@ -511,6 +576,7 @@ export function Canvas({
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
+        onDblClick={isPolygonTool ? polygonDrawing.handleDoubleClick : undefined}
       >
         {/* Background layer: color fill, image, grid */}
         <Layer>
@@ -591,6 +657,20 @@ export function Canvas({
               onEndpointMove={onEndpointMove}
             />
           )}
+          {isSelectedArc && selectedElement && (
+            <ArcControlHandle
+              elementId={selectedElement.id}
+              geometry={selectedElement.geometry as ArcGeometry}
+              onControlPointMove={onArcControlPointMove}
+            />
+          )}
+          {isSelectedPolygon && selectedElement && (
+            <PolygonVertexHandles
+              elementId={selectedElement.id}
+              geometry={selectedElement.geometry as PolygonGeometry}
+              onVertexMove={onPolygonVertexMove}
+            />
+          )}
         </Layer>
 
         {/* Drawing overlay: preview, guides, drag-select rect */}
@@ -598,6 +678,8 @@ export function Canvas({
           <DrawingPreview
             rectPreview={shapeDrawing.preview}
             linePreview={lineDrawing.preview}
+            arcState={arcDrawing.state}
+            polygonState={polygonDrawing.state}
             activeTool={activeTool}
           />
           <AlignmentGuides

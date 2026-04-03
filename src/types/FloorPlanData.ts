@@ -64,7 +64,9 @@ export interface RectGeometry {
 
 export interface PolygonGeometry {
   shape: "polygon";
-  coordinates: Point[];
+  x: number;
+  y: number;
+  points: number[]; // flat array [x1, y1, x2, y2, ...] relative to anchor
 }
 
 export interface CircleGeometry {
@@ -90,12 +92,22 @@ export interface LineGeometry {
   points: [number, number, number, number]; // [x1, y1, x2, y2] relative to anchor
 }
 
+export interface ArcGeometry {
+  shape: "arc";
+  x: number;
+  y: number;
+  points: [number, number, number, number, number, number];
+  // [x1, y1, cx, cy, x2, y2] relative to anchor
+  // x1,y1 = start, cx,cy = control point, x2,y2 = end
+}
+
 export type Geometry =
   | RectGeometry
   | PolygonGeometry
   | CircleGeometry
   | EllipseGeometry
-  | LineGeometry;
+  | LineGeometry
+  | ArcGeometry;
 
 export interface ElementProperties {
   name?: string;
@@ -122,6 +134,20 @@ export interface ElementProperties {
   textAlign?: "left" | "center" | "right";
   // Icon-specific
   iconName?: string;
+  // Element opacity
+  opacity?: number; // 0.0–1.0, default 1.0
+  // Arrow-specific
+  arrowHead?: { style: "triangle" | "chevron"; size: number };
+  // Label customization
+  labelPositionV?: "top" | "middle" | "bottom";
+  labelPositionH?: "left" | "center" | "right";
+  labelColor?: string;
+  labelFontSize?: number;
+  labelBold?: boolean;
+  labelItalic?: boolean;
+  labelUnderline?: boolean;
+  labelBackground?: { color: string; opacity: number };
+  labelVisible?: boolean;
 }
 
 export interface FloorPlanElement {

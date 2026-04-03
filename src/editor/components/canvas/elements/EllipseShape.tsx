@@ -1,6 +1,8 @@
-import { Ellipse, Text } from "react-konva";
-import type { EllipseGeometry } from "../../../../types";
+import { Ellipse, Group } from "react-konva";
+import type { EllipseGeometry, ElementProperties } from "../../../../types";
 import type { ShapeConfig } from "./types";
+import { getLabelXY, getLabelFontStyle, getLabelRenderProps } from "./labelUtils";
+import { LabelWithBackground } from "./LabelWithBackground";
 
 export const ellipseConfig: ShapeConfig = {
   optionsBar: ["fill", "stroke", "strokeWidth"],
@@ -14,9 +16,16 @@ interface EllipseShapeProps {
   strokeColor: string;
   strokeWidth: number;
   label: string;
+  properties: ElementProperties;
 }
 
-export function EllipseShape({ geo, color, strokeColor, strokeWidth, label }: EllipseShapeProps) {
+export function EllipseShape({ geo, color, strokeColor, strokeWidth, label, properties }: EllipseShapeProps) {
+  const lp = getLabelRenderProps(properties);
+  const w = geo.radiusX * 2;
+  const h = geo.radiusY * 2;
+  const labelPos = getLabelXY(lp.labelPositionV, lp.labelPositionH, w, h);
+  const fontStyle = getLabelFontStyle(lp.labelBold, lp.labelItalic);
+
   return (
     <>
       <Ellipse
@@ -30,19 +39,17 @@ export function EllipseShape({ geo, color, strokeColor, strokeWidth, label }: El
         opacity={0.9}
       />
       {label && (
-        <Text
-          text={label}
-          x={0}
-          y={0}
-          width={geo.radiusX * 2}
-          height={geo.radiusY * 2}
-          align="center"
-          verticalAlign="middle"
-          fontSize={12}
-          fill="#fff"
-          fontStyle="bold"
-          listening={false}
-        />
+        <Group opacity={lp.labelVisible ? 1 : 0.35} listening={false}>
+          <LabelWithBackground
+            text={lp.labelVisible ? label : `${label} ⊘`}
+            labelPos={labelPos}
+            fontSize={lp.labelFontSize}
+            fill={lp.labelColor}
+            fontStyle={fontStyle}
+            underline={lp.labelUnderline}
+            background={lp.labelBackground}
+          />
+        </Group>
       )}
     </>
   );

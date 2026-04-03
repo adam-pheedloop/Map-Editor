@@ -48,8 +48,11 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   const {
     data,
     addElement,
+    addElements,
     updateElement,
     updateProperties,
+    previewProperties,
+    batchUpdateProperties,
     deleteElement,
     deleteElements,
     moveElements,
@@ -236,21 +239,21 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   const handlePaste = useCallback(() => {
     const newElements = paste();
     if (newElements.length > 0) {
-      for (const el of newElements) addElement(el);
+      addElements(newElements);
       setSelectedIds(new Set(newElements.map((el) => el.id)));
     }
-  }, [paste, addElement]);
+  }, [paste, addElements]);
 
   const handleDuplicate = useCallback(() => {
     if (selectedElements.length > 0) {
       copy(selectedElements);
       const newElements = paste();
       if (newElements.length > 0) {
-        for (const el of newElements) addElement(el);
+        addElements(newElements);
         setSelectedIds(new Set(newElements.map((el) => el.id)));
       }
     }
-  }, [selectedElements, copy, paste, addElement]);
+  }, [selectedElements, copy, paste, addElements]);
 
   const handleDeselect = useCallback(() => {
     selectNone();
@@ -377,16 +380,19 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           points: [x1 - anchorX, y1 - anchorY, x2 - anchorX, y2 - anchorY],
         },
         properties: {
-          name: "Line",
+          name: activeTool === "arrow" ? "Arrow" : "Line",
           color: defaults.stroke,
           strokeWidth: defaults.strokeWidth,
           zIndex: 1,
+          ...(activeTool === "arrow" && {
+            arrowHead: { style: "triangle" as const, size: 12 },
+          }),
         },
       });
       selectOne(id);
       setActiveTool("select");
     },
-    [addElement, defaults, selectOne]
+    [activeTool, addElement, defaults, selectOne]
   );
 
   const handleClickPlace = useCallback(
@@ -448,6 +454,94 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     [data.elements, updateElement]
   );
 
+  const handleArcDrawEnd = useCallback(
+    (x1: number, y1: number, cx: number, cy: number, x2: number, y2: number) => {
+      const id = uuidv4();
+      addElement({
+        id,
+        type: "shape",
+        geometry: {
+          shape: "arc",
+          x: x1,
+          y: y1,
+          points: [0, 0, cx - x1, cy - y1, x2 - x1, y2 - y1],
+        },
+        properties: {
+          name: "Arc",
+          color: defaults.stroke,
+          strokeWidth: defaults.strokeWidth,
+          zIndex: 1,
+        },
+      });
+      selectOne(id);
+      setActiveTool("select");
+    },
+    [addElement, defaults, selectOne]
+  );
+
+  const handleArcControlPointMove = useCallback(
+    (id: string, pointIndex: 0 | 1 | 2, x: number, y: number) => {
+      const element = data.elements.find((el) => el.id === id);
+      if (!element || element.geometry.shape !== "arc") return;
+      const geo = element.geometry;
+      const newPoints = [...geo.points] as [number, number, number, number, number, number];
+      if (pointIndex === 0) {
+        // Start point
+        newPoints[0] = x - geo.x;
+        newPoints[1] = y - geo.y;
+      } else if (pointIndex === 1) {
+        // End point
+        newPoints[4] = x - geo.x;
+        newPoints[5] = y - geo.y;
+      } else {
+        // Control point
+        newPoints[2] = x - geo.x;
+        newPoints[3] = y - geo.y;
+      }
+      updateElement(id, { points: newPoints });
+    },
+    [data.elements, updateElement]
+  );
+
+  const handlePolygonDrawEnd = useCallback(
+    (points: number[], anchorX: number, anchorY: number) => {
+      const id = uuidv4();
+      addElement({
+        id,
+        type: "shape",
+        geometry: {
+          shape: "polygon",
+          x: anchorX,
+          y: anchorY,
+          points,
+        },
+        properties: {
+          name: "Polygon",
+          color: defaults.fill,
+          strokeColor: defaults.stroke,
+          strokeWidth: defaults.strokeWidth,
+          zIndex: 1,
+        },
+      });
+      selectOne(id);
+      setActiveTool("select");
+    },
+    [addElement, defaults, selectOne]
+  );
+
+  const handlePolygonVertexMove = useCallback(
+    (id: string, vertexIndex: number, x: number, y: number) => {
+      const element = data.elements.find((el) => el.id === id);
+      if (!element || element.geometry.shape !== "polygon") return;
+      const geo = element.geometry;
+      const newPoints = [...geo.points];
+      newPoints[vertexIndex * 2] = x - geo.x;
+      newPoints[vertexIndex * 2 + 1] = y - geo.y;
+      updateElement(id, { points: newPoints });
+    },
+    [data.elements, updateElement]
+  );
+
   const handleElementMove = useCallback(
     (id: string, x: number, y: number) => {
       updateElement(id, { x, y });
@@ -482,7 +576,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
         for (const el of data.elements) {
           const geo = el.geometry;
           if ("x" in geo && "y" in geo) {
-            const updates: Record<string, number> = {
+            const updates: Record<string, number | number[]> = {
               x: geo.x * scaleX,
               y: geo.y * scaleY,
             };
@@ -491,6 +585,11 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
             if ("radiusX" in geo) updates.radiusX = geo.radiusX * scaleX;
             if ("radiusY" in geo) updates.radiusY = geo.radiusY * scaleY;
             if ("radius" in geo) updates.radius = geo.radius * Math.min(scaleX, scaleY);
+            if ("points" in geo && Array.isArray(geo.points)) {
+              updates.points = geo.points.map((v: number, i: number) =>
+                i % 2 === 0 ? v * scaleX : v * scaleY
+              );
+            }
             updateElement(el.id, updates);
           }
         }
@@ -526,7 +625,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     const element = data.elements.find((el) => el.id === contextMenu.elementId);
     if (!element) return [];
 
-    const config = getShapeConfig(element.geometry.shape, element.type);
+    const config = getShapeConfig(element.geometry.shape, element.type, element.properties);
     const items: ContextMenuItem[] = [];
 
     // Z-ordering actions
@@ -787,8 +886,9 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
               defaults={activeDefaults}
               config={getShapeConfig(
                 selectedElement?.geometry.shape
-                  ?? (activeTool === "line" ? "line" : activeTool === "ellipse" ? "ellipse" : "rect"),
-                selectedElement?.type ?? (activeTool === "booth" ? "booth" : activeTool === "text" ? "label" : activeTool === "icon" ? "icon" : undefined)
+                  ?? (activeTool === "line" || activeTool === "arrow" ? "line" : activeTool === "arc" ? "arc" : activeTool === "polygon" ? "polygon" : activeTool === "ellipse" ? "ellipse" : "rect"),
+                selectedElement?.type ?? (activeTool === "booth" ? "booth" : activeTool === "text" ? "label" : activeTool === "icon" ? "icon" : undefined),
+                selectedElement?.properties
               )}
               onDefaultsChange={handleDefaultsChange}
             />
@@ -814,6 +914,10 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   onElementMove={handleElementMove}
                   onMultiMove={handleMultiMove}
                   onEndpointMove={handleEndpointMove}
+                  onArcDrawEnd={handleArcDrawEnd}
+                  onArcControlPointMove={handleArcControlPointMove}
+                  onPolygonDrawEnd={handlePolygonDrawEnd}
+                  onPolygonVertexMove={handlePolygonVertexMove}
                   onElementResize={handleElementResize}
                   onElementContextMenu={handleElementContextMenu}
                   onClickPlace={handleClickPlace}
@@ -865,6 +969,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
             </div>
             <PropertiesPanel
               element={selectedElement}
+              selectedElements={selectedElements}
               selectedCount={selectedIds.size}
               dimensions={data.dimensions}
               backgroundImage={data.backgroundImage}
@@ -877,6 +982,12 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                 } else {
                   updateProperties(id, updates);
                 }
+              }}
+              onPreviewProperties={(id, updates) => previewProperties(id, updates)}
+              onBatchUpdateProperties={(updates) => {
+                batchUpdateProperties(
+                  [...selectedIds].map((id) => ({ id, properties: updates }))
+                );
               }}
               onUpdateGeometry={updateElement}
               onDelete={(id) => {

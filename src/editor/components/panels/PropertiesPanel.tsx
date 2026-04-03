@@ -5,9 +5,11 @@ import type { PropertiesPanelField } from "../canvas/elements";
 import { formatMeasurement, formatArea } from "../../../utils/unitConversion";
 import { Button, TabBar, Slider, SectionLabel, FieldRow, NumberInput, TextInput, TextArea, ColorSwatch } from "../ui";
 import { JsonDebugView } from "../debug";
+import { LabelSection } from "./LabelSection";
 
 interface PropertiesPanelProps {
   element: FloorPlanElement | null;
+  selectedElements: FloorPlanElement[];
   selectedCount: number;
   dimensions: Dimensions;
   backgroundImage?: BackgroundImage;
@@ -15,6 +17,8 @@ interface PropertiesPanelProps {
   activeLayerId: LayerId;
   debug: boolean;
   onUpdateProperties: (id: string, updates: Partial<ElementProperties>) => void;
+  onPreviewProperties: (id: string, updates: Partial<ElementProperties>) => void;
+  onBatchUpdateProperties: (updates: Partial<ElementProperties>) => void;
   onUpdateGeometry: (id: string, updates: Partial<Geometry>) => void;
   onDelete: (id: string) => void;
   onConvertToBooth?: (id: string) => void;
@@ -22,6 +26,13 @@ interface PropertiesPanelProps {
   onRemoveBackground?: () => void;
   onUploadBackground?: () => void;
   onBackgroundColorChange?: (color: string) => void;
+}
+
+function getCommonValue<T>(elements: FloorPlanElement[], getter: (el: FloorPlanElement) => T): T | undefined {
+  if (elements.length === 0) return undefined;
+  const vals = elements.map(getter);
+  const first = JSON.stringify(vals[0]);
+  return vals.every((v) => JSON.stringify(v) === first) ? vals[0] : undefined;
 }
 
 function getDimensions(element: FloorPlanElement): { width: number; height: number; length: number } {
@@ -34,11 +45,20 @@ function getDimensions(element: FloorPlanElement): { width: number; height: numb
     const dy = y2 - y1;
     return { width: 0, height: 0, length: Math.round(Math.sqrt(dx * dx + dy * dy)) };
   }
+  if (geo.shape === "arc") {
+    // Approximate arc length using chord + control point deviation
+    const [x1, y1, cx, cy, x2, y2] = geo.points;
+    const chordLen = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+    const controlLen = Math.sqrt((cx - x1) ** 2 + (cy - y1) ** 2) + Math.sqrt((x2 - cx) ** 2 + (y2 - cy) ** 2);
+    // Average of chord and control polygon is a reasonable approximation
+    return { width: 0, height: 0, length: Math.round((chordLen + controlLen) / 2) };
+  }
   return { width: 0, height: 0, length: 0 };
 }
 
 export function PropertiesPanel({
   element,
+  selectedElements,
   selectedCount,
   dimensions,
   backgroundImage,
@@ -46,6 +66,8 @@ export function PropertiesPanel({
   activeLayerId,
   debug,
   onUpdateProperties,
+  onPreviewProperties,
+  onBatchUpdateProperties,
   onUpdateGeometry,
   onDelete,
   onConvertToBooth,
@@ -57,6 +79,28 @@ export function PropertiesPanel({
   const [tab, setTab] = useState<"properties" | "debug">("properties");
 
   if (!element && selectedCount > 1) {
+    // Elements that support labels (rects and ellipses, excluding text labels and icons)
+    const labelableElements = selectedElements.filter((el) => {
+      const s = el.geometry.shape;
+      return (s === "rect" || s === "ellipse") && el.type !== "label" && el.type !== "icon";
+    });
+    const hasLabelable = labelableElements.length > 0;
+
+    // Build mixed-state properties for LabelSection
+    const mixedProps: Partial<ElementProperties> = hasLabelable ? {
+      labelPositionV: getCommonValue(labelableElements, (el) => el.properties.labelPositionV ?? "middle") as ElementProperties["labelPositionV"],
+      labelPositionH: getCommonValue(labelableElements, (el) => el.properties.labelPositionH ?? "center") as ElementProperties["labelPositionH"],
+      labelColor: getCommonValue(labelableElements, (el) => el.properties.labelColor ?? "#ffffff"),
+      labelFontSize: getCommonValue(labelableElements, (el) => el.properties.labelFontSize ?? 12),
+      labelBold: getCommonValue(labelableElements, (el) => el.properties.labelBold ?? true),
+      labelItalic: getCommonValue(labelableElements, (el) => el.properties.labelItalic ?? false),
+      labelUnderline: getCommonValue(labelableElements, (el) => el.properties.labelUnderline ?? false),
+      labelVisible: getCommonValue(labelableElements, (el) => el.properties.labelVisible !== false ? true : false),
+      labelBackground: getCommonValue(labelableElements, (el) => el.properties.labelBackground),
+    } : {};
+
+    const commonOpacity = getCommonValue(selectedElements, (el) => el.properties.opacity ?? 1);
+
     return (
       <div className="w-60 shrink-0 border-l border-gray-200 bg-white flex flex-col">
         <div className="px-3 py-2 border-b border-gray-200">
@@ -64,10 +108,49 @@ export function PropertiesPanel({
             {selectedCount} elements selected
           </span>
         </div>
-        <div className="flex-1 p-3">
-          <p className="text-xs text-gray-400">
-            Use the options bar to change shared properties.
-          </p>
+        <div className="flex flex-col gap-4 p-3 overflow-y-auto flex-1">
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between">
+              <SectionLabel>Opacity</SectionLabel>
+              <span className="text-[11px] text-gray-400">
+                {commonOpacity !== undefined ? `${Math.round(commonOpacity * 100)}%` : "Mixed"}
+              </span>
+            </div>
+            <Slider
+              min={0}
+              max={100}
+              value={commonOpacity !== undefined ? Math.round(commonOpacity * 100) : 100}
+              onChange={(e) => onBatchUpdateProperties({ opacity: Number(e.target.value) / 100 })}
+              className="w-full"
+            />
+          </div>
+
+          {hasLabelable && (
+            <>
+              <LabelSection
+                properties={mixedProps as ElementProperties}
+                onChange={(updates) => onBatchUpdateProperties(updates)}
+              />
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  color="neutral"
+                  className="flex-1 text-xs"
+                  onClick={() => onBatchUpdateProperties({ labelVisible: false })}
+                >
+                  Hide All Labels
+                </Button>
+                <Button
+                  variant="outline"
+                  color="neutral"
+                  className="flex-1 text-xs"
+                  onClick={() => onBatchUpdateProperties({ labelVisible: true })}
+                >
+                  Show All Labels
+                </Button>
+              </div>
+            </>
+          )}
         </div>
         <div className="p-3 border-t border-gray-200">
           <Button variant="outline" color="negative" className="w-full" onClick={() => onDelete("")}>
@@ -150,7 +233,7 @@ export function PropertiesPanel({
   }
 
   const geo = element.geometry;
-  const config = getShapeConfig(geo.shape, element.type);
+  const config = getShapeConfig(geo.shape, element.type, element.properties);
   const fields = new Set<PropertiesPanelField>(config.propertiesPanel);
   const dims = getDimensions(element);
   const canConvertToBooth = element.type === "shape" && geo.shape === "rect";
@@ -177,7 +260,7 @@ export function PropertiesPanel({
     <div className="w-60 shrink-0 border-l border-gray-200 bg-white flex flex-col">
       <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200">
         <span className="text-xs font-medium text-gray-600 capitalize">
-          {element.type === "shape" ? geo.shape : element.type}
+          {element.type === "shape" ? (element.properties.arrowHead ? "arrow" : geo.shape) : element.type}
         </span>
         {debug && (
           <TabBar
@@ -214,6 +297,40 @@ export function PropertiesPanel({
               onChange={(e) => onUpdateProperties(element.id, { boothCode: e.target.value || undefined })}
             />
           </div>
+        )}
+
+        <div className="flex flex-col gap-1.5">
+          <div className="flex items-center justify-between">
+            <SectionLabel>Opacity</SectionLabel>
+            <span className="text-[11px] text-gray-400">
+              {Math.round((element.properties.opacity ?? 1) * 100)}%
+            </span>
+          </div>
+          <Slider
+            min={0}
+            max={100}
+            value={Math.round((element.properties.opacity ?? 1) * 100)}
+            onMouseDown={() => {
+              // Push current state to undo stack before dragging begins
+              onUpdateProperties(element.id, { opacity: element.properties.opacity ?? 1 });
+            }}
+            onChange={(e) => {
+              // Live preview without undo entries
+              onPreviewProperties(element.id, { opacity: Number(e.target.value) / 100 });
+            }}
+            className="w-full"
+          />
+        </div>
+
+        {(geo.shape === "rect" || geo.shape === "ellipse") && element.type !== "label" && element.type !== "icon" && (
+          <LabelSection
+            properties={{
+              ...element.properties,
+              labelPositionV: element.properties.labelPositionV ?? "middle",
+              labelPositionH: element.properties.labelPositionH ?? "center",
+            }}
+            onChange={(updates) => onUpdateProperties(element.id, updates)}
+          />
         )}
 
         {fields.has("text") && (
@@ -319,6 +436,44 @@ export function PropertiesPanel({
             <div className="px-2 py-1 text-xs text-gray-600 bg-gray-50 rounded border border-gray-200">
               {formatMeasurement(dims.length, dimensions)}
             </div>
+          </div>
+        )}
+
+        {fields.has("arrowHeadStyle") && element.properties.arrowHead && (
+          <div className="flex flex-col gap-1.5">
+            <SectionLabel>Arrow Style</SectionLabel>
+            <div className="flex">
+              {(["triangle", "chevron"] as const).map((style) => (
+                <Button
+                  key={style}
+                  variant="outline"
+                  color="neutral"
+                  active={element.properties.arrowHead?.style === style}
+                  className={`flex-1 py-1 capitalize ${
+                    style === "triangle" ? "rounded-r-none" : "rounded-l-none"
+                  }`}
+                  onClick={() => onUpdateProperties(element.id, {
+                    arrowHead: { ...element.properties.arrowHead!, style },
+                  })}
+                >
+                  {style}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {fields.has("arrowHeadSize") && element.properties.arrowHead && (
+          <div className="flex flex-col gap-1.5">
+            <SectionLabel>Arrow Size</SectionLabel>
+            <FieldRow label="px">
+              <NumberInput
+                value={element.properties.arrowHead.size}
+                onChange={(v) => onUpdateProperties(element.id, {
+                  arrowHead: { ...element.properties.arrowHead!, size: Math.max(4, v) },
+                })}
+              />
+            </FieldRow>
           </div>
         )}
 

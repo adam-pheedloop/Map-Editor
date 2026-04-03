@@ -30,6 +30,17 @@ export function useHistory<T>(initialPresent: T) {
     });
   }, []);
 
+  /** Update present without pushing to undo stack. Use for live previews (e.g. slider dragging). */
+  const replace = useCallback((action: T | ((prev: T) => T)) => {
+    setState((prev) => {
+      const newPresent =
+        typeof action === "function"
+          ? (action as (prev: T) => T)(prev.present)
+          : action;
+      return { ...prev, present: newPresent };
+    });
+  }, []);
+
   const undo = useCallback(() => {
     setState((prev) => {
       if (prev.past.length === 0) return prev;
@@ -59,6 +70,7 @@ export function useHistory<T>(initialPresent: T) {
   return {
     present: state.present,
     set,
+    replace,
     undo,
     redo,
     canUndo: state.past.length > 0,

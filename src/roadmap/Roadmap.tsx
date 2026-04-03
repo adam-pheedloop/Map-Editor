@@ -137,12 +137,30 @@ export function Roadmap() {
           </div>
         </div>
 
-        {/* Phase list */}
+        {/* Active phases (in-progress + planned) */}
         <div className="flex flex-col gap-2">
-          {phases.map((phase) => (
-            <PhaseRow key={phase.id} phase={phase} />
-          ))}
+          {phases
+            .filter((p) => p.status !== "done")
+            .map((phase) => (
+              <PhaseRow key={phase.id} phase={phase} />
+            ))}
         </div>
+
+        {/* Completed phases */}
+        {done > 0 && (
+          <>
+            <div className="text-[10px] font-medium text-gray-400 uppercase tracking-wide mt-6 mb-2">
+              Completed
+            </div>
+            <div className="flex flex-col gap-2">
+              {phases
+                .filter((p) => p.status === "done")
+                .map((phase) => (
+                  <PhaseRow key={phase.id} phase={phase} />
+                ))}
+            </div>
+          </>
+        )}
       </div>
     </div>
   );

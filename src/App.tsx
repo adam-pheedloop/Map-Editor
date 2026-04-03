@@ -8,18 +8,20 @@ import {
 import { MapEditor } from "./editor";
 import { MapViewer } from "./viewer";
 import { Roadmap } from "./roadmap/Roadmap";
+import { KnownIssues } from "./roadmap/KnownIssues";
 import { sampleMap } from "./sample-data/sample-map";
 import { sampleExhibitors } from "./sample-data/sample-exhibitors";
 import type { FloorPlanData } from "./types";
 import type { ViewerMode } from "./viewer/types";
 
-type Route = "editor" | "viewer" | "roadmap";
+type Route = "editor" | "viewer" | "roadmap" | "issues";
 type Viewport = "desktop" | "mobile";
 
 function getRoute(): Route {
   const hash = window.location.hash.replace("#", "");
   if (hash === "viewer") return "viewer";
   if (hash === "roadmap") return "roadmap";
+  if (hash === "issues") return "issues";
   return "editor";
 }
 
@@ -105,6 +107,16 @@ function App() {
         >
           Roadmap
         </a>
+        <a
+          href="#issues"
+          className={`px-3 py-1 rounded transition-colors ${
+            route === "issues"
+              ? "bg-white/15 text-white"
+              : "text-gray-400 hover:text-white"
+          }`}
+        >
+          Issues
+        </a>
 
         {route === "viewer" && (
           <>
@@ -167,6 +179,7 @@ function App() {
           <ViewerRoute viewport={viewport} mode={viewerMode} />
         )}
         {route === "roadmap" && <Roadmap />}
+        {route === "issues" && <KnownIssues />}
       </div>
     </div>
   );

@@ -14,6 +14,9 @@ const shortcuts: { category: string; items: { keys: string; description: string 
       { keys: "R", description: "Rectangle tool" },
       { keys: "O", description: "Ellipse tool" },
       { keys: "L", description: "Line tool" },
+      { keys: "A", description: "Arrow tool" },
+      { keys: "C", description: "Arc tool" },
+      { keys: "P", description: "Polygon tool" },
       { keys: "B", description: "Booth tool" },
       { keys: "T", description: "Text tool" },
       { keys: "I", description: "Icon tool" },
@@ -49,7 +52,8 @@ const shortcuts: { category: string; items: { keys: string; description: string 
       { keys: "Space + Drag", description: "Pan canvas" },
       { keys: "Shift + Drag", description: "Constrain proportions (square/circle)" },
       { keys: "Shift + Rotate", description: "Snap rotation to 15°" },
-      { keys: "Shift + Line", description: "Snap line to 45° angles" },
+      { keys: "Shift + Line/Arrow", description: "Snap to 45° angles" },
+      { keys: "Shift + Polygon", description: "Snap edges to 45° angles" },
       { keys: "Shift + Measure", description: "Snap to horizontal/vertical/45°" },
       { keys: "Shift + Calibrate", description: "Snap calibration line to horizontal/vertical/45°" },
     ],
@@ -118,6 +122,15 @@ export function HelpDialog({ onClose }: HelpDialogProps) {
               <li>Upload a background floor plan via <strong>Background</strong> in the menu bar</li>
               <li>Use <strong>Tools &gt; Configure Grid</strong> to customize the grid overlay</li>
               <li>Hold <strong>Space</strong> and drag to pan the canvas</li>
+            </ul>
+
+            <h3 className="text-xs font-semibold text-gray-800 mt-4 mb-2">Drawing Tools</h3>
+            <ul className="text-xs text-gray-600 space-y-1.5">
+              <li><strong>Arrow</strong> (A) — click and drag to draw an arrow. Select to change arrowhead style (triangle/chevron) and size in the properties panel</li>
+              <li><strong>Arc</strong> (C) — click to set start point, click to set end point, then move mouse to bend the curve and click to finalize. Escape to cancel</li>
+              <li><strong>Polygon</strong> (P) — click to place vertices. Close by clicking near the first vertex, pressing Enter, or double-clicking. Minimum 3 vertices. Escape to cancel</li>
+              <li>Select any arrow, arc, or polygon to see <strong>control handles</strong> for reshaping</li>
+              <li>Hold <strong>Shift</strong> while drawing lines, arrows, or polygon edges to snap to 45° angles</li>
             </ul>
 
             <h3 className="text-xs font-semibold text-gray-800 mt-4 mb-2">Layers</h3>

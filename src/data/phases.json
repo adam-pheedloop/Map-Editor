@@ -114,16 +114,18 @@
       "id": 9,
       "title": "New Drawing Tools, Labels & Opacity",
       "summary": "Arrow, arc, and freeform polygon drawing tools, label customization with 9-point positioning, bulk label edit for multi-select, and per-element opacity. ~26 story points across 8 steps.",
-      "status": "planned",
+      "status": "in-progress",
       "tasks": [
-        "Arrow tool (extends line pattern, Konva Arrow component, shortcut A)",
-        "Arc geometry type + Bézier rendering (Konva Line with bezier: true)",
-        "Arc drawing tool (click-click-drag UX) + control point editing",
-        "Freeform polygon tool (multi-click vertex placement, snap-to-close, shortcut P)",
+        "[done] Arrow tool (extends line pattern, Konva Arrow component, triangle/chevron styles, shortcut A)",
+        "[done] Arc geometry type + quadratic Bézier rendering (custom sceneFunc with quadraticCurveTo)",
+        "[done] Arc drawing tool (click-click-drag UX) + 3-point control handle editing",
+        "[done] Freeform polygon tool (multi-click vertex placement, snap-to-close, shift-constrain, Enter/Escape/double-click, shortcut P)",
+        "[done] Line/arrow/arc/polygon drag-select fix (segment-rect intersection for zero-area bounds)",
+        "[done] Snap-to-object fix for non-rect geometries (anchor offset correction)",
         "Label schema + per-element customization (position, color, font, background, visibility with editor ghost indicator)",
         "Bulk label edit for multi-select (batch update as single undo entry)",
         "Per-element opacity slider (0-100%, single and multi-select)",
-        "Shape configs + integration cleanup (shortcuts, copy/paste, flip arrow direction)"
+        "Shape configs + integration cleanup (shortcuts, copy/paste)"
       ]
     },
     {

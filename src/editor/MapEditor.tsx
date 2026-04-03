@@ -575,7 +575,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
         for (const el of data.elements) {
           const geo = el.geometry;
           if ("x" in geo && "y" in geo) {
-            const updates: Record<string, number> = {
+            const updates: Record<string, number | number[]> = {
               x: geo.x * scaleX,
               y: geo.y * scaleY,
             };
@@ -584,6 +584,11 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
             if ("radiusX" in geo) updates.radiusX = geo.radiusX * scaleX;
             if ("radiusY" in geo) updates.radiusY = geo.radiusY * scaleY;
             if ("radius" in geo) updates.radius = geo.radius * Math.min(scaleX, scaleY);
+            if ("points" in geo && Array.isArray(geo.points)) {
+              updates.points = geo.points.map((v: number, i: number) =>
+                i % 2 === 0 ? v * scaleX : v * scaleY
+              );
+            }
             updateElement(el.id, updates);
           }
         }

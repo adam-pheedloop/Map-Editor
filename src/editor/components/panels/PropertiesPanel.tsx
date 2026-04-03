@@ -44,6 +44,14 @@ function getDimensions(element: FloorPlanElement): { width: number; height: numb
     const dy = y2 - y1;
     return { width: 0, height: 0, length: Math.round(Math.sqrt(dx * dx + dy * dy)) };
   }
+  if (geo.shape === "arc") {
+    // Approximate arc length using chord + control point deviation
+    const [x1, y1, cx, cy, x2, y2] = geo.points;
+    const chordLen = Math.sqrt((x2 - x1) ** 2 + (y2 - y1) ** 2);
+    const controlLen = Math.sqrt((cx - x1) ** 2 + (cy - y1) ** 2) + Math.sqrt((x2 - cx) ** 2 + (y2 - cy) ** 2);
+    // Average of chord and control polygon is a reasonable approximation
+    return { width: 0, height: 0, length: Math.round((chordLen + controlLen) / 2) };
+  }
   return { width: 0, height: 0, length: 0 };
 }
 

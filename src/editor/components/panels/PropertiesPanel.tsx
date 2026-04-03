@@ -17,6 +17,7 @@ interface PropertiesPanelProps {
   activeLayerId: LayerId;
   debug: boolean;
   onUpdateProperties: (id: string, updates: Partial<ElementProperties>) => void;
+  onPreviewProperties: (id: string, updates: Partial<ElementProperties>) => void;
   onBatchUpdateProperties: (updates: Partial<ElementProperties>) => void;
   onUpdateGeometry: (id: string, updates: Partial<Geometry>) => void;
   onDelete: (id: string) => void;
@@ -65,6 +66,7 @@ export function PropertiesPanel({
   activeLayerId,
   debug,
   onUpdateProperties,
+  onPreviewProperties,
   onBatchUpdateProperties,
   onUpdateGeometry,
   onDelete,
@@ -308,7 +310,14 @@ export function PropertiesPanel({
             min={0}
             max={100}
             value={Math.round((element.properties.opacity ?? 1) * 100)}
-            onChange={(e) => onUpdateProperties(element.id, { opacity: Number(e.target.value) / 100 })}
+            onMouseDown={() => {
+              // Push current state to undo stack before dragging begins
+              onUpdateProperties(element.id, { opacity: element.properties.opacity ?? 1 });
+            }}
+            onChange={(e) => {
+              // Live preview without undo entries
+              onPreviewProperties(element.id, { opacity: Number(e.target.value) / 100 });
+            }}
             className="w-full"
           />
         </div>

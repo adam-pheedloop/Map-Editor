@@ -51,6 +51,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     addElements,
     updateElement,
     updateProperties,
+    previewProperties,
     batchUpdateProperties,
     deleteElement,
     deleteElements,
@@ -982,6 +983,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   updateProperties(id, updates);
                 }
               }}
+              onPreviewProperties={(id, updates) => previewProperties(id, updates)}
               onBatchUpdateProperties={(updates) => {
                 batchUpdateProperties(
                   [...selectedIds].map((id) => ({ id, properties: updates }))

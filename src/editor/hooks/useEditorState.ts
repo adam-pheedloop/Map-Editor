@@ -38,7 +38,7 @@ export function useEditorState(
   { persist = false }: UseEditorStateOptions = {}
 ) {
   const loadedData = backfillLayers(persist ? loadFromStorage() ?? initialData : initialData);
-  const { present: data, set: setData, undo, redo, canUndo, canRedo } = useHistory<FloorPlanData>(loadedData);
+  const { present: data, set: setData, replace: replaceData, undo, redo, canUndo, canRedo } = useHistory<FloorPlanData>(loadedData);
 
   // Auto-save to localStorage
   useEffect(() => {
@@ -85,6 +85,21 @@ export function useEditorState(
   const updateProperties = useCallback(
     (id: string, properties: Partial<ElementProperties>) => {
       setData((prev) => ({
+        ...prev,
+        elements: prev.elements.map((el) =>
+          el.id === id
+            ? { ...el, properties: { ...el.properties, ...properties } }
+            : el
+        ),
+      }));
+    },
+    []
+  );
+
+  /** Update properties without pushing to undo stack. Use for live slider previews. */
+  const previewProperties = useCallback(
+    (id: string, properties: Partial<ElementProperties>) => {
+      replaceData((prev) => ({
         ...prev,
         elements: prev.elements.map((el) =>
           el.id === id
@@ -367,6 +382,7 @@ export function useEditorState(
     addElements,
     updateElement,
     updateProperties,
+    previewProperties,
     batchUpdateProperties,
     deleteElement,
     deleteElements,

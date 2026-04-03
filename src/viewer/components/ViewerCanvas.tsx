@@ -121,8 +121,9 @@ function ViewerElement({
               text={label}
               width={geo.width}
               height={(geo as RectGeometry).height}
-              align="center"
-              verticalAlign="middle"
+              align={element.properties.labelPositionH ?? "center"}
+              verticalAlign={element.properties.labelPositionV ?? "middle"}
+              padding={4}
               fontSize={12}
               fill="#fff"
               fontStyle="bold"
@@ -147,8 +148,9 @@ function ViewerElement({
             <Text
               width={(geo as EllipseGeometry).radiusX * 2}
               height={(geo as EllipseGeometry).radiusY * 2}
-              align="center"
-              verticalAlign="middle"
+              align={element.properties.labelPositionH ?? "center"}
+              verticalAlign={element.properties.labelPositionV ?? "middle"}
+              padding={4}
               text={label}
               fontSize={12}
               fill="#fff"

@@ -1,6 +1,7 @@
 import { Ellipse, Text } from "react-konva";
 import type { EllipseGeometry } from "../../../../types";
 import type { ShapeConfig } from "./types";
+import { getLabelXY } from "./labelUtils";
 
 export const ellipseConfig: ShapeConfig = {
   optionsBar: ["fill", "stroke", "strokeWidth"],
@@ -14,9 +15,18 @@ interface EllipseShapeProps {
   strokeColor: string;
   strokeWidth: number;
   label: string;
+  labelPositionV?: "top" | "middle" | "bottom";
+  labelPositionH?: "left" | "center" | "right";
 }
 
-export function EllipseShape({ geo, color, strokeColor, strokeWidth, label }: EllipseShapeProps) {
+export function EllipseShape({ geo, color, strokeColor, strokeWidth, label, labelPositionV, labelPositionH }: EllipseShapeProps) {
+  const labelPos = getLabelXY(
+    labelPositionV ?? "middle",
+    labelPositionH ?? "center",
+    geo.radiusX * 2,
+    geo.radiusY * 2
+  );
+
   return (
     <>
       <Ellipse
@@ -32,12 +42,13 @@ export function EllipseShape({ geo, color, strokeColor, strokeWidth, label }: El
       {label && (
         <Text
           text={label}
-          x={0}
-          y={0}
-          width={geo.radiusX * 2}
-          height={geo.radiusY * 2}
-          align="center"
-          verticalAlign="middle"
+          x={labelPos.x}
+          y={labelPos.y}
+          width={labelPos.width}
+          height={labelPos.height}
+          align={labelPos.align}
+          verticalAlign={labelPos.verticalAlign}
+          padding={labelPos.padding}
           fontSize={12}
           fill="#fff"
           fontStyle="bold"

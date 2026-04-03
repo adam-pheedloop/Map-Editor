@@ -5,6 +5,7 @@ import type { PropertiesPanelField } from "../canvas/elements";
 import { formatMeasurement, formatArea } from "../../../utils/unitConversion";
 import { Button, TabBar, Slider, SectionLabel, FieldRow, NumberInput, TextInput, TextArea, ColorSwatch } from "../ui";
 import { JsonDebugView } from "../debug";
+import { LabelPositionPicker } from "./LabelPositionPicker";
 
 interface PropertiesPanelProps {
   element: FloorPlanElement | null;
@@ -214,6 +215,14 @@ export function PropertiesPanel({
               onChange={(e) => onUpdateProperties(element.id, { boothCode: e.target.value || undefined })}
             />
           </div>
+        )}
+
+        {(geo.shape === "rect" || geo.shape === "ellipse") && element.type !== "label" && element.type !== "icon" && (
+          <LabelPositionPicker
+            v={element.properties.labelPositionV ?? "middle"}
+            h={element.properties.labelPositionH ?? "center"}
+            onChange={(v, h) => onUpdateProperties(element.id, { labelPositionV: v, labelPositionH: h })}
+          />
         )}
 
         {fields.has("text") && (

@@ -1,6 +1,7 @@
 import { Rect, Text } from "react-konva";
 import type { RectGeometry } from "../../../../types";
 import type { ShapeConfig } from "./types";
+import { getLabelXY } from "./labelUtils";
 
 export const rectConfig: ShapeConfig = {
   optionsBar: ["fill", "stroke", "strokeWidth"],
@@ -14,9 +15,18 @@ interface RectShapeProps {
   strokeColor: string;
   strokeWidth: number;
   label: string;
+  labelPositionV?: "top" | "middle" | "bottom";
+  labelPositionH?: "left" | "center" | "right";
 }
 
-export function RectShape({ geo, color, strokeColor, strokeWidth, label }: RectShapeProps) {
+export function RectShape({ geo, color, strokeColor, strokeWidth, label, labelPositionV, labelPositionH }: RectShapeProps) {
+  const labelPos = getLabelXY(
+    labelPositionV ?? "middle",
+    labelPositionH ?? "center",
+    geo.width,
+    geo.height
+  );
+
   return (
     <>
       <Rect
@@ -31,10 +41,13 @@ export function RectShape({ geo, color, strokeColor, strokeWidth, label }: RectS
       {label && (
         <Text
           text={label}
-          width={geo.width}
-          height={geo.height}
-          align="center"
-          verticalAlign="middle"
+          x={labelPos.x}
+          y={labelPos.y}
+          width={labelPos.width}
+          height={labelPos.height}
+          align={labelPos.align}
+          verticalAlign={labelPos.verticalAlign}
+          padding={labelPos.padding}
           fontSize={12}
           fill="#fff"
           fontStyle="bold"

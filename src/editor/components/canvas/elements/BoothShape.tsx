@@ -1,6 +1,7 @@
 import { Rect, Text } from "react-konva";
 import type { RectGeometry } from "../../../../types";
 import type { ShapeConfig } from "./types";
+import { getLabelXY } from "./labelUtils";
 
 export const boothConfig: ShapeConfig = {
   optionsBar: ["fill", "stroke", "strokeWidth"],
@@ -14,9 +15,18 @@ interface BoothShapeProps {
   strokeColor: string;
   strokeWidth: number;
   boothCode: string;
+  labelPositionV?: "top" | "middle" | "bottom";
+  labelPositionH?: "left" | "center" | "right";
 }
 
-export function BoothShape({ geo, color, strokeColor, strokeWidth, boothCode }: BoothShapeProps) {
+export function BoothShape({ geo, color, strokeColor, strokeWidth, boothCode, labelPositionV, labelPositionH }: BoothShapeProps) {
+  const labelPos = getLabelXY(
+    labelPositionV ?? "middle",
+    labelPositionH ?? "center",
+    geo.width,
+    geo.height
+  );
+
   return (
     <>
       <Rect
@@ -38,10 +48,13 @@ export function BoothShape({ geo, color, strokeColor, strokeWidth, boothCode }: 
       {boothCode && (
         <Text
           text={boothCode}
-          width={geo.width}
-          height={geo.height}
-          align="center"
-          verticalAlign="middle"
+          x={labelPos.x}
+          y={labelPos.y}
+          width={labelPos.width}
+          height={labelPos.height}
+          align={labelPos.align}
+          verticalAlign={labelPos.verticalAlign}
+          padding={labelPos.padding}
           fontSize={12}
           fill="#fff"
           fontStyle="bold"

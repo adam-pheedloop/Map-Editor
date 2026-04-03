@@ -82,6 +82,8 @@ export function ElementShape({
           strokeColor={strokeColor}
           strokeWidth={strokeWidth}
           boothCode={element.properties.boothCode || element.id.slice(0, 6)}
+          labelPositionV={element.properties.labelPositionV}
+          labelPositionH={element.properties.labelPositionH}
         />
       )}
       {element.type === "label" && geo.shape === "rect" && (
@@ -100,10 +102,10 @@ export function ElementShape({
         <IconShape geo={geo} iconName={element.properties.iconName} color={color} />
       )}
       {element.type !== "booth" && element.type !== "label" && element.type !== "icon" && geo.shape === "rect" && (
-        <RectShape geo={geo} color={color} strokeColor={strokeColor} strokeWidth={strokeWidth} label={label} />
+        <RectShape geo={geo} color={color} strokeColor={strokeColor} strokeWidth={strokeWidth} label={label} labelPositionV={element.properties.labelPositionV} labelPositionH={element.properties.labelPositionH} />
       )}
       {geo.shape === "ellipse" && (
-        <EllipseShape geo={geo} color={color} strokeColor={strokeColor} strokeWidth={strokeWidth} label={label} />
+        <EllipseShape geo={geo} color={color} strokeColor={strokeColor} strokeWidth={strokeWidth} label={label} labelPositionV={element.properties.labelPositionV} labelPositionH={element.properties.labelPositionH} />
       )}
       {geo.shape === "line" && !element.properties.arrowHead && (
         <LineShape geo={geo} color={color} strokeWidth={strokeWidth} />

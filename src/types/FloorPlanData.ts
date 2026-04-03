@@ -136,6 +136,9 @@ export interface ElementProperties {
   iconName?: string;
   // Arrow-specific
   arrowHead?: { style: "triangle" | "chevron"; size: number };
+  // Label positioning
+  labelPositionV?: "top" | "middle" | "bottom";
+  labelPositionH?: "left" | "center" | "right";
 }
 
 export interface FloorPlanElement {

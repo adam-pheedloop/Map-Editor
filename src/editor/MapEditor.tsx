@@ -48,8 +48,10 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   const {
     data,
     addElement,
+    addElements,
     updateElement,
     updateProperties,
+    batchUpdateProperties,
     deleteElement,
     deleteElements,
     moveElements,
@@ -236,21 +238,21 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   const handlePaste = useCallback(() => {
     const newElements = paste();
     if (newElements.length > 0) {
-      for (const el of newElements) addElement(el);
+      addElements(newElements);
       setSelectedIds(new Set(newElements.map((el) => el.id)));
     }
-  }, [paste, addElement]);
+  }, [paste, addElements]);
 
   const handleDuplicate = useCallback(() => {
     if (selectedElements.length > 0) {
       copy(selectedElements);
       const newElements = paste();
       if (newElements.length > 0) {
-        for (const el of newElements) addElement(el);
+        addElements(newElements);
         setSelectedIds(new Set(newElements.map((el) => el.id)));
       }
     }
-  }, [selectedElements, copy, paste, addElement]);
+  }, [selectedElements, copy, paste, addElements]);
 
   const handleDeselect = useCallback(() => {
     selectNone();
@@ -961,6 +963,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
             </div>
             <PropertiesPanel
               element={selectedElement}
+              selectedElements={selectedElements}
               selectedCount={selectedIds.size}
               dimensions={data.dimensions}
               backgroundImage={data.backgroundImage}
@@ -973,6 +976,11 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                 } else {
                   updateProperties(id, updates);
                 }
+              }}
+              onBatchUpdateProperties={(updates) => {
+                batchUpdateProperties(
+                  [...selectedIds].map((id) => ({ id, properties: updates }))
+                );
               }}
               onUpdateGeometry={updateElement}
               onDelete={(id) => {

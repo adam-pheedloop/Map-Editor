@@ -28,8 +28,8 @@ export function LabelSection({ properties, onChange }: LabelSectionProps) {
       </div>
 
       <LabelPositionPicker
-        v={properties.labelPositionV ?? "middle"}
-        h={properties.labelPositionH ?? "center"}
+        v={properties.labelPositionV}
+        h={properties.labelPositionH}
         onChange={(v, h) => onChange({ labelPositionV: v, labelPositionH: h })}
       />
 

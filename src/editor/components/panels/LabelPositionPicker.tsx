@@ -4,8 +4,8 @@ type VPos = "top" | "middle" | "bottom";
 type HPos = "left" | "center" | "right";
 
 interface LabelPositionPickerProps {
-  v: VPos;
-  h: HPos;
+  v?: VPos;
+  h?: HPos;
   onChange: (v: VPos, h: HPos) => void;
 }
 

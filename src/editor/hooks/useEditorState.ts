@@ -56,6 +56,18 @@ export function useEditorState(
     }));
   }, []);
 
+  const addElements = useCallback((elements: FloorPlanElement[]) => {
+    setData((prev) => ({
+      ...prev,
+      elements: [
+        ...prev.elements,
+        ...elements.map((el) =>
+          el.layer ? el : { ...el, layer: ELEMENT_TYPE_TO_LAYER[el.type] }
+        ),
+      ],
+    }));
+  }, []);
+
   const updateElement = useCallback(
     (id: string, geometry: Partial<Geometry>) => {
       setData((prev) => ({
@@ -80,6 +92,23 @@ export function useEditorState(
             : el
         ),
       }));
+    },
+    []
+  );
+
+  const batchUpdateProperties = useCallback(
+    (updates: Array<{ id: string; properties: Partial<ElementProperties> }>) => {
+      setData((prev) => {
+        const updateMap = new Map(updates.map((u) => [u.id, u.properties]));
+        return {
+          ...prev,
+          elements: prev.elements.map((el) => {
+            const props = updateMap.get(el.id);
+            if (!props) return el;
+            return { ...el, properties: { ...el.properties, ...props } };
+          }),
+        };
+      });
     },
     []
   );
@@ -335,8 +364,10 @@ export function useEditorState(
   return {
     data,
     addElement,
+    addElements,
     updateElement,
     updateProperties,
+    batchUpdateProperties,
     deleteElement,
     deleteElements,
     moveElements,

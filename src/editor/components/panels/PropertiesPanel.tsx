@@ -9,6 +9,7 @@ import { LabelSection } from "./LabelSection";
 
 interface PropertiesPanelProps {
   element: FloorPlanElement | null;
+  selectedElements: FloorPlanElement[];
   selectedCount: number;
   dimensions: Dimensions;
   backgroundImage?: BackgroundImage;
@@ -16,6 +17,7 @@ interface PropertiesPanelProps {
   activeLayerId: LayerId;
   debug: boolean;
   onUpdateProperties: (id: string, updates: Partial<ElementProperties>) => void;
+  onBatchUpdateProperties: (updates: Partial<ElementProperties>) => void;
   onUpdateGeometry: (id: string, updates: Partial<Geometry>) => void;
   onDelete: (id: string) => void;
   onConvertToBooth?: (id: string) => void;
@@ -23,6 +25,13 @@ interface PropertiesPanelProps {
   onRemoveBackground?: () => void;
   onUploadBackground?: () => void;
   onBackgroundColorChange?: (color: string) => void;
+}
+
+function getCommonValue<T>(elements: FloorPlanElement[], getter: (el: FloorPlanElement) => T): T | undefined {
+  if (elements.length === 0) return undefined;
+  const vals = elements.map(getter);
+  const first = JSON.stringify(vals[0]);
+  return vals.every((v) => JSON.stringify(v) === first) ? vals[0] : undefined;
 }
 
 function getDimensions(element: FloorPlanElement): { width: number; height: number; length: number } {
@@ -40,6 +49,7 @@ function getDimensions(element: FloorPlanElement): { width: number; height: numb
 
 export function PropertiesPanel({
   element,
+  selectedElements,
   selectedCount,
   dimensions,
   backgroundImage,
@@ -47,6 +57,7 @@ export function PropertiesPanel({
   activeLayerId,
   debug,
   onUpdateProperties,
+  onBatchUpdateProperties,
   onUpdateGeometry,
   onDelete,
   onConvertToBooth,
@@ -58,6 +69,28 @@ export function PropertiesPanel({
   const [tab, setTab] = useState<"properties" | "debug">("properties");
 
   if (!element && selectedCount > 1) {
+    // Elements that support labels (rects and ellipses, excluding text labels and icons)
+    const labelableElements = selectedElements.filter((el) => {
+      const s = el.geometry.shape;
+      return (s === "rect" || s === "ellipse") && el.type !== "label" && el.type !== "icon";
+    });
+    const hasLabelable = labelableElements.length > 0;
+
+    // Build mixed-state properties for LabelSection
+    const mixedProps: Partial<ElementProperties> = hasLabelable ? {
+      labelPositionV: getCommonValue(labelableElements, (el) => el.properties.labelPositionV ?? "middle") as ElementProperties["labelPositionV"],
+      labelPositionH: getCommonValue(labelableElements, (el) => el.properties.labelPositionH ?? "center") as ElementProperties["labelPositionH"],
+      labelColor: getCommonValue(labelableElements, (el) => el.properties.labelColor ?? "#ffffff"),
+      labelFontSize: getCommonValue(labelableElements, (el) => el.properties.labelFontSize ?? 12),
+      labelBold: getCommonValue(labelableElements, (el) => el.properties.labelBold ?? true),
+      labelItalic: getCommonValue(labelableElements, (el) => el.properties.labelItalic ?? false),
+      labelUnderline: getCommonValue(labelableElements, (el) => el.properties.labelUnderline ?? false),
+      labelVisible: getCommonValue(labelableElements, (el) => el.properties.labelVisible !== false ? true : false),
+      labelBackground: getCommonValue(labelableElements, (el) => el.properties.labelBackground),
+    } : {};
+
+    const commonOpacity = getCommonValue(selectedElements, (el) => el.properties.opacity ?? 1);
+
     return (
       <div className="w-60 shrink-0 border-l border-gray-200 bg-white flex flex-col">
         <div className="px-3 py-2 border-b border-gray-200">
@@ -65,10 +98,49 @@ export function PropertiesPanel({
             {selectedCount} elements selected
           </span>
         </div>
-        <div className="flex-1 p-3">
-          <p className="text-xs text-gray-400">
-            Use the options bar to change shared properties.
-          </p>
+        <div className="flex flex-col gap-4 p-3 overflow-y-auto flex-1">
+          <div className="flex flex-col gap-1.5">
+            <div className="flex items-center justify-between">
+              <SectionLabel>Opacity</SectionLabel>
+              <span className="text-[11px] text-gray-400">
+                {commonOpacity !== undefined ? `${Math.round(commonOpacity * 100)}%` : "Mixed"}
+              </span>
+            </div>
+            <Slider
+              min={0}
+              max={100}
+              value={commonOpacity !== undefined ? Math.round(commonOpacity * 100) : 100}
+              onChange={(e) => onBatchUpdateProperties({ opacity: Number(e.target.value) / 100 })}
+              className="w-full"
+            />
+          </div>
+
+          {hasLabelable && (
+            <>
+              <LabelSection
+                properties={mixedProps as ElementProperties}
+                onChange={(updates) => onBatchUpdateProperties(updates)}
+              />
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  color="neutral"
+                  className="flex-1 text-xs"
+                  onClick={() => onBatchUpdateProperties({ labelVisible: false })}
+                >
+                  Hide All Labels
+                </Button>
+                <Button
+                  variant="outline"
+                  color="neutral"
+                  className="flex-1 text-xs"
+                  onClick={() => onBatchUpdateProperties({ labelVisible: true })}
+                >
+                  Show All Labels
+                </Button>
+              </div>
+            </>
+          )}
         </div>
         <div className="p-3 border-t border-gray-200">
           <Button variant="outline" color="negative" className="w-full" onClick={() => onDelete("")}>
@@ -235,7 +307,11 @@ export function PropertiesPanel({
 
         {(geo.shape === "rect" || geo.shape === "ellipse") && element.type !== "label" && element.type !== "icon" && (
           <LabelSection
-            properties={element.properties}
+            properties={{
+              ...element.properties,
+              labelPositionV: element.properties.labelPositionV ?? "middle",
+              labelPositionH: element.properties.labelPositionH ?? "center",
+            }}
             onChange={(updates) => onUpdateProperties(element.id, updates)}
           />
         )}

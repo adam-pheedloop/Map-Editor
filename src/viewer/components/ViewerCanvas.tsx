@@ -116,7 +116,7 @@ function ViewerElement({
             cornerRadius={2}
             opacity={0.9}
           />
-          {label && (
+          {label && element.properties.labelVisible !== false && (
             <Text
               text={label}
               width={geo.width}
@@ -124,9 +124,10 @@ function ViewerElement({
               align={element.properties.labelPositionH ?? "center"}
               verticalAlign={element.properties.labelPositionV ?? "middle"}
               padding={4}
-              fontSize={12}
-              fill="#fff"
-              fontStyle="bold"
+              fontSize={element.properties.labelFontSize ?? 12}
+              fill={element.properties.labelColor ?? "#fff"}
+              fontStyle={`${element.properties.labelBold !== false ? "bold" : ""}${element.properties.labelItalic ? " italic" : ""}`.trim() || "normal"}
+              textDecoration={element.properties.labelUnderline ? "underline" : ""}
               listening={false}
             />
           )}
@@ -144,7 +145,7 @@ function ViewerElement({
             strokeWidth={strokeWidth}
             opacity={0.9}
           />
-          {label && (
+          {label && element.properties.labelVisible !== false && (
             <Text
               width={(geo as EllipseGeometry).radiusX * 2}
               height={(geo as EllipseGeometry).radiusY * 2}
@@ -152,9 +153,10 @@ function ViewerElement({
               verticalAlign={element.properties.labelPositionV ?? "middle"}
               padding={4}
               text={label}
-              fontSize={12}
-              fill="#fff"
-              fontStyle="bold"
+              fontSize={element.properties.labelFontSize ?? 12}
+              fill={element.properties.labelColor ?? "#fff"}
+              fontStyle={`${element.properties.labelBold !== false ? "bold" : ""}${element.properties.labelItalic ? " italic" : ""}`.trim() || "normal"}
+              textDecoration={element.properties.labelUnderline ? "underline" : ""}
               listening={false}
             />
           )}

@@ -1,7 +1,8 @@
-import { Ellipse, Text } from "react-konva";
-import type { EllipseGeometry } from "../../../../types";
+import { Ellipse, Group } from "react-konva";
+import type { EllipseGeometry, ElementProperties } from "../../../../types";
 import type { ShapeConfig } from "./types";
-import { getLabelXY } from "./labelUtils";
+import { getLabelXY, getLabelFontStyle, getLabelRenderProps } from "./labelUtils";
+import { LabelWithBackground } from "./LabelWithBackground";
 
 export const ellipseConfig: ShapeConfig = {
   optionsBar: ["fill", "stroke", "strokeWidth"],
@@ -15,17 +16,15 @@ interface EllipseShapeProps {
   strokeColor: string;
   strokeWidth: number;
   label: string;
-  labelPositionV?: "top" | "middle" | "bottom";
-  labelPositionH?: "left" | "center" | "right";
+  properties: ElementProperties;
 }
 
-export function EllipseShape({ geo, color, strokeColor, strokeWidth, label, labelPositionV, labelPositionH }: EllipseShapeProps) {
-  const labelPos = getLabelXY(
-    labelPositionV ?? "middle",
-    labelPositionH ?? "center",
-    geo.radiusX * 2,
-    geo.radiusY * 2
-  );
+export function EllipseShape({ geo, color, strokeColor, strokeWidth, label, properties }: EllipseShapeProps) {
+  const lp = getLabelRenderProps(properties);
+  const w = geo.radiusX * 2;
+  const h = geo.radiusY * 2;
+  const labelPos = getLabelXY(lp.labelPositionV, lp.labelPositionH, w, h);
+  const fontStyle = getLabelFontStyle(lp.labelBold, lp.labelItalic);
 
   return (
     <>
@@ -40,20 +39,17 @@ export function EllipseShape({ geo, color, strokeColor, strokeWidth, label, labe
         opacity={0.9}
       />
       {label && (
-        <Text
-          text={label}
-          x={labelPos.x}
-          y={labelPos.y}
-          width={labelPos.width}
-          height={labelPos.height}
-          align={labelPos.align}
-          verticalAlign={labelPos.verticalAlign}
-          padding={labelPos.padding}
-          fontSize={12}
-          fill="#fff"
-          fontStyle="bold"
-          listening={false}
-        />
+        <Group opacity={lp.labelVisible ? 1 : 0.35} listening={false}>
+          <LabelWithBackground
+            text={lp.labelVisible ? label : `${label} ⊘`}
+            labelPos={labelPos}
+            fontSize={lp.labelFontSize}
+            fill={lp.labelColor}
+            fontStyle={fontStyle}
+            underline={lp.labelUnderline}
+            background={lp.labelBackground}
+          />
+        </Group>
       )}
     </>
   );

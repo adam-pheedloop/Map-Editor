@@ -1,7 +1,8 @@
-import { Rect, Text } from "react-konva";
-import type { RectGeometry } from "../../../../types";
+import { Rect, Group } from "react-konva";
+import type { RectGeometry, ElementProperties } from "../../../../types";
 import type { ShapeConfig } from "./types";
-import { getLabelXY } from "./labelUtils";
+import { getLabelXY, getLabelFontStyle, getLabelRenderProps } from "./labelUtils";
+import { LabelWithBackground } from "./LabelWithBackground";
 
 export const rectConfig: ShapeConfig = {
   optionsBar: ["fill", "stroke", "strokeWidth"],
@@ -15,17 +16,13 @@ interface RectShapeProps {
   strokeColor: string;
   strokeWidth: number;
   label: string;
-  labelPositionV?: "top" | "middle" | "bottom";
-  labelPositionH?: "left" | "center" | "right";
+  properties: ElementProperties;
 }
 
-export function RectShape({ geo, color, strokeColor, strokeWidth, label, labelPositionV, labelPositionH }: RectShapeProps) {
-  const labelPos = getLabelXY(
-    labelPositionV ?? "middle",
-    labelPositionH ?? "center",
-    geo.width,
-    geo.height
-  );
+export function RectShape({ geo, color, strokeColor, strokeWidth, label, properties }: RectShapeProps) {
+  const lp = getLabelRenderProps(properties);
+  const labelPos = getLabelXY(lp.labelPositionV, lp.labelPositionH, geo.width, geo.height);
+  const fontStyle = getLabelFontStyle(lp.labelBold, lp.labelItalic);
 
   return (
     <>
@@ -39,20 +36,17 @@ export function RectShape({ geo, color, strokeColor, strokeWidth, label, labelPo
         opacity={0.9}
       />
       {label && (
-        <Text
-          text={label}
-          x={labelPos.x}
-          y={labelPos.y}
-          width={labelPos.width}
-          height={labelPos.height}
-          align={labelPos.align}
-          verticalAlign={labelPos.verticalAlign}
-          padding={labelPos.padding}
-          fontSize={12}
-          fill="#fff"
-          fontStyle="bold"
-          listening={false}
-        />
+        <Group opacity={lp.labelVisible ? 1 : 0.35} listening={false}>
+          <LabelWithBackground
+            text={lp.labelVisible ? label : `${label} ⊘`}
+            labelPos={labelPos}
+            fontSize={lp.labelFontSize}
+            fill={lp.labelColor}
+            fontStyle={fontStyle}
+            underline={lp.labelUnderline}
+            background={lp.labelBackground}
+          />
+        </Group>
       )}
     </>
   );

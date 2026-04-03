@@ -1,7 +1,8 @@
-import { Rect, Text } from "react-konva";
-import type { RectGeometry } from "../../../../types";
+import { Rect, Text, Group } from "react-konva";
+import type { RectGeometry, ElementProperties } from "../../../../types";
 import type { ShapeConfig } from "./types";
-import { getLabelXY } from "./labelUtils";
+import { getLabelXY, getLabelFontStyle, getLabelRenderProps } from "./labelUtils";
+import { LabelWithBackground } from "./LabelWithBackground";
 
 export const boothConfig: ShapeConfig = {
   optionsBar: ["fill", "stroke", "strokeWidth"],
@@ -15,17 +16,13 @@ interface BoothShapeProps {
   strokeColor: string;
   strokeWidth: number;
   boothCode: string;
-  labelPositionV?: "top" | "middle" | "bottom";
-  labelPositionH?: "left" | "center" | "right";
+  properties: ElementProperties;
 }
 
-export function BoothShape({ geo, color, strokeColor, strokeWidth, boothCode, labelPositionV, labelPositionH }: BoothShapeProps) {
-  const labelPos = getLabelXY(
-    labelPositionV ?? "middle",
-    labelPositionH ?? "center",
-    geo.width,
-    geo.height
-  );
+export function BoothShape({ geo, color, strokeColor, strokeWidth, boothCode, properties }: BoothShapeProps) {
+  const lp = getLabelRenderProps(properties);
+  const labelPos = getLabelXY(lp.labelPositionV, lp.labelPositionH, geo.width, geo.height);
+  const fontStyle = getLabelFontStyle(lp.labelBold, lp.labelItalic);
 
   return (
     <>
@@ -46,20 +43,17 @@ export function BoothShape({ geo, color, strokeColor, strokeWidth, boothCode, la
         listening={false}
       />
       {boothCode && (
-        <Text
-          text={boothCode}
-          x={labelPos.x}
-          y={labelPos.y}
-          width={labelPos.width}
-          height={labelPos.height}
-          align={labelPos.align}
-          verticalAlign={labelPos.verticalAlign}
-          padding={labelPos.padding}
-          fontSize={12}
-          fill="#fff"
-          fontStyle="bold"
-          listening={false}
-        />
+        <Group opacity={lp.labelVisible ? 1 : 0.35} listening={false}>
+          <LabelWithBackground
+            text={lp.labelVisible ? boothCode : `${boothCode} ⊘`}
+            labelPos={labelPos}
+            fontSize={lp.labelFontSize}
+            fill={lp.labelColor}
+            fontStyle={fontStyle}
+            underline={lp.labelUnderline}
+            background={lp.labelBackground}
+          />
+        </Group>
       )}
     </>
   );

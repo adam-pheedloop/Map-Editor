@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-02",
+  "lastUpdated": "2026-04-04",
   "phases": [
     {
       "id": 1,
@@ -132,14 +132,15 @@
     {
       "id": 10,
       "title": "Session Locations & Meeting Rooms",
-      "summary": "First-class session and meeting room elements in the editor and viewer, with their own search and interactions.",
+      "summary": "First-class session and meeting room elements with grouped Locations tool menu (Photoshop-style), dedicated shape components, convert actions, viewer tabs + search, and interactive popovers. ~18 story points across 6 steps.",
       "status": "planned",
       "tasks": [
-        "Session element type & properties",
-        "Meeting room element type & properties",
-        "Session / room search in viewer",
-        "Click-to-detail for sessions & rooms",
-        "Schedule integration (session time / track)"
+        "Grouped Locations tool menu (ToolGroup component — booth, session, meeting room in horizontal flyout, last-selected icon, ▶ indicator)",
+        "Session Location tool (ToolDefinition, SessionAreaShape, green #27AE60, 🎤 icon, shortcut S)",
+        "Meeting Room tool (ToolDefinition, MeetingRoomShape, orange #F39C12, 🚪 icon, shortcut M)",
+        "Convert actions (context menu: Convert to Booth/Session/Meeting Room/Shape, properties panel type-specific fields)",
+        "Viewer integration (interactive hover+click, detail popovers, sidebar tabs for Exhibitors/Sessions/Meeting Rooms, search across all types)",
+        "Sample data + integration cleanup (sample session locations and meeting rooms, end-to-end verification)"
       ]
     },
     {

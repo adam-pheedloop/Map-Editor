@@ -1,11 +1,16 @@
 import type { ToolDefinition, OptionsBarField, PropertiesPanelField, ContextMenuAction } from "./types";
+import { rectangleTool } from "./rectangle";
 
 // Tools are added here as they are migrated (Steps 3-4).
 // Order determines toolbar display order.
-export const TOOL_REGISTRY: ToolDefinition[] = [];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const TOOL_REGISTRY: ToolDefinition<any>[] = [
+  rectangleTool,
+];
 
 // O(1) lookup by tool id
-export const TOOL_MAP = new Map<string, ToolDefinition>(
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const TOOL_MAP = new Map<string, ToolDefinition<any>>(
   TOOL_REGISTRY.map((t) => [t.id, t])
 );
 

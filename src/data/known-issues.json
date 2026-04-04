@@ -56,6 +56,14 @@
       "area": "Viewer — Mobile",
       "description": "The DirectionsPanel from/to LocationField dropdowns use absolute positioning with left-0 right-0 which stretches to the containing block width. In the mobile container this causes inputs and dropdown suggestions to overflow. Needs max-width constraints or overflow handling within the mobile viewport.",
       "status": "open"
+    },
+    {
+      "id": 8,
+      "title": "Escape does not close icon picker",
+      "severity": "minor",
+      "area": "Editor — Icon Tool",
+      "description": "When the icon picker is open, pressing Escape does not close it or switch back to the select tool. The keyboard shortcuts hook ignores key events when an input is focused, and the icon picker's search input captures focus. The only way to exit is to place an icon. Fix: either have IconPicker handle Escape directly, or exempt Escape from the input-focused guard in useKeyboardShortcuts.",
+      "status": "open"
     }
   ]
 }

@@ -1,15 +1,8 @@
 import { useEffect, useState } from "react";
 import { Image as KonvaImage } from "react-konva";
 import type { RectGeometry } from "../../../../types";
-import type { ShapeConfig } from "./types";
 import { getIconEntry } from "../../../utils/iconRegistry";
 import { iconToImage } from "../../../utils/iconToImage";
-
-export const iconConfig: ShapeConfig = {
-  optionsBar: ["fill"],
-  propertiesPanel: ["name", "width", "height", "rotation"],
-  contextMenu: ["delete"],
-};
 
 interface IconShapeProps {
   geo: RectGeometry;

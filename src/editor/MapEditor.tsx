@@ -16,7 +16,7 @@ import { OptionsBar } from "./components/panels/OptionsBar";
 import { PathingOptionsBar } from "./components/panels/PathingOptionsBar";
 import { StatusBar } from "./components/StatusBar";
 import { PropertiesPanel } from "./components/panels/PropertiesPanel";
-import { getShapeConfig } from "./components/canvas/elements";
+import { getToolUIConfig } from "./tools/registry";
 import { ContextMenu, type ContextMenuItem } from "./components/canvas/ContextMenu";
 import { modKey } from "./components/TopBar";
 import { MapDebugDialog } from "./components/debug";
@@ -434,7 +434,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     const element = data.elements.find((el) => el.id === contextMenu.elementId);
     if (!element) return [];
 
-    const config = getShapeConfig(element.geometry.shape, element.type, element.properties);
+    const config = getToolUIConfig(element.geometry.shape, element.type);
     const items: ContextMenuItem[] = [];
 
     // Z-ordering actions
@@ -693,12 +693,12 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           ) : (
             <OptionsBar
               defaults={activeDefaults}
-              config={getShapeConfig(
-                selectedElement?.geometry.shape
-                  ?? (activeTool === "line" || activeTool === "arrow" ? "line" : activeTool === "arc" ? "arc" : activeTool === "polygon" ? "polygon" : activeTool === "ellipse" ? "ellipse" : "rect"),
-                selectedElement?.type ?? (activeTool === "booth" ? "booth" : activeTool === "text" ? "label" : activeTool === "icon" ? "icon" : undefined),
-                selectedElement?.properties
-              )}
+              config={selectedElement
+                ? getToolUIConfig(selectedElement.geometry.shape, selectedElement.type)
+                : resolvedTool
+                  ? { optionsBar: resolvedTool.optionsBar, propertiesPanel: resolvedTool.propertiesPanel, contextMenu: resolvedTool.contextMenu }
+                  : { optionsBar: [], propertiesPanel: [], contextMenu: [] }
+              }
               onDefaultsChange={handleDefaultsChange}
             />
           )}

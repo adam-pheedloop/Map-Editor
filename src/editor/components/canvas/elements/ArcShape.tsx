@@ -1,12 +1,5 @@
 import { Shape } from "react-konva";
 import type { ArcGeometry } from "../../../../types";
-import type { ShapeConfig } from "./types";
-
-export const arcConfig: ShapeConfig = {
-  optionsBar: ["stroke", "strokeWidth"],
-  propertiesPanel: ["name", "length"],
-  contextMenu: ["delete"],
-};
 
 interface ArcShapeProps {
   geo: ArcGeometry;

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import type { FloorPlanElement, ElementProperties, Geometry, BackgroundImage, LayerId, Dimensions } from "../../../types";
-import { getShapeConfig } from "../canvas/elements";
-import type { PropertiesPanelField } from "../canvas/elements";
+import { getToolUIConfig } from "../../tools/registry";
+import type { PropertiesPanelField } from "../canvas/elements/types";
 import { formatMeasurement, formatArea } from "../../../utils/unitConversion";
 import { Button, TabBar, Slider, SectionLabel, FieldRow, NumberInput, TextInput, TextArea, ColorSwatch } from "../ui";
 import { JsonDebugView } from "../debug";
@@ -233,7 +233,7 @@ export function PropertiesPanel({
   }
 
   const geo = element.geometry;
-  const config = getShapeConfig(geo.shape, element.type, element.properties);
+  const config = getToolUIConfig(geo.shape, element.type);
   const fields = new Set<PropertiesPanelField>(config.propertiesPanel);
   const dims = getDimensions(element);
   const canConvertToBooth = element.type === "shape" && geo.shape === "rect";

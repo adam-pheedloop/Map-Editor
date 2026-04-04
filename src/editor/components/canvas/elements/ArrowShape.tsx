@@ -1,12 +1,5 @@
 import { Arrow } from "react-konva";
 import type { LineGeometry, ArrowGeometry } from "../../../../types";
-import type { ShapeConfig } from "./types";
-
-export const arrowConfig: ShapeConfig = {
-  optionsBar: ["stroke", "strokeWidth"],
-  propertiesPanel: ["name", "length", "arrowHeadStyle", "arrowHeadSize"],
-  contextMenu: ["delete"],
-};
 
 interface ArrowShapeProps {
   geo: LineGeometry | ArrowGeometry;

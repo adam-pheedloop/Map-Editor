@@ -1,5 +1,5 @@
 import { Arrow } from "react-konva";
-import type { LineGeometry } from "../../../../types";
+import type { LineGeometry, ArrowGeometry } from "../../../../types";
 import type { ShapeConfig } from "./types";
 
 export const arrowConfig: ShapeConfig = {
@@ -9,7 +9,7 @@ export const arrowConfig: ShapeConfig = {
 };
 
 interface ArrowShapeProps {
-  geo: LineGeometry;
+  geo: LineGeometry | ArrowGeometry;
   color: string;
   strokeWidth: number;
   arrowHead: { style: "triangle" | "chevron"; size: number };

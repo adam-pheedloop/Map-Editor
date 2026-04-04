@@ -43,6 +43,8 @@ export interface ToolContext {
   data: FloorPlanData;
   defaults: DrawingDefaults;
   onComplete: (result: ToolResult) => void;
+  /** Currently selected icon name (used by icon tool) */
+  activeIconName?: string | null;
 }
 
 // ---------------------------------------------------------------------------

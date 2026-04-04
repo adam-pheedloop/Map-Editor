@@ -32,6 +32,7 @@ const geometryConfigs: Record<string, ShapeConfig> = {
   rect: rectConfig,
   ellipse: ellipseConfig,
   line: lineConfig,
+  arrow: arrowConfig,
   arc: arcConfig,
   polygon: polygonConfig,
 };

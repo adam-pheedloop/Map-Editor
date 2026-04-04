@@ -42,7 +42,7 @@ export function ElementShape({
   const label = getLabel(element);
   const color = element.properties.color;
   const strokeColor = element.properties.strokeColor || "#888888";
-  const strokeWidth = element.properties.strokeWidth ?? (geo.shape === "line" ? 2 : 1);
+  const strokeWidth = element.properties.strokeWidth ?? (geo.shape === "line" || geo.shape === "arrow" ? 2 : 1);
 
   const x = "x" in geo ? geo.x : 0;
   const y = "y" in geo ? geo.y : 0;
@@ -107,15 +107,15 @@ export function ElementShape({
       {geo.shape === "ellipse" && (
         <EllipseShape geo={geo} color={color} strokeColor={strokeColor} strokeWidth={strokeWidth} label={label} properties={element.properties} />
       )}
-      {geo.shape === "line" && !element.properties.arrowHead && (
+      {geo.shape === "line" && (
         <LineShape geo={geo} color={color} strokeWidth={strokeWidth} />
       )}
-      {geo.shape === "line" && element.properties.arrowHead && (
+      {geo.shape === "arrow" && (
         <ArrowShape
           geo={geo}
           color={color}
           strokeWidth={strokeWidth}
-          arrowHead={element.properties.arrowHead}
+          arrowHead={element.properties.arrowHead ?? { style: "triangle", size: 12 }}
         />
       )}
       {geo.shape === "arc" && (

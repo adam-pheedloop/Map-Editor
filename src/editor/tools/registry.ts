@@ -1,11 +1,28 @@
 import type { ToolDefinition, OptionsBarField, PropertiesPanelField, ContextMenuAction } from "./types";
 import { rectangleTool } from "./rectangle";
+import { ellipseTool } from "./ellipse";
+import { boothTool } from "./booth";
+import { lineTool } from "./line";
+import { arrowTool } from "./arrow";
+import { arcTool } from "./arc";
+import { polygonTool } from "./polygon";
+import { textTool } from "./text";
+import { iconTool } from "./icon";
+import { measureTool } from "./measure";
 
-// Tools are added here as they are migrated (Steps 3-4).
 // Order determines toolbar display order.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const TOOL_REGISTRY: ToolDefinition<any>[] = [
   rectangleTool,
+  ellipseTool,
+  lineTool,
+  arrowTool,
+  arcTool,
+  polygonTool,
+  boothTool,
+  textTool,
+  iconTool,
+  measureTool,
 ];
 
 // O(1) lookup by tool id

@@ -357,8 +357,9 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
       data,
       defaults,
       onComplete: handleToolComplete,
+      activeIconName,
     }),
-    [stageRef, position, scale, data, defaults, handleToolComplete]
+    [stageRef, position, scale, data, defaults, handleToolComplete, activeIconName]
   );
 
   const handleDrawEnd = useCallback(

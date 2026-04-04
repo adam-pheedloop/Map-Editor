@@ -1,14 +1,14 @@
-import { PiRectangle } from "react-icons/pi";
+import { PiMicrophone } from "react-icons/pi";
 import type { ToolDefinition } from "./types";
 import { useClickDragInteraction } from "./hooks/useClickDragInteraction";
 import type { DrawingRect } from "./hooks/useClickDragInteraction";
 import { RectPreview } from "./previews/RectPreview";
 
-export const rectangleTool: ToolDefinition<DrawingRect | null> = {
-  id: "rectangle",
-  label: "Rectangle",
-  shortcut: "R",
-  icon: <PiRectangle size={20} />,
+export const sessionAreaTool: ToolDefinition<DrawingRect | null> = {
+  id: "session_area",
+  label: "Session Location",
+  shortcut: "S",
+  icon: <PiMicrophone size={20} />,
   cursor: "crosshair",
 
   useInteraction: (ctx) =>
@@ -16,7 +16,7 @@ export const rectangleTool: ToolDefinition<DrawingRect | null> = {
       type: "element",
       element: {
         id: crypto.randomUUID(),
-        type: "shape",
+        type: "session_area",
         geometry: {
           shape: "rect",
           x: rect.x,
@@ -25,19 +25,22 @@ export const rectangleTool: ToolDefinition<DrawingRect | null> = {
           height: rect.height,
         },
         properties: {
-          name: "",
-          color: defaults.fill,
+          name: "Session",
+          color: "#27AE60",
           strokeColor: defaults.stroke,
           strokeWidth: defaults.strokeWidth,
           zIndex: 1,
+          capacity: null,
+          area: rect.width * rect.height,
         },
       },
     })),
 
   PreviewComponent: RectPreview,
 
-  ownsGeometry: ["rect"],
+  ownsElementType: "session_area",
+  ownsGeometry: ["rect", "polygon"],
   optionsBar: ["fill", "stroke", "strokeWidth"],
-  propertiesPanel: ["name", "width", "height", "rotation"],
-  contextMenu: ["convertToBooth", "convertToSessionArea", "convertToMeetingRoom", "delete"],
+  propertiesPanel: ["name", "capacity", "width", "height", "rotation", "area"],
+  contextMenu: ["convertToBooth", "convertToMeetingRoom", "convertToShape", "delete"],
 };

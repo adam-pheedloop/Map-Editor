@@ -159,11 +159,13 @@ export function useEditorState(
     []
   );
 
-  const updateElementType = useCallback((id: string, newType: ElementType) => {
+  const updateElementType = useCallback((id: string, newType: ElementType, propertyOverrides?: Partial<ElementProperties>) => {
     setData((prev) => ({
       ...prev,
       elements: prev.elements.map((el) =>
-        el.id === id ? { ...el, type: newType } : el
+        el.id === id
+          ? { ...el, type: newType, properties: propertyOverrides ? { ...el.properties, ...propertyOverrides } : el.properties }
+          : el
       ),
     }));
   }, []);

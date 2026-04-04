@@ -4,20 +4,20 @@ import { getLabelXY, getLabelFontStyle, getLabelRenderProps } from "./labelUtils
 import { LabelWithBackground } from "./LabelWithBackground";
 import { getGeometryBounds } from "../../../utils/bounds";
 
-interface BoothShapeProps {
+interface SessionAreaShapeProps {
   geo: Geometry;
   color: string;
   strokeColor: string;
   strokeWidth: number;
-  boothCode: string;
   properties: ElementProperties;
 }
 
-export function BoothShape({ geo, color, strokeColor, strokeWidth, boothCode, properties }: BoothShapeProps) {
+export function SessionAreaShape({ geo, color, strokeColor, strokeWidth, properties }: SessionAreaShapeProps) {
   const lp = getLabelRenderProps(properties);
   const bounds = getGeometryBounds(geo);
   const labelPos = getLabelXY(lp.labelPositionV, lp.labelPositionH, bounds.width, bounds.height);
   const fontStyle = getLabelFontStyle(lp.labelBold, lp.labelItalic);
+  const displayName = properties.name ?? "Session";
 
   return (
     <>
@@ -43,16 +43,16 @@ export function BoothShape({ geo, color, strokeColor, strokeWidth, boothCode, pr
         />
       )}
       <Text
-        text="🏪"
+        text="🎤"
         x={3}
         y={2}
         fontSize={10}
         listening={false}
       />
-      {boothCode && (
+      {displayName && (
         <Group opacity={lp.labelVisible ? 1 : 0.35} listening={false}>
           <LabelWithBackground
-            text={lp.labelVisible ? boothCode : `${boothCode} ⊘`}
+            text={lp.labelVisible ? displayName : `${displayName} ⊘`}
             labelPos={labelPos}
             fontSize={lp.labelFontSize}
             fill={lp.labelColor}

@@ -335,6 +335,66 @@
       "layer": "content"
     },
     {
+      "id": "session-breakout-a",
+      "type": "session_area",
+      "geometry": {
+        "shape": "rect",
+        "x": 460,
+        "y": 500,
+        "width": 150,
+        "height": 120
+      },
+      "properties": {
+        "name": "Breakout Room A",
+        "color": "#27AE60",
+        "strokeColor": "#1E8449",
+        "strokeWidth": 2,
+        "zIndex": 1,
+        "capacity": 50
+      },
+      "layer": "content"
+    },
+    {
+      "id": "session-workshop",
+      "type": "session_area",
+      "geometry": {
+        "shape": "rect",
+        "x": 640,
+        "y": 500,
+        "width": 140,
+        "height": 120
+      },
+      "properties": {
+        "name": "Workshop Room",
+        "color": "#27AE60",
+        "strokeColor": "#1E8449",
+        "strokeWidth": 2,
+        "zIndex": 1,
+        "capacity": 30
+      },
+      "layer": "content"
+    },
+    {
+      "id": "meeting-vip-lounge",
+      "type": "meeting_room",
+      "geometry": {
+        "shape": "rect",
+        "x": 508,
+        "y": 490,
+        "width": 120,
+        "height": 80
+      },
+      "properties": {
+        "name": "VIP Lounge",
+        "color": "#F39C12",
+        "strokeColor": "#D68910",
+        "strokeWidth": 2,
+        "zIndex": 1,
+        "capacity": 12
+      },
+      "layer": "content"
+    },
+    {
       "id": "f164cdf4-75a7-4749-ba50-82dae9c1807a",
       "type": "icon",
       "geometry": {

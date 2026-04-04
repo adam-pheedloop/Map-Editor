@@ -7,6 +7,8 @@ import { ArrowShape } from "./elements/ArrowShape";
 import { ArcShape } from "./elements/ArcShape";
 import { PolygonShape } from "./elements/PolygonShape";
 import { BoothShape } from "./elements/BoothShape";
+import { SessionAreaShape } from "./elements/SessionAreaShape";
+import { MeetingRoomShape } from "./elements/MeetingRoomShape";
 import { TextShape } from "./elements/TextShape";
 import { IconShape } from "./elements/IconShape";
 
@@ -76,13 +78,31 @@ export function ElementShape({
         onContextMenu(element.id, e.evt.clientX, e.evt.clientY);
       }}
     >
-      {element.type === "booth" && geo.shape === "rect" && (
+      {element.type === "booth" && (geo.shape === "rect" || geo.shape === "polygon") && (
         <BoothShape
           geo={geo}
           color={color}
           strokeColor={strokeColor}
           strokeWidth={strokeWidth}
           boothCode={element.properties.boothCode || element.id.slice(0, 6)}
+          properties={element.properties}
+        />
+      )}
+      {element.type === "session_area" && (geo.shape === "rect" || geo.shape === "polygon") && (
+        <SessionAreaShape
+          geo={geo}
+          color={color}
+          strokeColor={strokeColor}
+          strokeWidth={strokeWidth}
+          properties={element.properties}
+        />
+      )}
+      {element.type === "meeting_room" && (geo.shape === "rect" || geo.shape === "polygon") && (
+        <MeetingRoomShape
+          geo={geo}
+          color={color}
+          strokeColor={strokeColor}
+          strokeWidth={strokeWidth}
           properties={element.properties}
         />
       )}
@@ -101,7 +121,7 @@ export function ElementShape({
       {element.type === "icon" && geo.shape === "rect" && element.properties.iconName && (
         <IconShape geo={geo} iconName={element.properties.iconName} color={color} />
       )}
-      {element.type !== "booth" && element.type !== "label" && element.type !== "icon" && geo.shape === "rect" && (
+      {element.type !== "booth" && element.type !== "session_area" && element.type !== "meeting_room" && element.type !== "label" && element.type !== "icon" && geo.shape === "rect" && (
         <RectShape geo={geo} color={color} strokeColor={strokeColor} strokeWidth={strokeWidth} label={label} properties={element.properties} />
       )}
       {geo.shape === "ellipse" && (

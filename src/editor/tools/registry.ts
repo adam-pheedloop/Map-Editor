@@ -25,6 +25,9 @@ export const TOOL_REGISTRY: ToolDefinition<any>[] = [
   measureTool,
 ];
 
+/** Tool IDs that belong in the "Locations" tool group. */
+export const LOCATION_TOOL_IDS: readonly string[] = ["booth"];
+
 // O(1) lookup by tool id
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const TOOL_MAP = new Map<string, ToolDefinition<any>>(

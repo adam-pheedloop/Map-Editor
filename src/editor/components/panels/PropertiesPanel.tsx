@@ -260,7 +260,11 @@ export function PropertiesPanel({
     <div className="w-60 shrink-0 border-l border-gray-200 bg-white flex flex-col">
       <div className="flex items-center justify-between px-3 py-2 border-b border-gray-200">
         <span className="text-xs font-medium text-gray-600 capitalize">
-          {element.type === "shape" ? (element.properties.arrowHead ? "arrow" : geo.shape) : element.type}
+          {element.type === "shape"
+            ? (element.properties.arrowHead ? "arrow" : geo.shape)
+            : element.type === "session_area"
+              ? "Session Location"
+              : element.type}
         </span>
         {debug && (
           <TabBar
@@ -298,6 +302,17 @@ export function PropertiesPanel({
             />
           </div>
         )}
+
+        {fields.has("capacity") && (
+          <div className="flex flex-col gap-1.5">
+            <SectionLabel>Capacity</SectionLabel>
+            <NumberInput
+              value={element.properties.capacity ?? 0}
+              onChange={(v) => onUpdateProperties(element.id, { capacity: v > 0 ? v : null })}
+            />
+          </div>
+        )}
+
 
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">

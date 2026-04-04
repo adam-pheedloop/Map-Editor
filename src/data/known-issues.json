@@ -31,7 +31,7 @@
       "severity": "tech-debt",
       "area": "Editor — Architecture",
       "description": "MapEditor.tsx and Canvas.tsx are accumulating too many props and helpers. Each new tool adds more conditional event routing. Should refactor toward a tool-context or registry pattern.",
-      "status": "open"
+      "status": "fixed"
     },
     {
       "id": 5,

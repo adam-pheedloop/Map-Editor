@@ -1,5 +1,14 @@
 import { useEffect } from "react";
 import type { ActiveTool, PathingTool } from "../types";
+import { TOOL_REGISTRY } from "../tools/registry";
+
+// Build shortcut → tool id map from registry
+const toolShortcuts = new Map<string, string>();
+for (const tool of TOOL_REGISTRY) {
+  if (tool.shortcut) {
+    toolShortcuts.set(tool.shortcut.toLowerCase(), tool.id);
+  }
+}
 
 interface KeyboardShortcutActions {
   setActiveTool: (tool: ActiveTool) => void;
@@ -71,7 +80,7 @@ export function useKeyboardShortcuts({
         }
       }
 
-      // Pathing mode shortcuts
+      // Pathing mode shortcuts (take priority)
       if (isPathingMode && setPathingTool) {
         switch (e.key.toLowerCase()) {
           case "v":
@@ -92,48 +101,27 @@ export function useKeyboardShortcuts({
         }
       }
 
-      switch (e.key.toLowerCase()) {
-        case "v":
-          setActiveTool("select");
-          break;
-        case "r":
-          setActiveTool("rectangle");
-          break;
-        case "o":
-          setActiveTool("ellipse");
-          break;
-        case "l":
-          setActiveTool("line");
-          break;
-        case "a":
-          setActiveTool("arrow");
-          break;
-        case "c":
-          setActiveTool("arc");
-          break;
-        case "p":
-          setActiveTool("polygon");
-          break;
-        case "b":
-          setActiveTool("booth");
-          break;
-        case "t":
-          setActiveTool("text");
-          break;
-        case "i":
-          setActiveTool("icon");
-          break;
-        case "m":
-          setActiveTool("measure");
-          break;
-        case "escape":
-          onDeselect();
-          setActiveTool("select");
-          break;
-        case "delete":
-        case "backspace":
-          onDelete();
-          break;
+      const key = e.key.toLowerCase();
+
+      // Hardcoded shortcuts: select, escape, delete
+      if (key === "v") {
+        setActiveTool("select");
+        return;
+      }
+      if (key === "escape") {
+        onDeselect();
+        setActiveTool("select");
+        return;
+      }
+      if (key === "delete" || key === "backspace") {
+        onDelete();
+        return;
+      }
+
+      // Registry-derived shortcuts
+      const toolId = toolShortcuts.get(key);
+      if (toolId) {
+        setActiveTool(toolId as ActiveTool);
       }
     };
 

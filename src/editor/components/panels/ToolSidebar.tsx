@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { PiCursorFill, PiRectangle, PiCircle, PiLineSegment, PiArrowUpRight, PiBezierCurve, PiPolygon, PiStorefront, PiTextT, PiSticker, PiRuler, PiPaintBrush, PiEraser, PiSquare } from "react-icons/pi";
+import { PiCursorFill, PiPaintBrush, PiEraser, PiSquare } from "react-icons/pi";
 import type { ActiveTool, PathingTool } from "../../types";
+import { TOOL_REGISTRY } from "../../tools/registry";
 import { IconButton } from "../ui";
 import { IconPicker } from "./IconPicker";
 import { getIconEntry } from "../../utils/iconRegistry";
@@ -12,18 +13,23 @@ interface ToolDef<T extends string> {
   icon: React.ReactNode;
 }
 
+// Select is not in the registry — it's built into Canvas
+const selectDef: ToolDef<ActiveTool> = {
+  id: "select",
+  label: "Select",
+  shortcut: "V",
+  icon: <PiCursorFill size={20} />,
+};
+
+// Derive tool list from registry
 const tools: ToolDef<ActiveTool>[] = [
-  { id: "select", label: "Select", shortcut: "V", icon: <PiCursorFill size={20} /> },
-  { id: "rectangle", label: "Rectangle", shortcut: "R", icon: <PiRectangle size={20} /> },
-  { id: "ellipse", label: "Ellipse", shortcut: "O", icon: <PiCircle size={20} /> },
-  { id: "line", label: "Line", shortcut: "L", icon: <PiLineSegment size={20} /> },
-  { id: "arrow", label: "Arrow", shortcut: "A", icon: <PiArrowUpRight size={20} /> },
-  { id: "arc", label: "Arc", shortcut: "C", icon: <PiBezierCurve size={20} /> },
-  { id: "polygon", label: "Polygon", shortcut: "P", icon: <PiPolygon size={20} /> },
-  { id: "booth", label: "Booth", shortcut: "B", icon: <PiStorefront size={20} /> },
-  { id: "text", label: "Text", shortcut: "T", icon: <PiTextT size={20} /> },
-  { id: "icon", label: "Icon", shortcut: "I", icon: <PiSticker size={20} /> },
-  { id: "measure", label: "Measure", shortcut: "M", icon: <PiRuler size={20} /> },
+  selectDef,
+  ...TOOL_REGISTRY.map((t) => ({
+    id: t.id as ActiveTool,
+    label: t.label,
+    shortcut: t.shortcut ?? "",
+    icon: t.icon,
+  })),
 ];
 
 const pathingTools: ToolDef<PathingTool>[] = [

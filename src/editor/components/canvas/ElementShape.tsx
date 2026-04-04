@@ -76,7 +76,7 @@ export function ElementShape({
         onContextMenu(element.id, e.evt.clientX, e.evt.clientY);
       }}
     >
-      {element.type === "booth" && geo.shape === "rect" && (
+      {element.type === "booth" && (geo.shape === "rect" || geo.shape === "polygon") && (
         <BoothShape
           geo={geo}
           color={color}

@@ -1,10 +1,11 @@
-import { Rect, Text, Group } from "react-konva";
-import type { RectGeometry, ElementProperties } from "../../../../types";
+import { Rect, Line, Text, Group } from "react-konva";
+import type { Geometry, ElementProperties } from "../../../../types";
 import { getLabelXY, getLabelFontStyle, getLabelRenderProps } from "./labelUtils";
 import { LabelWithBackground } from "./LabelWithBackground";
+import { getGeometryBounds } from "../../../utils/bounds";
 
 interface BoothShapeProps {
-  geo: RectGeometry;
+  geo: Geometry;
   color: string;
   strokeColor: string;
   strokeWidth: number;
@@ -14,20 +15,33 @@ interface BoothShapeProps {
 
 export function BoothShape({ geo, color, strokeColor, strokeWidth, boothCode, properties }: BoothShapeProps) {
   const lp = getLabelRenderProps(properties);
-  const labelPos = getLabelXY(lp.labelPositionV, lp.labelPositionH, geo.width, geo.height);
+  const bounds = getGeometryBounds(geo);
+  const labelPos = getLabelXY(lp.labelPositionV, lp.labelPositionH, bounds.width, bounds.height);
   const fontStyle = getLabelFontStyle(lp.labelBold, lp.labelItalic);
 
   return (
     <>
-      <Rect
-        width={geo.width}
-        height={geo.height}
-        fill={color}
-        stroke={strokeColor}
-        strokeWidth={strokeWidth}
-        cornerRadius={2}
-        opacity={0.9}
-      />
+      {geo.shape === "rect" && (
+        <Rect
+          width={geo.width}
+          height={geo.height}
+          fill={color}
+          stroke={strokeColor}
+          strokeWidth={strokeWidth}
+          cornerRadius={2}
+          opacity={0.9}
+        />
+      )}
+      {geo.shape === "polygon" && (
+        <Line
+          points={[...geo.points]}
+          closed
+          fill={color}
+          stroke={strokeColor}
+          strokeWidth={strokeWidth}
+          opacity={0.9}
+        />
+      )}
       <Text
         text="🏪"
         x={3}

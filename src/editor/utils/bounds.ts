@@ -1,4 +1,4 @@
-import type { FloorPlanElement } from "../../types";
+import type { FloorPlanElement, Geometry } from "../../types";
 
 export interface ElementBounds {
   left: number;
@@ -7,6 +7,48 @@ export interface ElementBounds {
   bottom: number;
   centerX: number;
   centerY: number;
+}
+
+/** Local bounding box of a geometry (width/height, no absolute position). */
+export interface GeometryBounds {
+  width: number;
+  height: number;
+}
+
+export function getGeometryBounds(geo: Geometry): GeometryBounds {
+  if (geo.shape === "rect") {
+    return { width: geo.width, height: geo.height };
+  }
+  if (geo.shape === "polygon") {
+    const pts = geo.points;
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (let i = 0; i < pts.length; i += 2) {
+      if (pts[i] < minX) minX = pts[i];
+      if (pts[i] > maxX) maxX = pts[i];
+      if (pts[i + 1] < minY) minY = pts[i + 1];
+      if (pts[i + 1] > maxY) maxY = pts[i + 1];
+    }
+    return { width: maxX - minX, height: maxY - minY };
+  }
+  if (geo.shape === "ellipse") {
+    return { width: geo.radiusX * 2, height: geo.radiusY * 2 };
+  }
+  if (geo.shape === "circle") {
+    return { width: geo.radius * 2, height: geo.radius * 2 };
+  }
+  // line, arrow, arc — use points extent
+  if ("points" in geo) {
+    const pts = geo.points;
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (let i = 0; i < pts.length; i += 2) {
+      if (pts[i] < minX) minX = pts[i];
+      if (pts[i] > maxX) maxX = pts[i];
+      if (pts[i + 1] < minY) minY = pts[i + 1];
+      if (pts[i + 1] > maxY) maxY = pts[i + 1];
+    }
+    return { width: maxX - minX, height: maxY - minY };
+  }
+  return { width: 0, height: 0 };
 }
 
 export function getElementBounds(element: FloorPlanElement): ElementBounds {

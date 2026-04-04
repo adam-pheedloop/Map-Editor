@@ -130,17 +130,30 @@
       ]
     },
     {
-      "id": 10,
-      "title": "Session Locations & Meeting Rooms",
-      "summary": "First-class session and meeting room elements with grouped Locations tool menu (Photoshop-style), dedicated shape components, convert actions, viewer tabs + search, and interactive popovers. ~18 story points across 6 steps.",
-      "status": "planned",
+      "id": "10a",
+      "title": "Session Locations & Meeting Rooms (Editor)",
+      "summary": "First-class session and meeting room editor tools with grouped Locations toolbar menu, dedicated shape components, convert actions, and BoothShape geometry refactor. ~14 story points across 6 steps.",
+      "status": "done",
       "tasks": [
         "Grouped Locations tool menu (ToolGroup component — booth, session, meeting room in horizontal flyout, last-selected icon, ▶ indicator)",
+        "BoothShape refactored to accept Geometry union (rect + polygon branches, getGeometryBounds utility)",
         "Session Location tool (ToolDefinition, SessionAreaShape, green #27AE60, 🎤 icon, shortcut S)",
-        "Meeting Room tool (ToolDefinition, MeetingRoomShape, orange #F39C12, 🚪 icon, shortcut M)",
-        "Convert actions (context menu: Convert to Booth/Session/Meeting Room/Shape, properties panel type-specific fields)",
-        "Viewer integration (interactive hover+click, detail popovers, sidebar tabs for Exhibitors/Sessions/Meeting Rooms, search across all types)",
-        "Sample data + integration cleanup (sample session locations and meeting rooms, end-to-end verification)"
+        "Meeting Room tool (ToolDefinition, MeetingRoomShape, orange #F39C12, 🚪 icon, shortcut N)",
+        "Convert actions (context menu: Convert to Booth/Session/Meeting Room/Shape between all types, single undo entry)",
+        "Sample data (Breakout Room A, Workshop Room, VIP Lounge added to sample map)"
+      ]
+    },
+    {
+      "id": "10b",
+      "title": "Session Locations & Meeting Rooms (Viewer)",
+      "summary": "Viewer integration for session locations and meeting rooms — interactive hover+click, detail popovers, sidebar tabs, search across all types, mobile bottom sheet.",
+      "status": "planned",
+      "tasks": [
+        "Interactive session areas and meeting rooms in viewer (hover highlight + click)",
+        "Detail popovers for session areas and meeting rooms (name, capacity, placeholder text)",
+        "Sidebar tabs (Exhibitors / Sessions / Meeting Rooms) with auto-hide for empty tabs",
+        "Search extension across all three element types with type badges",
+        "Mobile bottom sheet tab structure"
       ]
     },
     {

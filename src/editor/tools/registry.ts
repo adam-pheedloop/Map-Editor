@@ -10,6 +10,7 @@ import { textTool } from "./text";
 import { iconTool } from "./icon";
 import { measureTool } from "./measure";
 import { sessionAreaTool } from "./sessionArea";
+import { meetingRoomTool } from "./meetingRoom";
 
 // Order determines toolbar display order.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -22,13 +23,14 @@ export const TOOL_REGISTRY: ToolDefinition<any>[] = [
   polygonTool,
   boothTool,
   sessionAreaTool,
+  meetingRoomTool,
   textTool,
   iconTool,
   measureTool,
 ];
 
 /** Tool IDs that belong in the "Locations" tool group. */
-export const LOCATION_TOOL_IDS: readonly string[] = ["booth", "session_area"];
+export const LOCATION_TOOL_IDS: readonly string[] = ["booth", "session_area", "meeting_room"];
 
 // O(1) lookup by tool id
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

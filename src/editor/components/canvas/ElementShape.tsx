@@ -8,6 +8,7 @@ import { ArcShape } from "./elements/ArcShape";
 import { PolygonShape } from "./elements/PolygonShape";
 import { BoothShape } from "./elements/BoothShape";
 import { SessionAreaShape } from "./elements/SessionAreaShape";
+import { MeetingRoomShape } from "./elements/MeetingRoomShape";
 import { TextShape } from "./elements/TextShape";
 import { IconShape } from "./elements/IconShape";
 
@@ -96,6 +97,15 @@ export function ElementShape({
           properties={element.properties}
         />
       )}
+      {element.type === "meeting_room" && (geo.shape === "rect" || geo.shape === "polygon") && (
+        <MeetingRoomShape
+          geo={geo}
+          color={color}
+          strokeColor={strokeColor}
+          strokeWidth={strokeWidth}
+          properties={element.properties}
+        />
+      )}
       {element.type === "label" && geo.shape === "rect" && (
         <TextShape
           geo={geo}
@@ -111,7 +121,7 @@ export function ElementShape({
       {element.type === "icon" && geo.shape === "rect" && element.properties.iconName && (
         <IconShape geo={geo} iconName={element.properties.iconName} color={color} />
       )}
-      {element.type !== "booth" && element.type !== "session_area" && element.type !== "label" && element.type !== "icon" && geo.shape === "rect" && (
+      {element.type !== "booth" && element.type !== "session_area" && element.type !== "meeting_room" && element.type !== "label" && element.type !== "icon" && geo.shape === "rect" && (
         <RectShape geo={geo} color={color} strokeColor={strokeColor} strokeWidth={strokeWidth} label={label} properties={element.properties} />
       )}
       {geo.shape === "ellipse" && (

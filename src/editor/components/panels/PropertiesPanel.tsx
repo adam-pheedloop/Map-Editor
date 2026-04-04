@@ -264,7 +264,9 @@ export function PropertiesPanel({
             ? (element.properties.arrowHead ? "arrow" : geo.shape)
             : element.type === "session_area"
               ? "Session Location"
-              : element.type}
+              : element.type === "meeting_room"
+                ? "Meeting Room"
+                : element.type}
         </span>
         {debug && (
           <TabBar
@@ -313,6 +315,16 @@ export function PropertiesPanel({
           </div>
         )}
 
+        {fields.has("meetingRoomId") && (
+          <div className="flex flex-col gap-1.5">
+            <SectionLabel>Meeting Room ID</SectionLabel>
+            <TextInput
+              value={element.properties.meetingRoomId || ""}
+              placeholder="Link in dashboard"
+              onChange={(e) => onUpdateProperties(element.id, { meetingRoomId: e.target.value || null })}
+            />
+          </div>
+        )}
 
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">

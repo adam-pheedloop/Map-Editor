@@ -1,14 +1,7 @@
 import { Ellipse, Group } from "react-konva";
 import type { EllipseGeometry, ElementProperties } from "../../../../types";
-import type { ShapeConfig } from "./types";
 import { getLabelXY, getLabelFontStyle, getLabelRenderProps } from "./labelUtils";
 import { LabelWithBackground } from "./LabelWithBackground";
-
-export const ellipseConfig: ShapeConfig = {
-  optionsBar: ["fill", "stroke", "strokeWidth"],
-  propertiesPanel: ["name", "width", "height", "rotation"],
-  contextMenu: ["delete"],
-};
 
 interface EllipseShapeProps {
   geo: EllipseGeometry;

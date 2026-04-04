@@ -1,8 +1,9 @@
 import { useState, useRef, useCallback } from "react";
 import type Konva from "konva";
-import { getCanvasPoint, isEmptySpaceClick, snapToAngle } from "../utils/canvas";
+import type { ToolContext, ToolInteraction, ToolResult } from "../types";
+import { getCanvasPoint, isEmptySpaceClick, snapToAngle } from "../../utils/canvas";
 
-export interface LinePreview {
+export interface LinePreviewState {
   x1: number;
   y1: number;
   x2: number;
@@ -11,46 +12,44 @@ export interface LinePreview {
 
 const MIN_LENGTH = 5;
 
-export function useLineTool(
-  stageRef: React.RefObject<Konva.Stage | null>,
-  position: { x: number; y: number },
-  scale: number,
-  isActive: boolean,
-  onComplete: (x1: number, y1: number, x2: number, y2: number) => void
-) {
-  const [preview, setPreview] = useState<LinePreview | null>(null);
+/**
+ * Shared interaction hook for line-based tools (line, arrow).
+ * Click sets origin, drag updates endpoint, release completes.
+ */
+export function useLineInteraction(
+  ctx: ToolContext,
+  createResult: (line: LinePreviewState, ctx: ToolContext) => ToolResult
+): ToolInteraction<LinePreviewState | null> {
+  const [preview, setPreview] = useState<LinePreviewState | null>(null);
   const origin = useRef<{ x: number; y: number } | null>(null);
 
   const handleMouseDown = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
-      if (!isActive) return;
       if (!isEmptySpaceClick(e)) return;
 
-      const stage = stageRef.current;
+      const stage = ctx.stageRef.current;
       if (!stage) return;
 
-      const point = getCanvasPoint(stage, position, scale);
+      const point = getCanvasPoint(stage, ctx.position, ctx.scale);
       if (!point) return;
 
       origin.current = point;
       setPreview({ x1: point.x, y1: point.y, x2: point.x, y2: point.y });
     },
-    [isActive, stageRef, position, scale]
+    [ctx.stageRef, ctx.position, ctx.scale]
   );
 
   const handleMouseMove = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
       if (!origin.current) return;
 
-      const stage = stageRef.current;
+      const stage = ctx.stageRef.current;
       if (!stage) return;
 
-      const point = getCanvasPoint(stage, position, scale);
+      const point = getCanvasPoint(stage, ctx.position, ctx.scale);
       if (!point) return;
 
-      const end = e.evt.shiftKey
-        ? snapToAngle(origin.current, point)
-        : point;
+      const end = e.evt.shiftKey ? snapToAngle(origin.current, point) : point;
 
       setPreview({
         x1: origin.current.x,
@@ -59,7 +58,7 @@ export function useLineTool(
         y2: end.y,
       });
     },
-    [stageRef, position, scale]
+    [ctx.stageRef, ctx.position, ctx.scale]
   );
 
   const handleMouseUp = useCallback(() => {
@@ -70,17 +69,25 @@ export function useLineTool(
     const length = Math.sqrt(dx * dx + dy * dy);
 
     if (length > MIN_LENGTH) {
-      onComplete(preview.x1, preview.y1, preview.x2, preview.y2);
+      const result = createResult(preview, ctx);
+      ctx.onComplete(result);
     }
 
     origin.current = null;
     setPreview(null);
-  }, [preview, onComplete]);
+  }, [preview, ctx, createResult]);
+
+  const cancel = useCallback(() => {
+    origin.current = null;
+    setPreview(null);
+  }, []);
 
   return {
-    preview,
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
+    cancel,
+    cursor: "crosshair",
+    state: preview,
   };
 }

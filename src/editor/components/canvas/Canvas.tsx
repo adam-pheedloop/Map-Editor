@@ -1,20 +1,13 @@
 import { useCallback, useState, useRef, useEffect } from "react";
 import { Stage, Layer, Rect } from "react-konva";
 import type Konva from "konva";
-import type { FloorPlanData, LineGeometry, ArcGeometry, PolygonGeometry, LayerDefinition, LayerId } from "../../../types";
+import type { FloorPlanData, LayerDefinition, LayerId } from "../../../types";
 import { ELEMENT_TYPE_TO_LAYER } from "../../../types";
-import type { ActiveTool } from "../../types";
+import type { ToolDefinition, ToolInteraction, ToolContext } from "../../tools/types";
+import { findToolForElement } from "../../tools/registry";
 import { isEmptySpaceClick, getCanvasPoint } from "../../utils/canvas";
-import { useDrawingTool } from "../../hooks/useDrawingTool";
-import { useLineTool } from "../../hooks/useLineTool";
-import { useArcTool } from "../../hooks/useArcTool";
-import { usePolygonTool } from "../../hooks/usePolygonTool";
 import { ElementShape } from "./ElementShape";
 import { SelectionTransformer } from "./SelectionTransformer";
-import { LineEndpointHandles } from "./LineEndpointHandles";
-import { ArcControlHandle } from "./ArcControlHandle";
-import { PolygonVertexHandles } from "./PolygonVertexHandles";
-import { DrawingPreview } from "./DrawingPreview";
 import { BackgroundImage } from "./BackgroundImage";
 import { AlignmentGuides } from "./AlignmentGuides";
 import { SelectionRect } from "./SelectionRect";
@@ -22,15 +15,57 @@ import { MultiSelectBounds } from "./MultiSelectBounds";
 import { GridLayer } from "./GridLayer";
 import { WalkableGridOverlay } from "./WalkableGridOverlay";
 import { CalibrationPreview } from "./CalibrationPreview";
-import { MeasurePreview } from "./MeasurePreview";
 import type { CalibrationState } from "../../hooks/useCalibration";
-import type { MeasureState } from "../../hooks/useMeasureTool";
 import { useAlignmentGuides } from "../../hooks/useAlignmentGuides";
 import { getElementBounds, lineIntersectsRect } from "../../utils/bounds";
 
+// ---------------------------------------------------------------------------
+// ToolHost — mounts/unmounts with key={tool.id} to manage hook lifecycle
+// ---------------------------------------------------------------------------
+
+function ToolHost({
+  tool,
+  context,
+  onInteraction,
+}: {
+  tool: ToolDefinition;
+  context: ToolContext;
+  onInteraction: (interaction: ToolInteraction) => void;
+}) {
+  const interaction = tool.useInteraction(context);
+
+  useEffect(() => {
+    onInteraction(interaction);
+  });
+
+  // Key listener for tools that need it (e.g. arc Escape to cancel)
+  useEffect(() => {
+    if (!interaction.handleKeyDown) return;
+    const handler = interaction.handleKeyDown;
+    window.addEventListener("keydown", handler);
+    return () => window.removeEventListener("keydown", handler);
+  }, [interaction.handleKeyDown]);
+
+  // Render preview if the tool has one
+  const Preview = tool.PreviewComponent;
+  return Preview ? (
+    <Preview
+      state={interaction.state}
+      scale={context.scale}
+      dimensions={context.data.dimensions}
+    />
+  ) : null;
+}
+
+// ---------------------------------------------------------------------------
+// Canvas
+// ---------------------------------------------------------------------------
+
 interface CanvasProps {
   data: FloorPlanData;
-  activeTool: ActiveTool;
+  /** null = select mode (built-in), otherwise the active registry tool */
+  activeTool: ToolDefinition | null;
+  toolContext: ToolContext;
   selectedIds: Set<string>;
   scale: number;
   position: { x: number; y: number };
@@ -39,8 +74,6 @@ interface CanvasProps {
   containerRef: React.RefObject<HTMLDivElement | null>;
   onWheel: (e: Konva.KonvaEventObject<WheelEvent>) => void;
   onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => void;
-  onDrawEnd: (x: number, y: number, width: number, height: number) => void;
-  onLineDrawEnd: (x1: number, y1: number, x2: number, y2: number) => void;
   onSelect: (id: string | null, shiftKey?: boolean) => void;
   onDragSelect: (ids: string[]) => void;
   onElementMove: (id: string, x: number, y: number) => void;
@@ -53,13 +86,8 @@ interface CanvasProps {
     height: number,
     rotation: number
   ) => void;
-  onEndpointMove: (id: string, pointIndex: 0 | 1, x: number, y: number) => void;
-  onArcDrawEnd: (x1: number, y1: number, cx: number, cy: number, x2: number, y2: number) => void;
-  onArcControlPointMove: (id: string, pointIndex: 0 | 1 | 2, x: number, y: number) => void;
-  onPolygonDrawEnd: (points: number[], anchorX: number, anchorY: number) => void;
-  onPolygonVertexMove: (id: string, vertexIndex: number, x: number, y: number) => void;
+  onGeometryUpdate: (id: string, updates: Partial<import("../../../types").Geometry>) => void;
   onElementContextMenu: (id: string, screenX: number, screenY: number) => void;
-  onClickPlace: (x: number, y: number) => void;
   gridSettings: {
     showGrid: boolean;
     gridSpacing: number;
@@ -85,16 +113,12 @@ interface CanvasProps {
   existingCalibration?: FloorPlanData["scaleCalibration"];
   onCalibrationClick?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
   onCalibrationMouseMove?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
-  // Measure tool
-  measureState?: MeasureState;
-  onMeasureMouseDown?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
-  onMeasureMouseMove?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
-  onMeasureMouseUp?: () => void;
 }
 
 export function Canvas({
   data,
   activeTool,
+  toolContext,
   selectedIds,
   scale,
   position,
@@ -103,20 +127,13 @@ export function Canvas({
   containerRef,
   onWheel,
   onDragEnd,
-  onDrawEnd,
-  onLineDrawEnd,
   onSelect,
   onDragSelect,
   onElementMove,
   onMultiMove,
-  onEndpointMove,
-  onArcDrawEnd,
-  onArcControlPointMove,
-  onPolygonDrawEnd,
-  onPolygonVertexMove,
   onElementResize,
+  onGeometryUpdate,
   onElementContextMenu,
-  onClickPlace,
   gridSettings,
   snapToObjects,
   layers,
@@ -135,20 +152,8 @@ export function Canvas({
   existingCalibration,
   onCalibrationClick,
   onCalibrationMouseMove,
-  measureState,
-  onMeasureMouseDown,
-  onMeasureMouseMove,
-  onMeasureMouseUp,
 }: CanvasProps) {
-  const isSelectMode = activeTool === "select";
-  const isMeasureTool = activeTool === "measure";
-  const isDrawing = !isSelectMode && !isMeasureTool;
-  const isLineTool = activeTool === "line" || activeTool === "arrow";
-  const isArcTool = activeTool === "arc";
-  const isPolygonTool = activeTool === "polygon";
-  const isTextTool = activeTool === "text";
-  const isIconTool = activeTool === "icon";
-  const isClickPlaceTool = isTextTool || isIconTool;
+  const isSelectMode = activeTool === null;
 
   // Track Space key for pan mode
   const [spaceHeld, setSpaceHeld] = useState(false);
@@ -180,37 +185,19 @@ export function Canvas({
   const [isMultiDragging, setIsMultiDragging] = useState(false);
   const dragStartPositions = useRef<Map<string, { x: number; y: number }>>(new Map());
 
-  const shapeDrawing = useDrawingTool(
-    stageRef,
-    position,
-    scale,
-    isDrawing && !isLineTool && !isArcTool && !isPolygonTool,
-    onDrawEnd
-  );
+  // Tool interaction ref — updated by ToolHost on each render
+  const toolInteractionRef = useRef<ToolInteraction | null>(null);
 
-  const lineDrawing = useLineTool(
-    stageRef,
-    position,
-    scale,
-    isLineTool,
-    onLineDrawEnd
-  );
+  const handleToolInteraction = useCallback((interaction: ToolInteraction) => {
+    toolInteractionRef.current = interaction;
+  }, []);
 
-  const arcDrawing = useArcTool(
-    stageRef,
-    position,
-    scale,
-    isArcTool,
-    onArcDrawEnd
-  );
-
-  const polygonDrawing = usePolygonTool(
-    stageRef,
-    position,
-    scale,
-    isPolygonTool,
-    onPolygonDrawEnd
-  );
+  // Clear interaction ref when switching to select mode
+  useEffect(() => {
+    if (isSelectMode) {
+      toolInteractionRef.current = null;
+    }
+  }, [isSelectMode]);
 
   const { activeGuides, startDrag, endDrag, snapPosition } = useAlignmentGuides(data.elements);
 
@@ -236,26 +223,23 @@ export function Canvas({
   // Ordered layer IDs for rendering (excluding background — handled separately)
   const elementLayerOrder: LayerId[] = ["content", "pathing", "markup"];
 
+  // Selected element + handle lookup from registry
   const selectedElement = selectedIds.size === 1
     ? data.elements.find((el) => selectedIds.has(el.id))
     : undefined;
-  const isSelectedLine = selectedElement?.geometry.shape === "line";
-  const isSelectedArc = selectedElement?.geometry.shape === "arc";
-  const isSelectedPolygon = selectedElement?.geometry.shape === "polygon";
+  const handleDef = selectedElement
+    ? findToolForElement(selectedElement.geometry.shape, selectedElement.type)
+    : undefined;
+  const HandleComponent = handleDef?.HandleComponent;
+
+  // --- Mouse event handlers ---
 
   const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
-    // Space held = pan mode, let stage draggable handle it
     if (isPanMode) return;
 
     // Calibration mode: intercept before everything else
     if (isCalibrating && onCalibrationClick) {
       onCalibrationClick(e);
-      return;
-    }
-
-    // Measure tool
-    if (isMeasureTool && onMeasureMouseDown) {
-      onMeasureMouseDown(e);
       return;
     }
 
@@ -265,9 +249,9 @@ export function Canvas({
       return;
     }
 
+    // Select mode: built-in selection behavior
     if (isSelectMode) {
       if (isEmptySpaceClick(e)) {
-        // Start drag-select rectangle
         const stage = stageRef.current;
         if (!stage) return;
         const point = getCanvasPoint(stage, position, scale);
@@ -279,50 +263,21 @@ export function Canvas({
       }
       return;
     }
-    if (isClickPlaceTool) {
-      if (!isEmptySpaceClick(e)) return;
-      const stage = stageRef.current;
-      if (!stage) return;
-      const point = getCanvasPoint(stage, position, scale);
-      if (point) onClickPlace(point.x, point.y);
-      return;
-    }
-    if (isPolygonTool) {
-      polygonDrawing.handleMouseDown(e);
-    } else if (isArcTool) {
-      arcDrawing.handleMouseDown(e);
-    } else if (isLineTool) {
-      lineDrawing.handleMouseDown(e);
-    } else {
-      shapeDrawing.handleMouseDown(e);
-    }
+
+    // Active tool: delegate to tool interaction
+    toolInteractionRef.current?.handleMouseDown(e);
   };
 
-  // Arc tool escape key listener
-  useEffect(() => {
-    if (!isArcTool) return;
-    const handler = arcDrawing.handleKeyDown;
-    window.addEventListener("keydown", handler);
-    return () => window.removeEventListener("keydown", handler);
-  }, [isArcTool, arcDrawing.handleKeyDown]);
-
   const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
-    // Calibration mode: intercept before everything else
+    // Calibration mode
     if (isCalibrating && onCalibrationMouseMove) {
       onCalibrationMouseMove(e);
       return;
     }
 
-    // Measure tool
-    if (isMeasureTool && onMeasureMouseMove) {
-      onMeasureMouseMove(e);
-      return;
-    }
-
-    // Pathing mode: delegate to pathing handlers
+    // Pathing mode
     if (isPathingMode && onPathingMouseMove) {
       onPathingMouseMove();
-      // Don't return — allow drag-select logic to be skipped naturally
       if (!dragSelectOrigin.current) return;
     }
 
@@ -342,25 +297,12 @@ export function Canvas({
       return;
     }
 
-    if (isPolygonTool) {
-      polygonDrawing.handleMouseMove(e);
-    } else if (isArcTool) {
-      arcDrawing.handleMouseMove(e);
-    } else if (isLineTool) {
-      lineDrawing.handleMouseMove(e);
-    } else {
-      shapeDrawing.handleMouseMove(e);
-    }
+    // Active tool: delegate to tool interaction
+    toolInteractionRef.current?.handleMouseMove(e);
   };
 
   const handleMouseUp = () => {
-    // Measure tool
-    if (isMeasureTool && onMeasureMouseUp) {
-      onMeasureMouseUp();
-      return;
-    }
-
-    // Pathing mode: delegate to pathing handlers
+    // Pathing mode
     if (isPathingMode && onPathingMouseUp) {
       onPathingMouseUp();
       return;
@@ -372,13 +314,11 @@ export function Canvas({
         const rect = dragSelectRect;
         const OVERLAP_THRESHOLD = 0.9;
         const enclosed = data.elements.filter((el) => {
-          // Only select elements on the active layer
           const elLayer = el.layer ?? ELEMENT_TYPE_TO_LAYER[el.type];
           if (elLayer !== activeLayerId) return false;
 
           const b = getElementBounds(el);
 
-          // Lines have zero-area bounding boxes — use segment-rect intersection
           if (el.geometry.shape === "line") {
             const geo = el.geometry;
             const [x1, y1, x2, y2] = geo.points;
@@ -408,18 +348,20 @@ export function Canvas({
       return;
     }
 
-    if (isLineTool) {
-      lineDrawing.handleMouseUp();
-    } else {
-      shapeDrawing.handleMouseUp();
-    }
+    // Active tool: delegate to tool interaction
+    toolInteractionRef.current?.handleMouseUp();
   };
+
+  const handleDoubleClick = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    toolInteractionRef.current?.handleDoubleClick?.(e);
+  };
+
+  // --- Element drag handlers (unchanged) ---
 
   const handleElementDragStart = useCallback(
     (id: string) => {
       startDrag(id);
 
-      // Record start positions for all selected elements (for multi-drag)
       if (selectedIds.has(id) && selectedIds.size > 1) {
         setIsMultiDragging(true);
         const stage = stageRef.current;
@@ -446,7 +388,6 @@ export function Canvas({
       if (!stage) return;
 
       if (isMulti) {
-        // Multi-drag: no alignment snapping, just apply raw delta to all
         const startPos = dragStartPositions.current.get(id);
         if (!startPos) return;
 
@@ -463,7 +404,6 @@ export function Canvas({
           }
         }
       } else {
-        // Single drag: alignment guides (if enabled), then grid snap fallback
         const element = data.elements.find((el) => el.id === id);
         if (!element) return;
 
@@ -479,9 +419,6 @@ export function Canvas({
             geometry: { ...geo, x, y } as typeof geo,
           });
 
-          // Offset between anchor position and bounds edges
-          // For rects: anchor is top-left so offset is 0.
-          // For lines: anchor is midpoint so offset is non-zero.
           const anchorOffsetX = x - proposedBounds.left;
           const anchorOffsetY = y - proposedBounds.top;
 
@@ -496,7 +433,6 @@ export function Canvas({
           }
         }
 
-        // Grid snap fallback (only where alignment guides didn't snap)
         if (gridSettings.snapToGrid) {
           const gs = gridSettings.gridSpacing;
           const gridSnapThreshold = gs * 0.25;
@@ -528,7 +464,6 @@ export function Canvas({
     (id: string, _x: number, _y: number) => {
       endDrag();
 
-      // Multi-drag: persist all positions from node state
       if (selectedIds.has(id) && selectedIds.size > 1) {
         const stage = stageRef.current;
         if (!stage) return;
@@ -543,7 +478,6 @@ export function Canvas({
         dragStartPositions.current = new Map();
         setIsMultiDragging(false);
       } else {
-        // Single drag: use the node's actual position (may have been snapped)
         const stage = stageRef.current;
         const node = stage?.findOne(`.${id}`);
         if (node) {
@@ -556,11 +490,22 @@ export function Canvas({
     [endDrag, selectedIds, stageRef, onMultiMove, onElementMove]
   );
 
+  // --- Cursor ---
+  const cursor = isPanMode
+    ? "grab"
+    : isCalibrating
+      ? "crosshair"
+      : isPathingMode
+        ? "crosshair"
+        : activeTool
+          ? activeTool.cursor
+          : "default";
+
   return (
     <div
       ref={containerRef}
       className="flex-1 min-w-0 bg-gray-200 overflow-hidden"
-      style={{ cursor: isPanMode ? "grab" : isCalibrating ? "crosshair" : isMeasureTool ? "crosshair" : isPathingMode ? "crosshair" : isDrawing ? "crosshair" : "default" }}
+      style={{ cursor }}
     >
       <Stage
         ref={stageRef}
@@ -576,7 +521,7 @@ export function Canvas({
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onDblClick={isPolygonTool ? polygonDrawing.handleDoubleClick : undefined}
+        onDblClick={handleDoubleClick}
       >
         {/* Background layer: color fill, image, grid */}
         <Layer>
@@ -636,7 +581,7 @@ export function Canvas({
           );
         })}
 
-        {/* Selection overlay: transformer, multi-select bounds, line handles */}
+        {/* Selection overlay: transformer, multi-select bounds, handles */}
         <Layer>
           <SelectionTransformer
             selectedIds={selectedIds}
@@ -650,51 +595,31 @@ export function Canvas({
               selectedIds={selectedIds}
             />
           )}
-          {isSelectedLine && selectedElement && (
-            <LineEndpointHandles
-              elementId={selectedElement.id}
-              geometry={selectedElement.geometry as LineGeometry}
-              onEndpointMove={onEndpointMove}
-            />
-          )}
-          {isSelectedArc && selectedElement && (
-            <ArcControlHandle
-              elementId={selectedElement.id}
-              geometry={selectedElement.geometry as ArcGeometry}
-              onControlPointMove={onArcControlPointMove}
-            />
-          )}
-          {isSelectedPolygon && selectedElement && (
-            <PolygonVertexHandles
-              elementId={selectedElement.id}
-              geometry={selectedElement.geometry as PolygonGeometry}
-              onVertexMove={onPolygonVertexMove}
+          {HandleComponent && selectedElement && (
+            <HandleComponent
+              element={selectedElement}
+              onGeometryUpdate={onGeometryUpdate}
             />
           )}
         </Layer>
 
-        {/* Drawing overlay: preview, guides, drag-select rect */}
+        {/* Drawing overlay: tool preview, guides, drag-select rect */}
         <Layer>
-          <DrawingPreview
-            rectPreview={shapeDrawing.preview}
-            linePreview={lineDrawing.preview}
-            arcState={arcDrawing.state}
-            polygonState={polygonDrawing.state}
-            activeTool={activeTool}
-          />
+          {/* Tool preview is rendered inside ToolHost */}
+          {activeTool && (
+            <ToolHost
+              key={activeTool.id}
+              tool={activeTool}
+              context={toolContext}
+              onInteraction={handleToolInteraction}
+            />
+          )}
           <AlignmentGuides
             guides={activeGuides}
             canvasWidth={data.dimensions.width}
             canvasHeight={data.dimensions.height}
           />
           <SelectionRect rect={dragSelectRect} />
-          {measureState && (
-            <MeasurePreview
-              state={measureState}
-              scale={scale}
-              dimensions={data.dimensions}
-            />
-          )}
           {isCalibrating && calibrationState && (
             <CalibrationPreview
               calibrationState={calibrationState}

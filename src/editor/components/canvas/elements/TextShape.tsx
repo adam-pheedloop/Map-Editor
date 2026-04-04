@@ -1,12 +1,5 @@
 import { Text } from "react-konva";
 import type { RectGeometry } from "../../../../types";
-import type { ShapeConfig } from "./types";
-
-export const textConfig: ShapeConfig = {
-  optionsBar: ["fill"],
-  propertiesPanel: ["text", "fontSize", "fontWeight", "fontStyle", "textDecoration", "textAlign", "width", "height", "rotation"],
-  contextMenu: ["delete"],
-};
 
 interface TextShapeProps {
   geo: RectGeometry;

@@ -1,29 +1,22 @@
 import { Circle } from "react-konva";
 import type Konva from "konva";
-import type { LineGeometry } from "../../../types";
+import type { FloorPlanElement, Geometry, LineGeometry } from "../../../types";
 import { snapToAngle } from "../../utils/canvas";
 
 interface LineEndpointHandlesProps {
-  elementId: string;
-  geometry: LineGeometry;
-  onEndpointMove: (
-    id: string,
-    pointIndex: 0 | 1,
-    x: number,
-    y: number
-  ) => void;
+  element: FloorPlanElement;
+  onGeometryUpdate: (id: string, updates: Partial<Geometry>) => void;
 }
 
 const HANDLE_RADIUS = 5;
 
 export function LineEndpointHandles({
-  elementId,
-  geometry,
-  onEndpointMove,
+  element,
+  onGeometryUpdate,
 }: LineEndpointHandlesProps) {
+  const geometry = element.geometry as LineGeometry;
   const [x1, y1, x2, y2] = geometry.points;
 
-  // Absolute positions of each endpoint
   const abs1 = { x: geometry.x + x1, y: geometry.y + y1 };
   const abs2 = { x: geometry.x + x2, y: geometry.y + y2 };
 
@@ -36,15 +29,21 @@ export function LineEndpointHandles({
     let pos = { x: e.target.x(), y: e.target.y() };
 
     if (e.evt.shiftKey) {
-      // Snap relative to the opposite endpoint
       const anchor = pointIndex === 0 ? abs2 : abs1;
       pos = snapToAngle(anchor, pos);
-      // Move the handle to the snapped position
       e.target.x(pos.x);
       e.target.y(pos.y);
     }
 
-    onEndpointMove(elementId, pointIndex, pos.x, pos.y);
+    const newPoints = [...geometry.points] as [number, number, number, number];
+    if (pointIndex === 0) {
+      newPoints[0] = pos.x - geometry.x;
+      newPoints[1] = pos.y - geometry.y;
+    } else {
+      newPoints[2] = pos.x - geometry.x;
+      newPoints[3] = pos.y - geometry.y;
+    }
+    onGeometryUpdate(element.id, { points: newPoints });
   };
 
   return (

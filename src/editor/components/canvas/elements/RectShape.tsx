@@ -1,14 +1,7 @@
 import { Rect, Group } from "react-konva";
 import type { RectGeometry, ElementProperties } from "../../../../types";
-import type { ShapeConfig } from "./types";
 import { getLabelXY, getLabelFontStyle, getLabelRenderProps } from "./labelUtils";
 import { LabelWithBackground } from "./LabelWithBackground";
-
-export const rectConfig: ShapeConfig = {
-  optionsBar: ["fill", "stroke", "strokeWidth"],
-  propertiesPanel: ["name", "width", "height", "rotation"],
-  contextMenu: ["convertToBooth", "delete"],
-};
 
 interface RectShapeProps {
   geo: RectGeometry;

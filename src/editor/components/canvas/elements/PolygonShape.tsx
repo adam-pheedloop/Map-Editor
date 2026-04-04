@@ -1,12 +1,5 @@
 import { Line } from "react-konva";
 import type { PolygonGeometry } from "../../../../types";
-import type { ShapeConfig } from "./types";
-
-export const polygonConfig: ShapeConfig = {
-  optionsBar: ["fill", "stroke", "strokeWidth"],
-  propertiesPanel: ["name"],
-  contextMenu: ["delete"],
-};
 
 interface PolygonShapeProps {
   geo: PolygonGeometry;

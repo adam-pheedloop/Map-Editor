@@ -1,7 +1,8 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import { useState, useCallback, useRef } from "react";
 import type Konva from "konva";
-import type { Point } from "../../types";
-import { getCanvasPoint, snapToAngle } from "../utils/canvas";
+import type { Point } from "../../../types";
+import type { ToolContext, ToolInteraction } from "../types";
+import { getCanvasPoint, snapToAngle } from "../../utils/canvas";
 
 export interface MeasureState {
   p1: Point | null;
@@ -15,62 +16,47 @@ const INITIAL_STATE: MeasureState = {
   measuring: false,
 };
 
-interface UseMeasureToolOptions {
-  stageRef: React.RefObject<Konva.Stage | null>;
-  position: { x: number; y: number };
-  scale: number;
-  isActive: boolean;
-}
-
-export function useMeasureTool({
-  stageRef,
-  position,
-  scale,
-  isActive,
-}: UseMeasureToolOptions) {
+/**
+ * Measure tool interaction: click-drag to measure distance.
+ * Does not create elements — the preview IS the output.
+ */
+export function useMeasureInteraction(
+  ctx: ToolContext
+): ToolInteraction<MeasureState> {
   const [state, setState] = useState<MeasureState>(INITIAL_STATE);
   const measuringRef = useRef(false);
 
-  // Reset when tool deactivates
-  useEffect(() => {
-    if (!isActive) {
-      setState(INITIAL_STATE);
-      measuringRef.current = false;
-    }
-  }, [isActive]);
-
   const handleMouseDown = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
-      const stage = stageRef.current;
+      const stage = ctx.stageRef.current;
       if (!stage) return;
-      const point = getCanvasPoint(stage, position, scale);
+      const point = getCanvasPoint(stage, ctx.position, ctx.scale);
       if (!point) return;
 
       e.evt.preventDefault();
       measuringRef.current = true;
       setState({ p1: point, p2: point, measuring: true });
     },
-    [stageRef, position, scale],
+    [ctx.stageRef, ctx.position, ctx.scale]
   );
 
   const handleMouseMove = useCallback(
     (e: Konva.KonvaEventObject<MouseEvent>) => {
       if (!measuringRef.current) return;
-      const stage = stageRef.current;
+      const stage = ctx.stageRef.current;
       if (!stage) return;
-      let point = getCanvasPoint(stage, position, scale);
+      let point = getCanvasPoint(stage, ctx.position, ctx.scale);
       if (!point) return;
 
       setState((prev) => {
         if (!prev.p1 || !prev.measuring) return prev;
-        // Shift-snap to horizontal/vertical/45°
         if (e.evt.shiftKey) {
           point = snapToAngle(prev.p1, point!);
         }
         return { ...prev, p2: point };
       });
     },
-    [stageRef, position, scale],
+    [ctx.stageRef, ctx.position, ctx.scale]
   );
 
   const handleMouseUp = useCallback(() => {
@@ -78,10 +64,17 @@ export function useMeasureTool({
     setState((prev) => ({ ...prev, measuring: false }));
   }, []);
 
+  const cancel = useCallback(() => {
+    measuringRef.current = false;
+    setState(INITIAL_STATE);
+  }, []);
+
   return {
-    state,
     handleMouseDown,
     handleMouseMove,
     handleMouseUp,
+    cancel,
+    cursor: "crosshair",
+    state,
   };
 }

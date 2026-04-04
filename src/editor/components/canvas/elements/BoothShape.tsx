@@ -1,14 +1,7 @@
 import { Rect, Text, Group } from "react-konva";
 import type { RectGeometry, ElementProperties } from "../../../../types";
-import type { ShapeConfig } from "./types";
 import { getLabelXY, getLabelFontStyle, getLabelRenderProps } from "./labelUtils";
 import { LabelWithBackground } from "./LabelWithBackground";
-
-export const boothConfig: ShapeConfig = {
-  optionsBar: ["fill", "stroke", "strokeWidth"],
-  propertiesPanel: ["name", "boothCode", "width", "height", "rotation", "area"],
-  contextMenu: ["delete"],
-};
 
 interface BoothShapeProps {
   geo: RectGeometry;

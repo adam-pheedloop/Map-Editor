@@ -92,6 +92,13 @@ export interface LineGeometry {
   points: [number, number, number, number]; // [x1, y1, x2, y2] relative to anchor
 }
 
+export interface ArrowGeometry {
+  shape: "arrow";
+  x: number;
+  y: number;
+  points: [number, number, number, number]; // [x1, y1, x2, y2] relative to anchor
+}
+
 export interface ArcGeometry {
   shape: "arc";
   x: number;
@@ -107,6 +114,7 @@ export type Geometry =
   | CircleGeometry
   | EllipseGeometry
   | LineGeometry
+  | ArrowGeometry
   | ArcGeometry;
 
 export interface ElementProperties {

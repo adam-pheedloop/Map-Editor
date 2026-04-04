@@ -1,5 +1,5 @@
 import { ColorSwatch, NumberInput } from "../ui";
-import type { ShapeConfig, OptionsBarField } from "../canvas/elements";
+import type { OptionsBarField } from "../canvas/elements/types";
 
 export interface DrawingDefaults {
   fill: string;
@@ -9,7 +9,7 @@ export interface DrawingDefaults {
 
 interface OptionsBarProps {
   defaults: DrawingDefaults;
-  config: ShapeConfig;
+  config: { optionsBar: OptionsBarField[] };
   onDefaultsChange: (updates: Partial<DrawingDefaults>) => void;
 }
 
@@ -17,7 +17,7 @@ export function OptionsBar({ defaults, config, onDefaultsChange }: OptionsBarPro
   const fields = new Set<OptionsBarField>(config.optionsBar);
 
   return (
-    <div className="flex items-center gap-4 px-3 py-2 bg-white border-b border-gray-200">
+    <div className="flex items-center gap-4 px-3 py-2 bg-white border-b border-gray-200 h-[43px]">
       {fields.has("fill") && (
         <ColorSwatch
           label="Fill"

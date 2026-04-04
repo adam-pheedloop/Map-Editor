@@ -1,14 +1,14 @@
 import { useRef, useState, useCallback, useMemo, useEffect } from "react";
-import { v4 as uuidv4 } from "uuid";
 import type { ActiveTool, PathingTool } from "./types";
 import type { DrawingDefaults } from "./components/panels/OptionsBar";
+import type { ToolContext } from "./tools/types";
+import { TOOL_MAP } from "./tools/registry";
 import { useCanvasControls } from "./hooks/useCanvasControls";
 import { useEditorState } from "./hooks/useEditorState";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
 import { useClipboard } from "./hooks/useClipboard";
 import { usePathingTool } from "./hooks/usePathingTool";
 import { useCalibration } from "./hooks/useCalibration";
-import { useMeasureTool } from "./hooks/useMeasureTool";
 import { Canvas } from "./components/canvas/Canvas";
 import { ToolSidebar } from "./components/panels/ToolSidebar";
 import { TopBar } from "./components/TopBar";
@@ -16,7 +16,7 @@ import { OptionsBar } from "./components/panels/OptionsBar";
 import { PathingOptionsBar } from "./components/panels/PathingOptionsBar";
 import { StatusBar } from "./components/StatusBar";
 import { PropertiesPanel } from "./components/panels/PropertiesPanel";
-import { getShapeConfig } from "./components/canvas/elements";
+import { getToolUIConfig } from "./tools/registry";
 import { ContextMenu, type ContextMenuItem } from "./components/canvas/ContextMenu";
 import { modKey } from "./components/TopBar";
 import { MapDebugDialog } from "./components/debug";
@@ -79,6 +79,14 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     DEFAULT_LAYERS.map((l) => ({ ...l }))
   );
   const [activeLayerId, _setActiveLayerId] = useState<LayerId>("content");
+  const [activeTool, setActiveTool] = useState<ActiveTool>("select");
+  const [activePathingTool, setActivePathingTool] = useState<PathingTool>("select");
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [defaults, setDefaults] = useState<DrawingDefaults>(INITIAL_DEFAULTS);
+  const [showMapDebug, setShowMapDebug] = useState(false);
+  const [showBgDialog, setShowBgDialog] = useState(false);
+  const [showHelp, setShowHelp] = useState(false);
+  const [activeIconName, setActiveIconName] = useState<string | null>(null);
 
   const setActiveLayerId = useCallback((id: LayerId) => {
     _setActiveLayerId(id);
@@ -94,15 +102,6 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
       prev.map((l) => (l.id === id ? { ...l, visible: !l.visible } : l))
     );
   }, []);
-
-  const [activeTool, setActiveTool] = useState<ActiveTool>("select");
-  const [activePathingTool, setActivePathingTool] = useState<PathingTool>("select");
-  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [defaults, setDefaults] = useState<DrawingDefaults>(INITIAL_DEFAULTS);
-  const [showMapDebug, setShowMapDebug] = useState(false);
-  const [showBgDialog, setShowBgDialog] = useState(false);
-  const [showHelp, setShowHelp] = useState(false);
-  const [activeIconName, setActiveIconName] = useState<string | null>(null);
   const [gridSettings, setGridSettings] = useState({
     showGrid: true,
     gridSpacing: 20,
@@ -188,14 +187,6 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     activePathingTool,
     onPaintStroke: setWalkableCells,
     onRectFill: setWalkableCellRange,
-  });
-
-  // Measure tool
-  const measure = useMeasureTool({
-    stageRef,
-    position,
-    scale,
-    isActive: activeTool === "measure",
   });
 
   // Scale calibration
@@ -321,225 +312,43 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     [selectedIds, data.elements, updateProperties]
   );
 
-  const handleDrawEnd = useCallback(
-    (x: number, y: number, width: number, height: number) => {
-      const id = uuidv4();
+  // --- Tool registry integration ---
+  // Resolve active tool string to ToolDefinition (null = select mode)
+  const resolvedTool = activeTool === "select" ? null : TOOL_MAP.get(activeTool) ?? null;
 
-      if (activeTool === "booth") {
-        addElement({
-          id,
-          type: "booth",
-          geometry: { shape: "rect" as const, x, y, width, height },
-          properties: {
-            name: "Booth",
-            color: defaults.fill,
-            strokeColor: defaults.stroke,
-            strokeWidth: defaults.strokeWidth,
-            zIndex: 1,
-            area: width * height,
-          },
-        });
-      } else {
-        const geometry =
-          activeTool === "ellipse"
-            ? { shape: "ellipse" as const, x, y, radiusX: width / 2, radiusY: height / 2 }
-            : { shape: "rect" as const, x, y, width, height };
-
-        addElement({
-          id,
-          type: "shape",
-          geometry,
-          properties: {
-            name: "",
-            color: defaults.fill,
-            strokeColor: defaults.stroke,
-            strokeWidth: defaults.strokeWidth,
-            zIndex: 1,
-          },
-        });
-      }
-      selectOne(id);
-      setActiveTool("select");
-    },
-    [activeTool, addElement, defaults, selectOne]
-  );
-
-  const handleLineDrawEnd = useCallback(
-    (x1: number, y1: number, x2: number, y2: number) => {
-      const id = uuidv4();
-      const anchorX = (x1 + x2) / 2;
-      const anchorY = (y1 + y2) / 2;
-
-      addElement({
-        id,
-        type: "shape",
-        geometry: {
-          shape: "line",
-          x: anchorX,
-          y: anchorY,
-          points: [x1 - anchorX, y1 - anchorY, x2 - anchorX, y2 - anchorY],
-        },
-        properties: {
-          name: activeTool === "arrow" ? "Arrow" : "Line",
-          color: defaults.stroke,
-          strokeWidth: defaults.strokeWidth,
-          zIndex: 1,
-          ...(activeTool === "arrow" && {
-            arrowHead: { style: "triangle" as const, size: 12 },
-          }),
-        },
-      });
-      selectOne(id);
-      setActiveTool("select");
-    },
-    [activeTool, addElement, defaults, selectOne]
-  );
-
-  const handleClickPlace = useCallback(
-    (x: number, y: number) => {
-      if (activeTool === "text") {
-        const id = uuidv4();
-        addElement({
-          id,
-          type: "label",
-          geometry: { shape: "rect" as const, x, y, width: 150, height: 30 },
-          properties: {
-            name: "Text",
-            text: "Text",
-            fontSize: 16,
-            fontWeight: "normal",
-            textAlign: "left",
-            color: defaults.fill,
-            zIndex: 2,
-          },
-        });
-        selectOne(id);
+  // Unified tool completion handler (used once tools are migrated to registry)
+  const handleToolComplete = useCallback(
+    (result: import("./tools/types").ToolResult) => {
+      if (result.type === "element") {
+        addElement(result.element);
+        selectOne(result.element.id);
         setActiveTool("select");
-      } else if (activeTool === "icon" && activeIconName) {
-        const id = uuidv4();
-        addElement({
-          id,
-          type: "icon",
-          geometry: { shape: "rect" as const, x: x - 20, y: y - 20, width: 40, height: 40 },
-          properties: {
-            name: "Icon",
-            iconName: activeIconName,
-            color: defaults.fill,
-            zIndex: 2,
-          },
-        });
-        selectOne(id);
-        setActiveTool("select");
-        setActiveIconName(null);
       }
+      // "measurement" and "none" — no action needed
     },
-    [activeTool, activeIconName, addElement, defaults, selectOne]
+    [addElement, selectOne]
   );
 
-  const handleEndpointMove = useCallback(
-    (id: string, pointIndex: 0 | 1, x: number, y: number) => {
-      const element = data.elements.find((el) => el.id === id);
-      if (!element || element.geometry.shape !== "line") return;
-      const geo = element.geometry;
-      const newPoints = [...geo.points] as [number, number, number, number];
-      if (pointIndex === 0) {
-        newPoints[0] = x - geo.x;
-        newPoints[1] = y - geo.y;
-      } else {
-        newPoints[2] = x - geo.x;
-        newPoints[3] = y - geo.y;
-      }
-      updateElement(id, { points: newPoints });
+  // Generic geometry update handler (replaces per-shape callbacks for handles)
+  const handleGeometryUpdate = useCallback(
+    (id: string, updates: Partial<import("../types").Geometry>) => {
+      updateElement(id, updates);
     },
-    [data.elements, updateElement]
+    [updateElement]
   );
 
-  const handleArcDrawEnd = useCallback(
-    (x1: number, y1: number, cx: number, cy: number, x2: number, y2: number) => {
-      const id = uuidv4();
-      addElement({
-        id,
-        type: "shape",
-        geometry: {
-          shape: "arc",
-          x: x1,
-          y: y1,
-          points: [0, 0, cx - x1, cy - y1, x2 - x1, y2 - y1],
-        },
-        properties: {
-          name: "Arc",
-          color: defaults.stroke,
-          strokeWidth: defaults.strokeWidth,
-          zIndex: 1,
-        },
-      });
-      selectOne(id);
-      setActiveTool("select");
-    },
-    [addElement, defaults, selectOne]
-  );
-
-  const handleArcControlPointMove = useCallback(
-    (id: string, pointIndex: 0 | 1 | 2, x: number, y: number) => {
-      const element = data.elements.find((el) => el.id === id);
-      if (!element || element.geometry.shape !== "arc") return;
-      const geo = element.geometry;
-      const newPoints = [...geo.points] as [number, number, number, number, number, number];
-      if (pointIndex === 0) {
-        // Start point
-        newPoints[0] = x - geo.x;
-        newPoints[1] = y - geo.y;
-      } else if (pointIndex === 1) {
-        // End point
-        newPoints[4] = x - geo.x;
-        newPoints[5] = y - geo.y;
-      } else {
-        // Control point
-        newPoints[2] = x - geo.x;
-        newPoints[3] = y - geo.y;
-      }
-      updateElement(id, { points: newPoints });
-    },
-    [data.elements, updateElement]
-  );
-
-  const handlePolygonDrawEnd = useCallback(
-    (points: number[], anchorX: number, anchorY: number) => {
-      const id = uuidv4();
-      addElement({
-        id,
-        type: "shape",
-        geometry: {
-          shape: "polygon",
-          x: anchorX,
-          y: anchorY,
-          points,
-        },
-        properties: {
-          name: "Polygon",
-          color: defaults.fill,
-          strokeColor: defaults.stroke,
-          strokeWidth: defaults.strokeWidth,
-          zIndex: 1,
-        },
-      });
-      selectOne(id);
-      setActiveTool("select");
-    },
-    [addElement, defaults, selectOne]
-  );
-
-  const handlePolygonVertexMove = useCallback(
-    (id: string, vertexIndex: number, x: number, y: number) => {
-      const element = data.elements.find((el) => el.id === id);
-      if (!element || element.geometry.shape !== "polygon") return;
-      const geo = element.geometry;
-      const newPoints = [...geo.points];
-      newPoints[vertexIndex * 2] = x - geo.x;
-      newPoints[vertexIndex * 2 + 1] = y - geo.y;
-      updateElement(id, { points: newPoints });
-    },
-    [data.elements, updateElement]
+  // Tool context passed to Canvas → ToolHost
+  const toolContext: ToolContext = useMemo(
+    () => ({
+      stageRef,
+      position,
+      scale,
+      data,
+      defaults,
+      onComplete: handleToolComplete,
+      activeIconName,
+    }),
+    [stageRef, position, scale, data, defaults, handleToolComplete, activeIconName]
   );
 
   const handleElementMove = useCallback(
@@ -625,7 +434,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     const element = data.elements.find((el) => el.id === contextMenu.elementId);
     if (!element) return [];
 
-    const config = getShapeConfig(element.geometry.shape, element.type, element.properties);
+    const config = getToolUIConfig(element.geometry.shape, element.type);
     const items: ContextMenuItem[] = [];
 
     // Z-ordering actions
@@ -884,12 +693,12 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           ) : (
             <OptionsBar
               defaults={activeDefaults}
-              config={getShapeConfig(
-                selectedElement?.geometry.shape
-                  ?? (activeTool === "line" || activeTool === "arrow" ? "line" : activeTool === "arc" ? "arc" : activeTool === "polygon" ? "polygon" : activeTool === "ellipse" ? "ellipse" : "rect"),
-                selectedElement?.type ?? (activeTool === "booth" ? "booth" : activeTool === "text" ? "label" : activeTool === "icon" ? "icon" : undefined),
-                selectedElement?.properties
-              )}
+              config={selectedElement
+                ? getToolUIConfig(selectedElement.geometry.shape, selectedElement.type)
+                : resolvedTool
+                  ? { optionsBar: resolvedTool.optionsBar, propertiesPanel: resolvedTool.propertiesPanel, contextMenu: resolvedTool.contextMenu }
+                  : { optionsBar: [], propertiesPanel: [], contextMenu: [] }
+              }
               onDefaultsChange={handleDefaultsChange}
             />
           )}
@@ -898,7 +707,8 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
               <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden">
                 <Canvas
                   data={data}
-                  activeTool={activeTool}
+                  activeTool={resolvedTool}
+                  toolContext={toolContext}
                   selectedIds={selectedIds}
                   scale={scale}
                   position={position}
@@ -907,20 +717,13 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   containerRef={containerRef}
                   onWheel={handleWheel}
                   onDragEnd={handleDragEnd}
-                  onDrawEnd={handleDrawEnd}
-                  onLineDrawEnd={handleLineDrawEnd}
                   onSelect={handleSelect}
                   onDragSelect={handleDragSelect}
                   onElementMove={handleElementMove}
                   onMultiMove={handleMultiMove}
-                  onEndpointMove={handleEndpointMove}
-                  onArcDrawEnd={handleArcDrawEnd}
-                  onArcControlPointMove={handleArcControlPointMove}
-                  onPolygonDrawEnd={handlePolygonDrawEnd}
-                  onPolygonVertexMove={handlePolygonVertexMove}
                   onElementResize={handleElementResize}
+                  onGeometryUpdate={handleGeometryUpdate}
                   onElementContextMenu={handleElementContextMenu}
-                  onClickPlace={handleClickPlace}
                   gridSettings={gridSettings}
                   snapToObjects={snapToObjects}
                   layers={layers}
@@ -939,10 +742,6 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   existingCalibration={data.scaleCalibration}
                   onCalibrationClick={calibration.handleMouseDown}
                   onCalibrationMouseMove={calibration.handleMouseMove}
-                  measureState={measure.state}
-                  onMeasureMouseDown={measure.handleMouseDown}
-                  onMeasureMouseMove={measure.handleMouseMove}
-                  onMeasureMouseUp={measure.handleMouseUp}
                 />
                 <Rulers
                   visible={showRulers}

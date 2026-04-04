@@ -1,20 +1,20 @@
 import { Circle } from "react-konva";
 import type Konva from "konva";
-import type { PolygonGeometry } from "../../../types";
+import type { FloorPlanElement, Geometry, PolygonGeometry } from "../../../types";
 
 interface PolygonVertexHandlesProps {
-  elementId: string;
-  geometry: PolygonGeometry;
-  onVertexMove: (id: string, vertexIndex: number, x: number, y: number) => void;
+  element: FloorPlanElement;
+  onGeometryUpdate: (id: string, updates: Partial<Geometry>) => void;
 }
 
 const HANDLE_RADIUS = 5;
 
 export function PolygonVertexHandles({
-  elementId,
-  geometry,
-  onVertexMove,
+  element,
+  onGeometryUpdate,
 }: PolygonVertexHandlesProps) {
+  const geometry = element.geometry as PolygonGeometry;
+
   const vertices: Array<{ x: number; y: number; index: number }> = [];
   for (let i = 0; i < geometry.points.length; i += 2) {
     vertices.push({
@@ -29,7 +29,10 @@ export function PolygonVertexHandles({
     e: Konva.KonvaEventObject<DragEvent>
   ) => {
     e.cancelBubble = true;
-    onVertexMove(elementId, vertexIndex, e.target.x(), e.target.y());
+    const newPoints = [...geometry.points];
+    newPoints[vertexIndex * 2] = e.target.x() - geometry.x;
+    newPoints[vertexIndex * 2 + 1] = e.target.y() - geometry.y;
+    onGeometryUpdate(element.id, { points: newPoints });
   };
 
   return (

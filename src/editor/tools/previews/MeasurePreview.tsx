@@ -1,5 +1,5 @@
 import { Circle, Group, Line, Rect, Text } from "react-konva";
-import type { MeasureState } from "../../hooks/useMeasureTool";
+import type { MeasureState } from "../hooks/useMeasureInteraction";
 import type { Dimensions } from "../../../types";
 import { formatMeasurement } from "../../../utils/unitConversion";
 
@@ -55,7 +55,6 @@ export function MeasurePreview({ state, scale, dimensions }: MeasurePreviewProps
         strokeWidth={1 * inverseScale}
         listening={false}
       />
-      {/* Label background */}
       <Rect
         x={midX - (label.length * 3.5 * inverseScale)}
         y={midY - 10 * inverseScale}

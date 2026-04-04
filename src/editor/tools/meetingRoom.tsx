@@ -42,5 +42,5 @@ export const meetingRoomTool: ToolDefinition<DrawingRect | null> = {
   ownsGeometry: ["rect", "polygon"],
   optionsBar: ["fill", "stroke", "strokeWidth"],
   propertiesPanel: ["name", "capacity", "meetingRoomId", "width", "height", "rotation", "area"],
-  contextMenu: ["delete"],
+  contextMenu: ["convertToBooth", "convertToSessionArea", "convertToShape", "delete"],
 };

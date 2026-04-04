@@ -452,7 +452,25 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
         case "convertToBooth":
           items.push({
             label: "Convert to Booth",
-            onClick: () => updateElementType(contextMenu.elementId, "booth"),
+            onClick: () => updateElementType(contextMenu.elementId, "booth", { color: "#3498DB" }),
+          });
+          break;
+        case "convertToSessionArea":
+          items.push({
+            label: "Convert to Session Location",
+            onClick: () => updateElementType(contextMenu.elementId, "session_area", { color: "#27AE60" }),
+          });
+          break;
+        case "convertToMeetingRoom":
+          items.push({
+            label: "Convert to Meeting Room",
+            onClick: () => updateElementType(contextMenu.elementId, "meeting_room", { color: "#F39C12" }),
+          });
+          break;
+        case "convertToShape":
+          items.push({
+            label: "Convert to Shape",
+            onClick: () => updateElementType(contextMenu.elementId, "shape"),
           });
           break;
         case "delete":

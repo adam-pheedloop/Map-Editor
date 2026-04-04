@@ -2,6 +2,8 @@ import { useRef, useState, useCallback, useMemo, useEffect } from "react";
 import { v4 as uuidv4 } from "uuid";
 import type { ActiveTool, PathingTool } from "./types";
 import type { DrawingDefaults } from "./components/panels/OptionsBar";
+import type { ToolContext } from "./tools/types";
+import { TOOL_MAP } from "./tools/registry";
 import { useCanvasControls } from "./hooks/useCanvasControls";
 import { useEditorState } from "./hooks/useEditorState";
 import { useKeyboardShortcuts } from "./hooks/useKeyboardShortcuts";
@@ -319,6 +321,44 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
       }
     },
     [selectedIds, data.elements, updateProperties]
+  );
+
+  // --- Tool registry integration ---
+  // Resolve active tool string to ToolDefinition (null = select mode)
+  const resolvedTool = activeTool === "select" ? null : TOOL_MAP.get(activeTool) ?? null;
+
+  // Unified tool completion handler (used once tools are migrated to registry)
+  const handleToolComplete = useCallback(
+    (result: import("./tools/types").ToolResult) => {
+      if (result.type === "element") {
+        addElement(result.element);
+        selectOne(result.element.id);
+        setActiveTool("select");
+      }
+      // "measurement" and "none" — no action needed
+    },
+    [addElement, selectOne]
+  );
+
+  // Generic geometry update handler (replaces per-shape callbacks for handles)
+  const handleGeometryUpdate = useCallback(
+    (id: string, updates: Partial<import("../types").Geometry>) => {
+      updateElement(id, updates);
+    },
+    [updateElement]
+  );
+
+  // Tool context passed to Canvas → ToolHost
+  const toolContext: ToolContext = useMemo(
+    () => ({
+      stageRef,
+      position,
+      scale,
+      data,
+      defaults,
+      onComplete: handleToolComplete,
+    }),
+    [stageRef, position, scale, data, defaults, handleToolComplete]
   );
 
   const handleDrawEnd = useCallback(
@@ -898,7 +938,8 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
               <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden">
                 <Canvas
                   data={data}
-                  activeTool={activeTool}
+                  activeTool={resolvedTool}
+                  toolContext={toolContext}
                   selectedIds={selectedIds}
                   scale={scale}
                   position={position}
@@ -907,20 +948,13 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   containerRef={containerRef}
                   onWheel={handleWheel}
                   onDragEnd={handleDragEnd}
-                  onDrawEnd={handleDrawEnd}
-                  onLineDrawEnd={handleLineDrawEnd}
                   onSelect={handleSelect}
                   onDragSelect={handleDragSelect}
                   onElementMove={handleElementMove}
                   onMultiMove={handleMultiMove}
-                  onEndpointMove={handleEndpointMove}
-                  onArcDrawEnd={handleArcDrawEnd}
-                  onArcControlPointMove={handleArcControlPointMove}
-                  onPolygonDrawEnd={handlePolygonDrawEnd}
-                  onPolygonVertexMove={handlePolygonVertexMove}
                   onElementResize={handleElementResize}
+                  onGeometryUpdate={handleGeometryUpdate}
                   onElementContextMenu={handleElementContextMenu}
-                  onClickPlace={handleClickPlace}
                   gridSettings={gridSettings}
                   snapToObjects={snapToObjects}
                   layers={layers}
@@ -939,10 +973,6 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   existingCalibration={data.scaleCalibration}
                   onCalibrationClick={calibration.handleMouseDown}
                   onCalibrationMouseMove={calibration.handleMouseMove}
-                  measureState={measure.state}
-                  onMeasureMouseDown={measure.handleMouseDown}
-                  onMeasureMouseMove={measure.handleMouseMove}
-                  onMeasureMouseUp={measure.handleMouseUp}
                 />
                 <Rulers
                   visible={showRulers}

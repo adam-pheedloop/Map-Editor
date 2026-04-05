@@ -3,9 +3,11 @@ import type { FloorPlanElement } from "../../types";
 import type { Exhibitor } from "../types";
 
 export interface SearchResult {
-  boothCode: string;
-  boothName: string;
-  exhibitorName: string | null;
+  elementId: string;           // element.id UUID — use as React key and for canvas highlight lookup
+  elementType: "booth" | "session_area" | "meeting_room";
+  name: string;                // primary display name
+  code?: string | null;        // boothCode (EXHBOT...) / meetingRoomId (MEL...) / sessionId (numeric)
+  exhibitorName?: string | null;
 }
 
 export function useSearch(
@@ -22,36 +24,56 @@ export function useSearch(
     return map;
   }, [exhibitors]);
 
-  // Build searchable entries from booth elements
-  const allBooths = useMemo(() => {
-    return elements
-      .filter((el) => el.type === "booth" && el.properties.boothCode)
-      .map((el) => {
-        const code = el.properties.boothCode!;
+  // Build searchable entries from all interactive element types
+  const allEntries = useMemo(() => {
+    const entries: SearchResult[] = [];
+
+    for (const el of elements) {
+      if (el.type === "booth" && el.properties.boothCode) {
+        const code = el.properties.boothCode;
         const exhibitor = exhibitorsByBooth.get(code);
-        return {
-          boothCode: code,
-          boothName: el.properties.name || "",
+        entries.push({
+          elementId: el.id,
+          elementType: "booth",
+          name: el.properties.name || `Booth ${code}`,
+          code,
           exhibitorName: exhibitor?.name ?? null,
-        } satisfies SearchResult;
-      });
+        } satisfies SearchResult);
+      } else if (el.type === "session_area") {
+        entries.push({
+          elementId: el.id,
+          elementType: "session_area",
+          name: el.properties.name || "Session Area",
+          code: el.properties.sessionId ?? null,
+        } satisfies SearchResult);
+      } else if (el.type === "meeting_room") {
+        entries.push({
+          elementId: el.id,
+          elementType: "meeting_room",
+          name: el.properties.name || "Meeting Room",
+          code: el.properties.meetingRoomId ?? null,
+        } satisfies SearchResult);
+      }
+    }
+
+    return entries;
   }, [elements, exhibitorsByBooth]);
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return [];
 
-    return allBooths.filter(
-      (booth) =>
-        booth.boothCode.toLowerCase().includes(q) ||
-        booth.boothName.toLowerCase().includes(q) ||
-        (booth.exhibitorName && booth.exhibitorName.toLowerCase().includes(q))
+    return allEntries.filter(
+      (entry) =>
+        entry.name.toLowerCase().includes(q) ||
+        (entry.code && entry.code.toLowerCase().includes(q)) ||
+        (entry.exhibitorName && entry.exhibitorName.toLowerCase().includes(q))
     );
-  }, [query, allBooths]);
+  }, [query, allEntries]);
 
-  // Set of booth codes that match the search (for canvas highlighting)
-  const matchedBoothCodes = useMemo(
-    () => new Set(results.map((r) => r.boothCode)),
+  // Set of element IDs that match the search (for canvas highlighting)
+  const matchedElementIds = useMemo(
+    () => new Set(results.map((r) => r.elementId)),
     [results]
   );
 
@@ -59,7 +81,7 @@ export function useSearch(
     query,
     setQuery,
     results,
-    matchedBoothCodes,
+    matchedElementIds,
     isSearching: query.trim().length > 0,
   };
 }

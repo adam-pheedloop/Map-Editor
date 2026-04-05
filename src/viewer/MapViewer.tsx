@@ -1,14 +1,16 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from "react";
 import { PiPath } from "react-icons/pi";
 import type { FloorPlanData } from "../types";
-import type { Exhibitor, ViewerMode } from "./types";
+import type { Exhibitor, HoveredItem, ViewerMode } from "./types";
+import type { SearchResult } from "./hooks/useSearch";
 import { useSearch } from "./hooks/useSearch";
 import { useDirections } from "./hooks/useDirections";
 import { ViewerCanvas } from "./components/ViewerCanvas";
 import { SearchBar } from "./components/SearchBar";
-import { ExhibitorList } from "./components/ExhibitorList";
-import { ExhibitorSheet } from "./components/ExhibitorSheet";
+import { MapSidebar } from "./components/MapSidebar";
+import { MapSheet } from "./components/MapSheet";
 import { BoothPopover } from "./components/BoothPopover";
+import { LocationPopover } from "./components/LocationPopover";
 import { DirectionsPanel } from "./components/DirectionsPanel";
 
 interface MapViewerProps {
@@ -22,10 +24,10 @@ const MOBILE_BREAKPOINT = 640;
 export function MapViewer({ data, exhibitors, mode = "attendee" }: MapViewerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isMobile, setIsMobile] = useState(false);
-  const [selectedBoothCode, setSelectedBoothCode] = useState<string | null>(null);
-  const [popover, setPopover] = useState<{ boothCode: string; x: number; y: number } | null>(null);
+  const [selectedItem, setSelectedItem] = useState<HoveredItem | null>(null);
+  const [popover, setPopover] = useState<{ item: HoveredItem; name: string; x: number; y: number } | null>(null);
 
-  const { query, setQuery, results, matchedBoothCodes, isSearching } = useSearch(
+  const { query, setQuery, results, matchedElementIds, isSearching } = useSearch(
     data.elements,
     exhibitors
   );
@@ -56,66 +58,60 @@ export function MapViewer({ data, exhibitors, mode = "attendee" }: MapViewerProp
     return map;
   }, [exhibitors]);
 
-  const selectedExhibitor = selectedBoothCode
-    ? exhibitorsByBooth.get(selectedBoothCode) ?? null
-    : null;
-
-  const handleExhibitorSelect = useCallback((exhibitor: Exhibitor) => {
-    setSelectedBoothCode((prev) =>
-      prev === exhibitor.boothCode ? null : exhibitor.boothCode
-    );
+  const handleSidebarSelect = useCallback((item: HoveredItem) => {
+    setSelectedItem((prev) => (prev?.elementId === item.elementId ? null : item));
     setPopover(null);
   }, []);
 
-  const handleBoothClick = useCallback(
-    (boothCode: string, screenX: number, screenY: number) => {
-      setSelectedBoothCode((prev) => (prev === boothCode ? null : boothCode));
+  const handleElementClick = useCallback(
+    (item: HoveredItem, screenX: number, screenY: number) => {
+      setSelectedItem((prev) => (prev?.elementId === item.elementId ? null : item));
+      const el = data.elements.find((e) => e.id === item.elementId);
+      const name = el?.properties.name || "";
       setPopover((prev) =>
-        prev?.boothCode === boothCode ? null : { boothCode, x: screenX, y: screenY }
+        prev?.item.elementId === item.elementId
+          ? null
+          : { item, name, x: screenX, y: screenY }
       );
     },
-    []
+    [data.elements]
   );
 
-  const handleResultSelect = useCallback((boothCode: string) => {
-    setSelectedBoothCode(boothCode);
+  const handleResultSelect = useCallback((result: SearchResult) => {
+    let item: HoveredItem;
+    if (result.elementType === "booth") {
+      item = { type: "booth", elementId: result.elementId, boothCode: result.code! };
+    } else if (result.elementType === "session_area") {
+      item = { type: "session_area", elementId: result.elementId, sessionId: result.code };
+    } else {
+      item = { type: "meeting_room", elementId: result.elementId, meetingRoomId: result.code };
+    }
+    setSelectedItem(item);
     setPopover(null);
   }, []);
 
   const handlePopoverClose = useCallback(() => {
     setPopover(null);
-    setSelectedBoothCode(null);
+    setSelectedItem(null);
   }, []);
 
   const handleDirectionsStart = useCallback(
-    (result: unknown) => {
-      if (!result) {
-        directions.setStartLocation(null);
-        return;
-      }
-      directions.setStartLocation(
-        directions.locationFromResult(result as Parameters<typeof directions.locationFromResult>[0])
-      );
+    (result: SearchResult | null) => {
+      directions.setStartLocation(result ? directions.locationFromResult(result) : null);
     },
     [directions]
   );
 
   const handleDirectionsEnd = useCallback(
-    (result: unknown) => {
-      if (!result) {
-        directions.setEndLocation(null);
-        return;
-      }
-      directions.setEndLocation(
-        directions.locationFromResult(result as Parameters<typeof directions.locationFromResult>[0])
-      );
+    (result: SearchResult | null) => {
+      directions.setEndLocation(result ? directions.locationFromResult(result) : null);
     },
     [directions]
   );
 
   const handleGetDirections = useCallback(
-    (boothCode: string) => {
-      directions.navigateTo(boothCode);
+    (elementId: string) => {
+      directions.navigateTo(elementId);
       setPopover(null);
     },
     [directions]
@@ -149,10 +145,10 @@ export function MapViewer({ data, exhibitors, mode = "attendee" }: MapViewerProp
           data={data}
           mode={mode}
           occupiedBoothCodes={occupiedBoothCodes}
-          highlightedBoothCode={selectedBoothCode}
-          searchMatchCodes={isSearching ? matchedBoothCodes : null}
+          highlightedElementId={selectedItem?.elementId ?? null}
+          searchMatchIds={isSearching ? matchedElementIds : null}
           routePath={directions.routePath}
-          onBoothClick={handleBoothClick}
+          onElementClick={handleElementClick}
         />
         {!isMobile && directions.active && (
           <div className="w-64 shrink-0 bg-white border-l border-gray-200 flex flex-col">
@@ -171,17 +167,19 @@ export function MapViewer({ data, exhibitors, mode = "attendee" }: MapViewerProp
           </div>
         )}
         {!isMobile && !directions.active && (
-          <ExhibitorList
+          <MapSidebar
+            elements={data.elements}
             exhibitors={exhibitors}
-            selectedId={selectedExhibitor?.id ?? null}
-            onSelect={handleExhibitorSelect}
+            selectedItem={selectedItem}
+            onSelect={handleSidebarSelect}
           />
         )}
         {isMobile && !directions.active && (
-          <ExhibitorSheet
+          <MapSheet
+            elements={data.elements}
             exhibitors={exhibitors}
-            selectedId={selectedExhibitor?.id ?? null}
-            onSelect={handleExhibitorSelect}
+            selectedItem={selectedItem}
+            onSelect={handleSidebarSelect}
           />
         )}
         {isMobile && directions.active && (
@@ -200,16 +198,30 @@ export function MapViewer({ data, exhibitors, mode = "attendee" }: MapViewerProp
             />
           </div>
         )}
-        {popover && !isMobile && (
+        {popover && !isMobile && popover.item.type === "booth" && (
           <BoothPopover
-            boothCode={popover.boothCode}
-            exhibitor={exhibitorsByBooth.get(popover.boothCode) ?? null}
+            boothCode={popover.item.boothCode}
+            exhibitor={exhibitorsByBooth.get(popover.item.boothCode) ?? null}
             x={popover.x}
             y={popover.y}
             onClose={handlePopoverClose}
             onGetDirections={
               mode === "attendee" && directions.hasGrid
-                ? handleGetDirections
+                ? () => handleGetDirections(popover.item.elementId)
+                : undefined
+            }
+          />
+        )}
+        {popover && !isMobile && popover.item.type !== "booth" && (
+          <LocationPopover
+            name={popover.name}
+            type={popover.item.type}
+            x={popover.x}
+            y={popover.y}
+            onClose={handlePopoverClose}
+            onGetDirections={
+              mode === "attendee" && directions.hasGrid
+                ? () => handleGetDirections(popover.item.elementId)
                 : undefined
             }
           />

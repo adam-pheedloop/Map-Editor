@@ -12,11 +12,17 @@ interface DirectionsPanelProps {
   routePath: { x: number; y: number }[] | null;
   dimensions: Dimensions;
   onSearch: (query: string) => SearchResult[];
-  onSelectStart: (result: SearchResult) => void;
-  onSelectEnd: (result: SearchResult) => void;
+  onSelectStart: (result: SearchResult | null) => void;
+  onSelectEnd: (result: SearchResult | null) => void;
   onSwap: () => void;
   onClose: () => void;
 }
+
+const TYPE_BADGE: Record<SearchResult["elementType"], { label: string; className: string }> = {
+  booth: { label: "Booth", className: "bg-gray-100 text-gray-500" },
+  session_area: { label: "Session", className: "bg-green-100 text-green-700" },
+  meeting_room: { label: "Room", className: "bg-orange-100 text-orange-700" },
+};
 
 function LocationField({
   label,
@@ -86,26 +92,29 @@ function LocationField({
           {results.length === 0 ? (
             <div className="px-3 py-2 text-xs text-gray-400">No results</div>
           ) : (
-            results.map((result) => (
-              <button
-                key={result.boothCode}
-                onClick={() => {
-                  onSelect(result);
-                  setQuery("");
-                  inputRef.current?.blur();
-                }}
-                className="w-full text-left px-3 py-1.5 hover:bg-gray-50 cursor-pointer transition-colors"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-gray-800">
-                    {result.exhibitorName || result.boothName || "Booth"}
-                  </span>
-                  <span className="text-[11px] text-gray-400">
-                    {result.boothCode}
-                  </span>
-                </div>
-              </button>
-            ))
+            results.map((result) => {
+              const badge = TYPE_BADGE[result.elementType];
+              return (
+                <button
+                  key={result.elementId}
+                  onClick={() => {
+                    onSelect(result);
+                    setQuery("");
+                    inputRef.current?.blur();
+                  }}
+                  className="w-full text-left px-3 py-1.5 hover:bg-gray-50 cursor-pointer transition-colors"
+                >
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-xs font-medium text-gray-800 truncate">
+                      {result.exhibitorName || result.name}
+                    </span>
+                    <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded shrink-0 ${badge.className}`}>
+                      {badge.label}
+                    </span>
+                  </div>
+                </button>
+              );
+            })
           )}
         </div>
       )}
@@ -145,7 +154,7 @@ export function DirectionsPanel({
             value={startLocation}
             onSearch={onSearch}
             onSelect={onSelectStart}
-            onClear={() => onSelectStart(null as unknown as SearchResult)}
+            onClear={() => onSelectStart(null)}
           />
           <LocationField
             label="To"
@@ -153,7 +162,7 @@ export function DirectionsPanel({
             value={endLocation}
             onSearch={onSearch}
             onSelect={onSelectEnd}
-            onClear={() => onSelectEnd(null as unknown as SearchResult)}
+            onClear={() => onSelectEnd(null)}
           />
         </div>
 

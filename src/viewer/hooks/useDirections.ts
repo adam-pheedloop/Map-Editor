@@ -9,11 +9,14 @@ import {
 } from "../utils/snapToGrid";
 
 export interface DirectionsLocation {
-  type: "booth" | "exhibitor" | "point";
+  type: "booth" | "exhibitor" | "session_area" | "meeting_room" | "point";
+  // Future: add "poi" here without structural changes
   /** Display label for the location */
   label: string;
   /** Booth code (for booth/exhibitor types) */
   boothCode?: string;
+  /** Element UUID (for session_area / meeting_room / future poi) */
+  elementId?: string;
   /** Canvas coordinates (for point type) */
   position?: { x: number; y: number };
 }
@@ -37,19 +40,39 @@ export function useDirections(
     return map;
   }, [exhibitors]);
 
-  // Build searchable entries (reuses same logic as useSearch)
+  // Build searchable entries for all interactive element types
   const searchEntries = useMemo(() => {
-    return data.elements
-      .filter((el) => el.type === "booth" && el.properties.boothCode)
-      .map((el) => {
-        const code = el.properties.boothCode!;
+    const entries: SearchResult[] = [];
+
+    for (const el of data.elements) {
+      if (el.type === "booth" && el.properties.boothCode) {
+        const code = el.properties.boothCode;
         const exhibitor = exhibitorsByBooth.get(code);
-        return {
-          boothCode: code,
-          boothName: el.properties.name || "",
+        entries.push({
+          elementId: el.id,
+          elementType: "booth",
+          name: el.properties.name || `Booth ${code}`,
+          code,
           exhibitorName: exhibitor?.name ?? null,
-        } satisfies SearchResult;
-      });
+        } satisfies SearchResult);
+      } else if (el.type === "session_area") {
+        entries.push({
+          elementId: el.id,
+          elementType: "session_area",
+          name: el.properties.name || "Session Area",
+          code: el.properties.sessionId ?? null,
+        } satisfies SearchResult);
+      } else if (el.type === "meeting_room") {
+        entries.push({
+          elementId: el.id,
+          elementType: "meeting_room",
+          name: el.properties.name || "Meeting Room",
+          code: el.properties.meetingRoomId ?? null,
+        } satisfies SearchResult);
+      }
+    }
+
+    return entries;
   }, [data.elements, exhibitorsByBooth]);
 
   const searchLocations = useCallback(
@@ -58,8 +81,8 @@ export function useDirections(
       if (!q) return [];
       return searchEntries.filter(
         (entry) =>
-          entry.boothCode.toLowerCase().includes(q) ||
-          entry.boothName.toLowerCase().includes(q) ||
+          entry.name.toLowerCase().includes(q) ||
+          (entry.code && entry.code.toLowerCase().includes(q)) ||
           (entry.exhibitorName && entry.exhibitorName.toLowerCase().includes(q))
       );
     },
@@ -69,17 +92,26 @@ export function useDirections(
   /** Resolve a SearchResult into a DirectionsLocation */
   const locationFromResult = useCallback(
     (result: SearchResult): DirectionsLocation => {
-      if (result.exhibitorName) {
+      if (result.elementType === "booth") {
+        if (result.exhibitorName) {
+          return {
+            type: "exhibitor",
+            label: result.exhibitorName,
+            boothCode: result.code ?? undefined,
+            elementId: result.elementId,
+          };
+        }
         return {
-          type: "exhibitor",
-          label: result.exhibitorName,
-          boothCode: result.boothCode,
+          type: "booth",
+          label: result.name,
+          boothCode: result.code ?? undefined,
+          elementId: result.elementId,
         };
       }
       return {
-        type: "booth",
-        label: result.boothName || `Booth ${result.boothCode}`,
-        boothCode: result.boothCode,
+        type: result.elementType,
+        label: result.name,
+        elementId: result.elementId,
       };
     },
     []
@@ -91,12 +123,17 @@ export function useDirections(
       return { routePath: null, routeStatus: "idle" as RouteStatus };
     }
 
-    // Check same location
-    if (
+    // Check same location — compare by elementId when available, fall back to boothCode
+    const sameById =
+      startLocation.elementId &&
+      endLocation.elementId &&
+      startLocation.elementId === endLocation.elementId;
+    const sameByBoothCode =
+      !startLocation.elementId &&
       startLocation.boothCode &&
       endLocation.boothCode &&
-      startLocation.boothCode === endLocation.boothCode
-    ) {
+      startLocation.boothCode === endLocation.boothCode;
+    if (sameById || sameByBoothCode) {
       return { routePath: null, routeStatus: "same-location" as RouteStatus };
     }
 
@@ -105,11 +142,17 @@ export function useDirections(
       if (loc.type === "point" && loc.position) {
         return findNearestWalkableCell(grid, loc.position.x, loc.position.y);
       }
+      // elementId-based lookup (session_area, meeting_room, and booths with elementId)
+      if (loc.elementId) {
+        const el = data.elements.find((e) => e.id === loc.elementId);
+        if (el) return resolveBoothToCell(grid, el);
+      }
+      // Legacy boothCode-based lookup
       if (loc.boothCode) {
-        const booth = data.elements.find(
-          (el) => el.type === "booth" && el.properties.boothCode === loc.boothCode
+        const el = data.elements.find(
+          (e) => e.type === "booth" && e.properties.boothCode === loc.boothCode
         );
-        if (booth) return resolveBoothToCell(grid, booth);
+        if (el) return resolveBoothToCell(grid, el);
       }
       return null;
     };
@@ -145,19 +188,38 @@ export function useDirections(
     });
   }, [endLocation]);
 
-  /** Open directions with a pre-set destination (e.g. from booth popover) */
+  /** Open directions with a pre-set destination (e.g. from a popover) */
   const navigateTo = useCallback(
-    (boothCode: string) => {
-      const exhibitor = exhibitorsByBooth.get(boothCode);
-      const booth = data.elements.find(
-        (el) => el.type === "booth" && el.properties.boothCode === boothCode
-      );
-      const label = exhibitor?.name || booth?.properties.name || `Booth ${boothCode}`;
-      setEndLocation({
-        type: exhibitor ? "exhibitor" : "booth",
-        label,
-        boothCode,
-      });
+    (elementId: string) => {
+      const el = data.elements.find((e) => e.id === elementId);
+      if (!el) return;
+
+      let location: DirectionsLocation;
+      if (el.type === "booth" && el.properties.boothCode) {
+        const exhibitor = exhibitorsByBooth.get(el.properties.boothCode);
+        location = {
+          type: exhibitor ? "exhibitor" : "booth",
+          label: exhibitor?.name || el.properties.name || `Booth ${el.properties.boothCode}`,
+          boothCode: el.properties.boothCode,
+          elementId: el.id,
+        };
+      } else if (el.type === "session_area") {
+        location = {
+          type: "session_area",
+          label: el.properties.name || "Session Area",
+          elementId: el.id,
+        };
+      } else if (el.type === "meeting_room") {
+        location = {
+          type: "meeting_room",
+          label: el.properties.name || "Meeting Room",
+          elementId: el.id,
+        };
+      } else {
+        return;
+      }
+
+      setEndLocation(location);
       setStartLocation(null);
       setActive(true);
     },

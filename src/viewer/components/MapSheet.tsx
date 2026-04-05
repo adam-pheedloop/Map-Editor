@@ -1,0 +1,175 @@
+import { useState, useMemo } from "react";
+import { PiCaretUp, PiCaretDown } from "react-icons/pi";
+import type { FloorPlanElement } from "../../types";
+import type { Exhibitor, HoveredItem } from "../types";
+
+interface MapSheetProps {
+  elements: FloorPlanElement[];
+  exhibitors: Exhibitor[];
+  selectedItem: HoveredItem | null;
+  onSelect: (item: HoveredItem) => void;
+}
+
+type TabId = "exhibitors" | "sessions" | "meetingRooms";
+
+export function MapSheet({ elements, exhibitors, selectedItem, onSelect }: MapSheetProps) {
+  const [expanded, setExpanded] = useState(false);
+
+  const sessionElements = useMemo(
+    () =>
+      [...elements.filter((el) => el.type === "session_area")].sort((a, b) =>
+        (a.properties.name || "").localeCompare(b.properties.name || "")
+      ),
+    [elements]
+  );
+
+  const meetingRoomElements = useMemo(
+    () =>
+      [...elements.filter((el) => el.type === "meeting_room")].sort((a, b) =>
+        (a.properties.name || "").localeCompare(b.properties.name || "")
+      ),
+    [elements]
+  );
+
+  const sortedExhibitors = useMemo(
+    () => [...exhibitors].sort((a, b) => a.name.localeCompare(b.name)),
+    [exhibitors]
+  );
+
+  const boothByCode = useMemo(() => {
+    const map = new Map<string, FloorPlanElement>();
+    for (const el of elements) {
+      if (el.type === "booth" && el.properties.boothCode) {
+        map.set(el.properties.boothCode, el);
+      }
+    }
+    return map;
+  }, [elements]);
+
+  const visibleTabs = useMemo(
+    () =>
+      ([
+        { id: "exhibitors" as TabId, label: "Exhibitors", count: exhibitors.length },
+        { id: "sessions" as TabId, label: "Sessions", count: sessionElements.length },
+        { id: "meetingRooms" as TabId, label: "Rooms", count: meetingRoomElements.length },
+      ] as const).filter((tab) => tab.count > 0),
+    [exhibitors.length, sessionElements.length, meetingRoomElements.length]
+  );
+
+  const [activeTab, setActiveTab] = useState<TabId>(() => visibleTabs[0]?.id ?? "exhibitors");
+
+  const currentTab = visibleTabs.some((t) => t.id === activeTab) ? activeTab : (visibleTabs[0]?.id ?? "exhibitors");
+  const hasTabs = visibleTabs.length > 1;
+
+  return (
+    <div
+      className="absolute bottom-0 left-0 right-0 bg-white rounded-t-xl shadow-[0_-4px_20px_rgba(0,0,0,0.15)] transition-all duration-300 z-50"
+      style={{ maxHeight: expanded ? "60%" : hasTabs ? 56 : 48 }}
+    >
+      {/* Header / toggle */}
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="flex items-center justify-between w-full px-4 py-3 cursor-pointer"
+      >
+        {hasTabs ? (
+          /* Tab bar inside the collapsed header */
+          <div className="flex gap-3" onClick={(e) => e.stopPropagation()}>
+            {visibleTabs.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => {
+                  setActiveTab(tab.id);
+                  setExpanded(true);
+                }}
+                className={`text-xs font-medium pb-0.5 cursor-pointer transition-colors ${
+                  currentTab === tab.id
+                    ? "text-primary-600 border-b-2 border-primary-500"
+                    : "text-gray-400 hover:text-gray-600"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+        ) : (
+          <span className="text-xs font-medium text-gray-600">
+            {visibleTabs[0]?.label} ({visibleTabs[0]?.count ?? 0})
+          </span>
+        )}
+        {expanded ? (
+          <PiCaretDown size={14} className="text-gray-400" />
+        ) : (
+          <PiCaretUp size={14} className="text-gray-400" />
+        )}
+      </button>
+
+      {expanded && (
+        <div className="overflow-y-auto" style={{ maxHeight: "calc(60vh - 56px)" }}>
+          {currentTab === "exhibitors" &&
+            sortedExhibitors.map((exhibitor) => {
+              const boothEl = boothByCode.get(exhibitor.boothCode);
+              const isSelected = boothEl ? selectedItem?.elementId === boothEl.id : false;
+              return (
+                <button
+                  key={exhibitor.id}
+                  onClick={() => {
+                    if (!boothEl) return;
+                    onSelect({ type: "booth", elementId: boothEl.id, boothCode: exhibitor.boothCode });
+                  }}
+                  className={`w-full text-left px-4 py-2.5 border-t border-gray-100 cursor-pointer transition-colors ${
+                    isSelected ? "bg-primary-100" : "hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {exhibitor.logo && (
+                      <img src={exhibitor.logo} alt="" className="w-7 h-7 rounded shrink-0" />
+                    )}
+                    <div>
+                      <div className="text-xs font-medium text-gray-800">{exhibitor.name}</div>
+                      <div className="text-[11px] text-gray-400">Booth {exhibitor.boothCode}</div>
+                    </div>
+                  </div>
+                </button>
+              );
+            })}
+
+          {currentTab === "sessions" &&
+            sessionElements.map((el) => {
+              const isSelected = selectedItem?.elementId === el.id;
+              return (
+                <button
+                  key={el.id}
+                  onClick={() => onSelect({ type: "session_area", elementId: el.id, sessionId: el.properties.sessionId ?? null })}
+                  className={`w-full text-left px-4 py-2.5 border-t border-gray-100 cursor-pointer transition-colors ${
+                    isSelected ? "bg-primary-100" : "hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="text-xs font-medium text-gray-800">
+                    {el.properties.name || "Unnamed Session"}
+                  </div>
+                </button>
+              );
+            })}
+
+          {currentTab === "meetingRooms" &&
+            meetingRoomElements.map((el) => {
+              const isSelected = selectedItem?.elementId === el.id;
+              return (
+                <button
+                  key={el.id}
+                  onClick={() => onSelect({ type: "meeting_room", elementId: el.id, meetingRoomId: el.properties.meetingRoomId ?? null })}
+                  className={`w-full text-left px-4 py-2.5 border-t border-gray-100 cursor-pointer transition-colors ${
+                    isSelected ? "bg-primary-100" : "hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="text-xs font-medium text-gray-800">
+                    {el.properties.name || "Unnamed Room"}
+                  </div>
+                </button>
+              );
+            })}
+        </div>
+      )}
+    </div>
+  );
+}

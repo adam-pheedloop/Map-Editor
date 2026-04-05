@@ -2,7 +2,7 @@ import { useState } from "react";
 import { PiWarningCircle, PiCheckCircleFill, PiBug, PiWrench, PiCaretRight } from "react-icons/pi";
 import issuesData from "../data/known-issues.json";
 
-type Severity = "minor" | "medium" | "tech-debt";
+type Severity = "minor" | "medium" | "tech-debt" | "architecture";
 type Status = "open" | "fixed";
 
 interface Issue {
@@ -32,6 +32,12 @@ const severityConfig: Record<Severity, { icon: typeof PiBug; label: string; colo
     label: "Tech Debt",
     color: "text-purple-500",
     bg: "bg-purple-50 text-purple-700",
+  },
+  architecture: {
+    icon: PiWrench,
+    label: "Architecture",
+    color: "text-rose-500",
+    bg: "bg-rose-50 text-rose-700",
   },
 };
 

@@ -91,6 +91,9 @@
         "Visual route overlay on canvas",
         "Route distance / ETA display",
         "Clear / reset route action"
+      ],
+      "knownLimitations": [
+        "Wayfinding routes to enclosed rooms (meeting rooms, session areas) terminate at the nearest walkable cell on the element's bounding box — which may be a wall rather than the actual doorway. The system has no concept of where a door is. Future fix: add optional entrance point(s) to location elements (booth, session_area, meeting_room, poi). Each entrance is a Point placed on the element's perimeter by the organiser, marking the doorway. The wayfinding system routes to the nearest entrance point instead of the bounding box edge. Supports multiple entrances per room. Falls back to current bounding-box behaviour if no entrance is defined. See KNOWN-ISSUES.md."
       ]
     },
     {

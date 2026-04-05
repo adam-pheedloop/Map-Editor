@@ -13,7 +13,7 @@ import { getIconEntry } from "../../editor/utils/iconRegistry";
 import { iconToImage } from "../../editor/utils/iconToImage";
 import { useCanvasControls } from "../../editor/hooks/useCanvasControls";
 import { BackgroundImage } from "../../editor/components/canvas/BackgroundImage";
-import type { ViewerMode } from "../types";
+import type { ViewerMode, HoveredItem } from "../types";
 import { RouteOverlay } from "./RouteOverlay";
 import { ScaleBar } from "./ScaleBar";
 
@@ -21,10 +21,10 @@ interface ViewerCanvasProps {
   data: FloorPlanData;
   mode: ViewerMode;
   occupiedBoothCodes: Set<string>;
-  highlightedBoothCode: string | null;
-  searchMatchCodes: Set<string> | null;
+  highlightedElementId: string | null;
+  searchMatchIds: Set<string> | null;
   routePath: { x: number; y: number }[] | null;
-  onBoothClick: (boothCode: string, screenX: number, screenY: number) => void;
+  onElementClick: (item: HoveredItem, screenX: number, screenY: number) => void;
 }
 
 function ViewerIcon({ iconName, color, width, height }: { iconName: string; color: string; width: number; height: number }) {
@@ -220,10 +220,10 @@ function ViewerElement({
   );
 }
 
-export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedBoothCode, searchMatchCodes, routePath, onBoothClick }: ViewerCanvasProps) {
+export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedElementId, searchMatchIds, routePath, onElementClick }: ViewerCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [hoveredBoothCode, setHoveredBoothCode] = useState<string | null>(null);
-  const isSearching = searchMatchCodes !== null && searchMatchCodes.size > 0;
+  const [hoveredElementId, setHoveredElementId] = useState<string | null>(null);
+  const isSearching = !!searchMatchIds && searchMatchIds.size > 0;
   const {
     stageRef,
     scale,
@@ -237,7 +237,7 @@ export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedBoothC
     (a, b) => (a.properties.zIndex ?? 0) - (b.properties.zIndex ?? 0)
   );
 
-  const hasHighlight = highlightedBoothCode !== null;
+  const hasHighlight = highlightedElementId !== null;
 
   return (
     <div ref={containerRef} className="relative flex-1 min-w-0 bg-gray-200 overflow-hidden">
@@ -271,15 +271,18 @@ export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedBoothC
         <Layer>
           {sortedElements.map((element) => {
             const isBooth = element.type === "booth";
+            const isSessionArea = element.type === "session_area";
+            const isMeetingRoom = element.type === "meeting_room";
+            const isInteractive = isBooth || isSessionArea || isMeetingRoom;
             const boothCode = element.properties.boothCode;
             const isOccupied = isBooth && boothCode ? occupiedBoothCodes.has(boothCode) : false;
 
             // In attendee mode, unoccupied booths are faded and non-interactive
             const isInert = mode === "attendee" && isBooth && !isOccupied;
 
-            const isSelected = isBooth && boothCode === highlightedBoothCode;
-            const isSearchMatch = isBooth && boothCode && isSearching && searchMatchCodes!.has(boothCode);
-            const isHovered = isBooth && boothCode === hoveredBoothCode;
+            const isSelected = element.id === highlightedElementId;
+            const isSearchMatch = isInteractive && isSearching && searchMatchIds!.has(element.id);
+            const isHovered = element.id === hoveredElementId;
             const highlighted = isSelected || !!isSearchMatch;
             const dimmed =
               isInert ||
@@ -292,6 +295,19 @@ export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedBoothC
                 ? "#6B7280"
                 : undefined;
 
+            const buildClickItem = (): HoveredItem | null => {
+              if (isBooth && boothCode) {
+                return { type: "booth", elementId: element.id, boothCode };
+              }
+              if (isSessionArea) {
+                return { type: "session_area", elementId: element.id, sessionId: element.properties.sessionId ?? null };
+              }
+              if (isMeetingRoom) {
+                return { type: "meeting_room", elementId: element.id, meetingRoomId: element.properties.meetingRoomId ?? null };
+              }
+              return null;
+            };
+
             return (
               <ViewerElement
                 key={element.id}
@@ -300,9 +316,12 @@ export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedBoothC
                 isDimmed={dimmed}
                 isHovered={isHovered && !highlighted && !isInert}
                 overrideColor={overrideColor}
-                onMouseEnter={!isInert && isBooth && boothCode ? () => setHoveredBoothCode(boothCode) : undefined}
-                onMouseLeave={!isInert && isBooth ? () => setHoveredBoothCode(null) : undefined}
-                onClick={!isInert && isBooth && boothCode ? (e) => onBoothClick(boothCode, e.screenX, e.screenY) : undefined}
+                onMouseEnter={!isInert && isInteractive ? () => setHoveredElementId(element.id) : undefined}
+                onMouseLeave={!isInert && isInteractive ? () => setHoveredElementId(null) : undefined}
+                onClick={!isInert && isInteractive ? (e) => {
+                  const item = buildClickItem();
+                  if (item) onElementClick(item, e.screenX, e.screenY);
+                } : undefined}
               />
             );
           })}

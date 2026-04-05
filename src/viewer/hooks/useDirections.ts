@@ -9,11 +9,14 @@ import {
 } from "../utils/snapToGrid";
 
 export interface DirectionsLocation {
-  type: "booth" | "exhibitor" | "point";
+  type: "booth" | "exhibitor" | "session_area" | "meeting_room" | "point";
+  // Future: add "poi" here without structural changes
   /** Display label for the location */
   label: string;
   /** Booth code (for booth/exhibitor types) */
   boothCode?: string;
+  /** Element UUID (for session_area / meeting_room / future poi) */
+  elementId?: string;
   /** Canvas coordinates (for point type) */
   position?: { x: number; y: number };
 }

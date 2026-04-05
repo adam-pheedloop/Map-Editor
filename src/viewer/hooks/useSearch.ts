@@ -3,9 +3,11 @@ import type { FloorPlanElement } from "../../types";
 import type { Exhibitor } from "../types";
 
 export interface SearchResult {
-  boothCode: string;
-  boothName: string;
-  exhibitorName: string | null;
+  elementId: string;           // element.id UUID — use as React key and for canvas highlight lookup
+  elementType: "booth" | "session_area" | "meeting_room";
+  name: string;                // primary display name
+  code?: string | null;        // boothCode (EXHBOT...) / meetingRoomId (MEL...) / sessionId (numeric)
+  exhibitorName?: string | null;
 }
 
 export function useSearch(

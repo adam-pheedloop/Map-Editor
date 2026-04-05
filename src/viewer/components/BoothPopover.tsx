@@ -7,7 +7,7 @@ interface BoothPopoverProps {
   x: number;
   y: number;
   onClose: () => void;
-  onGetDirections?: (boothCode: string) => void;
+  onGetDirections?: () => void;
 }
 
 export function BoothPopover({ boothCode, exhibitor, x, y, onClose, onGetDirections }: BoothPopoverProps) {
@@ -55,7 +55,7 @@ export function BoothPopover({ boothCode, exhibitor, x, y, onClose, onGetDirecti
       )}
       {onGetDirections && (
         <button
-          onClick={() => onGetDirections(boothCode)}
+          onClick={() => onGetDirections()}
           className="mt-2 w-full text-xs font-medium text-blue-600 hover:bg-blue-50 rounded px-2 py-1.5 cursor-pointer transition-colors text-left"
         >
           Get directions to here

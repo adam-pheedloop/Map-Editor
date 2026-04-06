@@ -150,7 +150,7 @@
       "id": "10b",
       "title": "Session Locations & Meeting Rooms (Viewer)",
       "summary": "Viewer integration for session locations and meeting rooms — interactive hover+click, detail popovers, sidebar tabs, search across all types, mobile bottom sheet.",
-      "status": "planned",
+      "status": "done",
       "tasks": [
         "Interactive session areas and meeting rooms in viewer (hover highlight + click)",
         "Detail popovers for session areas and meeting rooms (name, capacity, placeholder text)",

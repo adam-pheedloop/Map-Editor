@@ -8,6 +8,45 @@ export interface Exhibitor {
 }
 
 /**
+ * MeetingRoom DB record.
+ * Note: no dedicated MeetingRoom model currently exists in pikachu — the map
+ * references meeting rooms by ID in the GeoJSON but the backend model is not
+ * yet implemented. This type is forward-looking, modelled on SessionLocation.
+ * id       → integer primary key
+ * name     → room name (unique per event)
+ * capacity → max occupancy
+ */
+export interface MeetingRoom {
+  id: number;
+  name: string;
+  capacity?: number;
+}
+
+/**
+ * Mirrors the PheedLoop SessionLocation DB record.
+ * id    → SessionLocation.id  (integer primary key, used as map sessionId reference)
+ * title → SessionLocation.title  (unique per event)
+ */
+export interface SessionLocation {
+  id: number;
+  title: string;
+}
+
+/**
+ * Mirrors the PheedLoop ExhibitorBooth DB record.
+ * The map editor references booths by slug — it does not own or create them.
+ * slug  → ExhibitorBooth.slug  (EXHBOT... unique identifier)
+ * code  → ExhibitorBooth.code  (human-readable booth number/label)
+ * area  → ExhibitorBooth.area  (area units — see booth pricing docs)
+ */
+export interface ExhibitorBooth {
+  slug: string;
+  code: string;
+  area: number;
+  color?: string;
+}
+
+/**
  * Discriminated union representing any interactive map element.
  * elementId is always element.id (the stable UUID) — used for canvas highlight lookup.
  * Future: add | { type: "poi"; elementId: string } without structural changes.

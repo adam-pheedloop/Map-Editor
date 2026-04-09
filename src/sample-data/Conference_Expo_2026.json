@@ -1,0 +1,3662 @@
+{
+  "version": "1.0",
+  "id": "EMP-demo-conference-expo-2026",
+  "name": "Conference & Expo Hall 2026",
+  "dimensions": {
+    "width": 1600,
+    "height": 1300,
+    "unit": "ft",
+    "pixelsPerUnit": 7
+  },
+  "elements": [
+    {
+      "id": "booth-1",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 50,
+        "y": 90,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 1",
+        "boothCode": "1",
+        "boothSlug": "EXHBOTNZNA02PFZ3HDXV",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-2",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 130,
+        "y": 90,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 2",
+        "boothCode": "2",
+        "boothSlug": "EXHBOTMQ742K5PAO67SP",
+        "boothState": "reserved",
+        "color": "#F39C12",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-3",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 210,
+        "y": 90,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 3",
+        "boothCode": "3",
+        "boothSlug": "EXHBOTZHX86RR9FBRI8T",
+        "boothState": "reserved",
+        "color": "#F39C12",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-4",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 290,
+        "y": 90,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 4",
+        "boothCode": "4",
+        "boothSlug": "EXHBOTCBKQSXFHJO2HM8",
+        "boothState": "reserved",
+        "color": "#F39C12",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-5",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 370,
+        "y": 90,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 5",
+        "boothCode": "5",
+        "boothSlug": "EXHBOTKWDZMHOVW9JRB6",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-6",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 450,
+        "y": 90,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 6",
+        "boothCode": "6",
+        "boothSlug": "EXHBOTKLVAA0LIKKNM7O",
+        "boothState": "reserved",
+        "color": "#F39C12",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-7",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 530,
+        "y": 90,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 7",
+        "boothCode": "7",
+        "boothSlug": "EXHBOTD9EH60FACRNNGF",
+        "boothState": "reserved",
+        "color": "#F39C12",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-8",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 610,
+        "y": 90,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 8",
+        "boothCode": "8",
+        "boothSlug": "EXHBOTWFU5SEYAMUN7VM",
+        "boothState": "reserved",
+        "color": "#F39C12",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-9",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 690,
+        "y": 90,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 9",
+        "boothCode": "9",
+        "boothSlug": "EXHBOT20F838RG8QS03X",
+        "boothState": "reserved",
+        "color": "#F39C12",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-10",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 770,
+        "y": 90,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 10",
+        "boothCode": "10",
+        "boothSlug": "EXHBOTSLE3WZLMOFNM38",
+        "boothState": "reserved",
+        "color": "#F39C12",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-11",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 850,
+        "y": 90,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 11",
+        "boothCode": "11",
+        "boothSlug": "EXHBOT6YAPT4R5O1L0VH",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-12",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 930,
+        "y": 90,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 12",
+        "boothCode": "12",
+        "boothSlug": "EXHBOT4KO9WHEMBO2UJ4",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-13",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1010,
+        "y": 90,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 13",
+        "boothCode": "13",
+        "boothSlug": "EXHBOTAFX4X7SKH5NB06",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-14",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1090,
+        "y": 90,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 14",
+        "boothCode": "14",
+        "boothSlug": "EXHBOTDCGR3VX6LWYF1U",
+        "boothState": "reserved",
+        "color": "#F39C12",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-15",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1170,
+        "y": 90,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 15",
+        "boothCode": "15",
+        "boothSlug": "EXHBOTDL55EMVXITXUUB",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-16",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 50,
+        "y": 170,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 16",
+        "boothCode": "16",
+        "boothSlug": "EXHBOTSL8ZADGUDJLC6I",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-17",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 130,
+        "y": 170,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 17",
+        "boothCode": "17",
+        "boothSlug": "EXHBOT0B58ANYDPD5WNM",
+        "boothState": "reserved",
+        "color": "#F39C12",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-18",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 210,
+        "y": 170,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 18",
+        "boothCode": "18",
+        "boothSlug": "EXHBOT5ZIO8PPC9BVIVU",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-19",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 290,
+        "y": 170,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 19",
+        "boothCode": "19",
+        "boothSlug": "EXHBOTMZ0CXBQH2SSSKE",
+        "boothState": "reserved",
+        "color": "#F39C12",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-20",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 370,
+        "y": 170,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 20",
+        "boothCode": "20",
+        "boothSlug": "EXHBOT0FV8VXK8SU4PCO",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-21",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 450,
+        "y": 170,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 21",
+        "boothCode": "21",
+        "boothSlug": "EXHBOTH55D07K5S5EVFV",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-22",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 530,
+        "y": 170,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 22",
+        "boothCode": "22",
+        "boothSlug": "EXHBOTU9HNDL26CKEAF5",
+        "boothState": "reserved",
+        "color": "#F39C12",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-23",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 610,
+        "y": 170,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 23",
+        "boothCode": "23",
+        "boothSlug": "EXHBOTY03X95WNCU0R5G",
+        "boothState": "reserved",
+        "color": "#F39C12",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-24",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 690,
+        "y": 170,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 24",
+        "boothCode": "24",
+        "boothSlug": "EXHBOTFU259DQ70LQWW1",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-25",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 770,
+        "y": 170,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 25",
+        "boothCode": "25",
+        "boothSlug": "EXHBOT4SOFAFEV8PVGUY",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-26",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 850,
+        "y": 170,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 26",
+        "boothCode": "26",
+        "boothSlug": "EXHBOTPFT5FGAMVT0RDB",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-27",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 930,
+        "y": 170,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 27",
+        "boothCode": "27",
+        "boothSlug": "EXHBOT1LPKSFIKPYF2RF",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-28",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1010,
+        "y": 170,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 28",
+        "boothCode": "28",
+        "boothSlug": "EXHBOT4NFB2IF3YAF3YD",
+        "boothState": "reserved",
+        "color": "#F39C12",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-29",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1090,
+        "y": 170,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 29",
+        "boothCode": "29",
+        "boothSlug": "EXHBOTZ4FGIC9BVY4EIT",
+        "boothState": "reserved",
+        "color": "#F39C12",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-30",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1170,
+        "y": 170,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 30",
+        "boothCode": "30",
+        "boothSlug": "EXHBOTKFDOBR235J2FSE",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-31",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 50,
+        "y": 280,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 31",
+        "boothCode": "31",
+        "boothSlug": "EXHBOTGVKT7EOHPKZRQ7",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-32",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 130,
+        "y": 280,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 32",
+        "boothCode": "32",
+        "boothSlug": "EXHBOTKALFO7JFRXIX4P",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-33",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 210,
+        "y": 280,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 33",
+        "boothCode": "33",
+        "boothSlug": "EXHBOT30BLLOHSS6GA6P",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-34",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 290,
+        "y": 280,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 34",
+        "boothCode": "34",
+        "boothSlug": "EXHBOTHLM3W12T2J8WR2",
+        "boothState": "on_hold",
+        "color": "#9B59B6",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-35",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 370,
+        "y": 280,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 35",
+        "boothCode": "35",
+        "boothSlug": "EXHBOT5363YEFJ4EQP7C",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-36",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 450,
+        "y": 280,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 36",
+        "boothCode": "36",
+        "boothSlug": "EXHBOTPS5W20F1ZOO69E",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-37",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 530,
+        "y": 280,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 37",
+        "boothCode": "37",
+        "boothSlug": "EXHBOTQ7RLH8MEYCOVNI",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-38",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 610,
+        "y": 280,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 38",
+        "boothCode": "38",
+        "boothSlug": "EXHBOT60IEYV2P9IPUUB",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-39",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 690,
+        "y": 280,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 39",
+        "boothCode": "39",
+        "boothSlug": "EXHBOTFNERCWKRX75ASL",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-40",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 770,
+        "y": 280,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 40",
+        "boothCode": "40",
+        "boothSlug": "EXHBOTEWZMULKJ55F27O",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-41",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 850,
+        "y": 280,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 41",
+        "boothCode": "41",
+        "boothSlug": "EXHBOTB4O380E95FQ4MX",
+        "boothState": "on_hold",
+        "color": "#9B59B6",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-42",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 930,
+        "y": 280,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 42",
+        "boothCode": "42",
+        "boothSlug": "EXHBOT9JJWT8QOO06B6I",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-43",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1010,
+        "y": 280,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 43",
+        "boothCode": "43",
+        "boothSlug": "EXHBOTOVJ9HFIKJ10YZ2",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-44",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1090,
+        "y": 280,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 44",
+        "boothCode": "44",
+        "boothSlug": "EXHBOTYU9XSVBQ241N99",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-45",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1170,
+        "y": 280,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 45",
+        "boothCode": "45",
+        "boothSlug": "EXHBOTAGH4758R8ULTLA",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-46",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 50,
+        "y": 360,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 46",
+        "boothCode": "46",
+        "boothSlug": "EXHBOT1SD5MSS45ED1BB",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-47",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 130,
+        "y": 360,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 47",
+        "boothCode": "47",
+        "boothSlug": "EXHBOTITESX1HAZI3RW3",
+        "boothState": "on_hold",
+        "color": "#9B59B6",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-48",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 210,
+        "y": 360,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 48",
+        "boothCode": "48",
+        "boothSlug": "EXHBOT4WA6C4Z0F3GNM8",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-49",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 290,
+        "y": 360,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 49",
+        "boothCode": "49",
+        "boothSlug": "EXHBOTXJPO0KYFHXLYJC",
+        "boothState": "on_hold",
+        "color": "#9B59B6",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-50",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 370,
+        "y": 360,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 50",
+        "boothCode": "50",
+        "boothSlug": "EXHBOTAWWKCIHEL366HM",
+        "boothState": "on_hold",
+        "color": "#9B59B6",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-51",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 450,
+        "y": 360,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 51",
+        "boothCode": "51",
+        "boothSlug": "EXHBOTOH0OZ0TRKV9L02",
+        "boothState": "on_hold",
+        "color": "#9B59B6",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-52",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 530,
+        "y": 360,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 52",
+        "boothCode": "52",
+        "boothSlug": "EXHBOTZFM2VFQN5DX0M9",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-53",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 610,
+        "y": 360,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 53",
+        "boothCode": "53",
+        "boothSlug": "EXHBOT6RHB10D0YU1LLA",
+        "boothState": "on_hold",
+        "color": "#9B59B6",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-54",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 690,
+        "y": 360,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 54",
+        "boothCode": "54",
+        "boothSlug": "EXHBOTH16MYDP1R2N2FH",
+        "boothState": "on_hold",
+        "color": "#9B59B6",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-55",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 770,
+        "y": 360,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 55",
+        "boothCode": "55",
+        "boothSlug": "EXHBOTC5P5XFUM3KEYE6",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-56",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 850,
+        "y": 360,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 56",
+        "boothCode": "56",
+        "boothSlug": "EXHBOTWV4MG784B57UFR",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-57",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 930,
+        "y": 360,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 57",
+        "boothCode": "57",
+        "boothSlug": "EXHBOTUUI79LG34JYIJG",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-58",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1010,
+        "y": 360,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 58",
+        "boothCode": "58",
+        "boothSlug": "EXHBOT7Y5POHI8X5J2M2",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-59",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1090,
+        "y": 360,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 59",
+        "boothCode": "59",
+        "boothSlug": "EXHBOTCSSS6Y6IRGZOJV",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-60",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1170,
+        "y": 360,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 60",
+        "boothCode": "60",
+        "boothSlug": "EXHBOTQ9SG88WT9BTI0I",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-61",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 50,
+        "y": 470,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 61",
+        "boothCode": "61",
+        "boothSlug": "EXHBOTSSJBLMXBO405FO",
+        "boothState": "on_hold",
+        "color": "#9B59B6",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-62",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 130,
+        "y": 470,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 62",
+        "boothCode": "62",
+        "boothSlug": "EXHBOT85SK7BTN4HHYQV",
+        "boothState": "on_hold",
+        "color": "#9B59B6",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-63",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 210,
+        "y": 470,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 63",
+        "boothCode": "63",
+        "boothSlug": "EXHBOTQSJUPVO1VZX9Z8",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-64",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 290,
+        "y": 470,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 64",
+        "boothCode": "64",
+        "boothSlug": "EXHBOTL8M8S8VW388TCO",
+        "boothState": "on_hold",
+        "color": "#9B59B6",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-65",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 370,
+        "y": 470,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 65",
+        "boothCode": "65",
+        "boothSlug": "EXHBOTXAJI0Y6DPBHSAH",
+        "boothState": "on_hold",
+        "color": "#9B59B6",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-66",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 450,
+        "y": 470,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 66",
+        "boothCode": "66",
+        "boothSlug": "EXHBOTXTHV3A3ZMF8MDD",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-67",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 530,
+        "y": 470,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 67",
+        "boothCode": "67",
+        "boothSlug": "EXHBOT4V30T9NT3W5UZB",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-68",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 610,
+        "y": 470,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 68",
+        "boothCode": "68",
+        "boothSlug": "EXHBOTIKCIDKWNNHJ7XV",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-69",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 690,
+        "y": 470,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 69",
+        "boothCode": "69",
+        "boothSlug": "EXHBOTG0FN9XUY41IBLJ",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-70",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 770,
+        "y": 470,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 70",
+        "boothCode": "70",
+        "boothSlug": "EXHBOTH75LXO6QJIUJV6",
+        "boothState": "on_hold",
+        "color": "#9B59B6",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-71",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 850,
+        "y": 470,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 71",
+        "boothCode": "71",
+        "boothSlug": "EXHBOTOH9SDBDW2PCN9T",
+        "boothState": "on_hold",
+        "color": "#9B59B6",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-72",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 930,
+        "y": 470,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 72",
+        "boothCode": "72",
+        "boothSlug": "EXHBOT84AZYTJXEPQ85J",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-73",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1010,
+        "y": 470,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 73",
+        "boothCode": "73",
+        "boothSlug": "EXHBOTSG65KXVF1T2TAL",
+        "boothState": "on_hold",
+        "color": "#9B59B6",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-74",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1090,
+        "y": 470,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 74",
+        "boothCode": "74",
+        "boothSlug": "EXHBOTA753LC58DRC11E",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-75",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1170,
+        "y": 470,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 75",
+        "boothCode": "75",
+        "boothSlug": "EXHBOTRTJ5PHT0HL9XPS",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-76",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 50,
+        "y": 550,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 76",
+        "boothCode": "76",
+        "boothSlug": "EXHBOTEIMVIHCWI64CIY",
+        "boothState": "available",
+        "color": "#94a3b8",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-77",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 130,
+        "y": 550,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 77",
+        "boothCode": "77",
+        "boothSlug": "EXHBOTHE7UR23GDPPQ0Y",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-78",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 210,
+        "y": 550,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 78",
+        "boothCode": "78",
+        "boothSlug": "EXHBOT9DOM5IGQPKI7P5",
+        "boothState": "available",
+        "color": "#94a3b8",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-79",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 290,
+        "y": 550,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 79",
+        "boothCode": "79",
+        "boothSlug": "EXHBOTTB94874FRHOCN9",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-80",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 370,
+        "y": 550,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 80",
+        "boothCode": "80",
+        "boothSlug": "EXHBOTJ2QP89UZFK8UT0",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-81",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 450,
+        "y": 550,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 81",
+        "boothCode": "81",
+        "boothSlug": "EXHBOTCVS4F8CGVYIE6I",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-82",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 530,
+        "y": 550,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 82",
+        "boothCode": "82",
+        "boothSlug": "EXHBOTVWPVS7HZIOYKL1",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-83",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 610,
+        "y": 550,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 83",
+        "boothCode": "83",
+        "boothSlug": "EXHBOTCQ99CHJ755NF4Z",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-84",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 690,
+        "y": 550,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 84",
+        "boothCode": "84",
+        "boothSlug": "EXHBOTW9XA3KX7EEDTJV",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-85",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 770,
+        "y": 550,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 85",
+        "boothCode": "85",
+        "boothSlug": "EXHBOTZHWJR64DPJA1WJ",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-86",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 850,
+        "y": 550,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 86",
+        "boothCode": "86",
+        "boothSlug": "EXHBOT0TPAC56T4UFEL6",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-87",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 930,
+        "y": 550,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 87",
+        "boothCode": "87",
+        "boothSlug": "EXHBOT246HID25OWF759",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-88",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1010,
+        "y": 550,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 88",
+        "boothCode": "88",
+        "boothSlug": "EXHBOT35A0L7253J2D54",
+        "boothState": "available",
+        "color": "#94a3b8",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-89",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1090,
+        "y": 550,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 89",
+        "boothCode": "89",
+        "boothSlug": "EXHBOTI3QK2IAGL58KXO",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-90",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1170,
+        "y": 550,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 90",
+        "boothCode": "90",
+        "boothSlug": "EXHBOT9T7E8G8JDP0LVS",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-91",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 50,
+        "y": 660,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 91",
+        "boothCode": "91",
+        "boothSlug": "EXHBOTNUJZA7TZ0YNCXL",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-92",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 130,
+        "y": 660,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 92",
+        "boothCode": "92",
+        "boothSlug": "EXHBOTL4ZKLOOKEP7Y6W",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-93",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 210,
+        "y": 660,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 93",
+        "boothCode": "93",
+        "boothSlug": "EXHBOTKTAKPUXQPHR62G",
+        "boothState": "available",
+        "color": "#94a3b8",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-94",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 290,
+        "y": 660,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 94",
+        "boothCode": "94",
+        "boothSlug": "EXHBOTDSWM31YIHAIR4C",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-95",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 370,
+        "y": 660,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 95",
+        "boothCode": "95",
+        "boothSlug": "EXHBOTOWGZRIXA11DPG8",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-96",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 450,
+        "y": 660,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 96",
+        "boothCode": "96",
+        "boothSlug": "EXHBOTSBI4Q2Y9V86WZS",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-97",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 530,
+        "y": 660,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 97",
+        "boothCode": "97",
+        "boothSlug": "EXHBOT3T60RJIW1SWJCK",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-98",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 610,
+        "y": 660,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 98",
+        "boothCode": "98",
+        "boothSlug": "EXHBOTJLTEIYZCOTOHP6",
+        "boothState": "available",
+        "color": "#94a3b8",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-99",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 690,
+        "y": 660,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 99",
+        "boothCode": "99",
+        "boothSlug": "EXHBOTVZ41NAM148P0TV",
+        "boothState": "available",
+        "color": "#94a3b8",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-100",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 770,
+        "y": 660,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 100",
+        "boothCode": "100",
+        "boothSlug": "EXHBOTHHPBMYOFQEWAOU",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-101",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 850,
+        "y": 660,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 101",
+        "boothCode": "101",
+        "boothSlug": "EXHBOTAXEQBNHL1N13JC",
+        "boothState": "available",
+        "color": "#94a3b8",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-102",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 930,
+        "y": 660,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 102",
+        "boothCode": "102",
+        "boothSlug": "EXHBOTAT9MX2X18HAFEY",
+        "boothState": "available",
+        "color": "#94a3b8",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-103",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1010,
+        "y": 660,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 103",
+        "boothCode": "103",
+        "boothSlug": "EXHBOTUHZ1GV0E38DALY",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-104",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1090,
+        "y": 660,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 104",
+        "boothCode": "104",
+        "boothSlug": "EXHBOT8OZCYWD14VE92M",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-105",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1170,
+        "y": 660,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 105",
+        "boothCode": "105",
+        "boothSlug": "EXHBOTPNSM43D8W3ZP08",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-106",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 50,
+        "y": 740,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 106",
+        "boothCode": "106",
+        "boothSlug": "EXHBOTJ3TRP0J43D5IQV",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-107",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 130,
+        "y": 740,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 107",
+        "boothCode": "107",
+        "boothSlug": "EXHBOTNB4GH2M5ZJA8DZ",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-108",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 210,
+        "y": 740,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 108",
+        "boothCode": "108",
+        "boothSlug": "EXHBOTR1YXR2DHYLURTP",
+        "boothState": "available",
+        "color": "#94a3b8",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-109",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 290,
+        "y": 740,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 109",
+        "boothCode": "109",
+        "boothSlug": "EXHBOT0LZJJEGET1GHR0",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-110",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 370,
+        "y": 740,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 110",
+        "boothCode": "110",
+        "boothSlug": "EXHBOT9SKDGIGATJ9TZE",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-111",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 450,
+        "y": 740,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 111",
+        "boothCode": "111",
+        "boothSlug": "EXHBOT5R5UQPGB7R3OCW",
+        "boothState": "available",
+        "color": "#94a3b8",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-112",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 530,
+        "y": 740,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 112",
+        "boothCode": "112",
+        "boothSlug": "EXHBOTBFUK9E1V2ISQP4",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-113",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 610,
+        "y": 740,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 113",
+        "boothCode": "113",
+        "boothSlug": "EXHBOT9KWV08HHXFGCAQ",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-114",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 690,
+        "y": 740,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 114",
+        "boothCode": "114",
+        "boothSlug": "EXHBOTVKIZZQY72WX7PT",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-115",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 770,
+        "y": 740,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 115",
+        "boothCode": "115",
+        "boothSlug": "EXHBOTX63CFL0UKEYZ7S",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-116",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 850,
+        "y": 740,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 116",
+        "boothCode": "116",
+        "boothSlug": "EXHBOTRCBPLJD84U89YJ",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-117",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 930,
+        "y": 740,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 117",
+        "boothCode": "117",
+        "boothSlug": "EXHBOTB1QX6GVWRDMLY4",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-118",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1010,
+        "y": 740,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 118",
+        "boothCode": "118",
+        "boothSlug": "EXHBOTLYK83TQLL8OS9X",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-119",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1090,
+        "y": 740,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 119",
+        "boothCode": "119",
+        "boothSlug": "EXHBOTTOGN1W1HT7PZE9",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-120",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1170,
+        "y": 740,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 120",
+        "boothCode": "120",
+        "boothSlug": "EXHBOTVIFTTD96QE3RZS",
+        "boothState": "available",
+        "color": "#94a3b8",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-121",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 50,
+        "y": 850,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 121",
+        "boothCode": "121",
+        "boothSlug": "EXHBOTJ49ITN7S55J2O7",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-122",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 130,
+        "y": 850,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 122",
+        "boothCode": "122",
+        "boothSlug": "EXHBOTS3KKV9RFTMTTQL",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-123",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 210,
+        "y": 850,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 123",
+        "boothCode": "123",
+        "boothSlug": "EXHBOTGZUI1B0Z3NX39R",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-124",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 290,
+        "y": 850,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 124",
+        "boothCode": "124",
+        "boothSlug": "EXHBOTBSV55PSQ0OXFQ8",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-125",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 370,
+        "y": 850,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 125",
+        "boothCode": "125",
+        "boothSlug": "EXHBOTMYX444NLZ15BCW",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-126",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 450,
+        "y": 850,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 126",
+        "boothCode": "126",
+        "boothSlug": "EXHBOT790PDW5PY6B2KN",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-127",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 530,
+        "y": 850,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 127",
+        "boothCode": "127",
+        "boothSlug": "EXHBOTFTU2GC5WI6FQJJ",
+        "boothState": "available",
+        "color": "#94a3b8",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-128",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 610,
+        "y": 850,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 128",
+        "boothCode": "128",
+        "boothSlug": "EXHBOTA26YFPMVXPJ4HN",
+        "boothState": "available",
+        "color": "#94a3b8",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-129",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 690,
+        "y": 850,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 129",
+        "boothCode": "129",
+        "boothSlug": "EXHBOTRIUU9K9XJUY0BV",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-130",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 770,
+        "y": 850,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 130",
+        "boothCode": "130",
+        "boothSlug": "EXHBOTR6K2VMWWYZX4W6",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-131",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 850,
+        "y": 850,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 131",
+        "boothCode": "131",
+        "boothSlug": "EXHBOTXLPU0DK0GET8T6",
+        "boothState": "available",
+        "color": "#94a3b8",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-132",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 930,
+        "y": 850,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 132",
+        "boothCode": "132",
+        "boothSlug": "EXHBOT3J3R30ME8F8409",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-133",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1010,
+        "y": 850,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 133",
+        "boothCode": "133",
+        "boothSlug": "EXHBOT82N2ATQYYV37DI",
+        "boothState": "available",
+        "color": "#94a3b8",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-134",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1090,
+        "y": 850,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 134",
+        "boothCode": "134",
+        "boothSlug": "EXHBOTA5U6HC36KOF8KR",
+        "boothState": "available",
+        "color": "#94a3b8",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-135",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1170,
+        "y": 850,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 135",
+        "boothCode": "135",
+        "boothSlug": "EXHBOTD5EQY08P0FODRO",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-136",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 50,
+        "y": 930,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 136",
+        "boothCode": "136",
+        "boothSlug": "EXHBOT8BNP84DYT9MOGE",
+        "boothState": "available",
+        "color": "#94a3b8",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-137",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 130,
+        "y": 930,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 137",
+        "boothCode": "137",
+        "boothSlug": "EXHBOT4QXXVA2IEUC1HH",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-138",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 210,
+        "y": 930,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 138",
+        "boothCode": "138",
+        "boothSlug": "EXHBOT5LF6A4FEJGXAA2",
+        "boothState": "available",
+        "color": "#94a3b8",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-139",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 290,
+        "y": 930,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 139",
+        "boothCode": "139",
+        "boothSlug": "EXHBOTILGB0S0R2SDS8B",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-140",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 370,
+        "y": 930,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 140",
+        "boothCode": "140",
+        "boothSlug": "EXHBOT25SQ8CROYR6CCV",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-141",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 450,
+        "y": 930,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 141",
+        "boothCode": "141",
+        "boothSlug": "EXHBOTCJWTL9TQVDZ4X1",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-142",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 530,
+        "y": 930,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 142",
+        "boothCode": "142",
+        "boothSlug": "EXHBOTZHQIMQODPXNF7C",
+        "boothState": "available",
+        "color": "#94a3b8",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-143",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 610,
+        "y": 930,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 143",
+        "boothCode": "143",
+        "boothSlug": "EXHBOT3DD03UVULEMX15",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-144",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 690,
+        "y": 930,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 144",
+        "boothCode": "144",
+        "boothSlug": "EXHBOTZ8VMUHXID4N1U3",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-145",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 770,
+        "y": 930,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 145",
+        "boothCode": "145",
+        "boothSlug": "EXHBOT493WXA73JGZLMA",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-146",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 850,
+        "y": 930,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 146",
+        "boothCode": "146",
+        "boothSlug": "EXHBOT5UOFWB0HPMNZ1U",
+        "boothState": "available",
+        "color": "#94a3b8",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-147",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 930,
+        "y": 930,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 147",
+        "boothCode": "147",
+        "boothSlug": "EXHBOTDBFWYJXRPJ1EPK",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-148",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1010,
+        "y": 930,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 148",
+        "boothCode": "148",
+        "boothSlug": "EXHBOTYRYBOVAKHEJLA0",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-149",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1090,
+        "y": 930,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 149",
+        "boothCode": "149",
+        "boothSlug": "EXHBOTGNZS43C5BA75UU",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "booth-150",
+      "type": "booth",
+      "geometry": {
+        "shape": "rect",
+        "x": 1170,
+        "y": 930,
+        "width": 70,
+        "height": 70,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Booth 150",
+        "boothCode": "150",
+        "boothSlug": "EXHBOTZPEAL2W37D4IVS",
+        "boothState": "sold",
+        "color": "#4A90D9",
+        "strokeColor": "#555555",
+        "strokeWidth": 1,
+        "zIndex": 0
+      },
+      "layer": "content"
+    },
+    {
+      "id": "session-keynote",
+      "type": "session_area",
+      "geometry": {
+        "shape": "rect",
+        "x": 1260,
+        "y": 90,
+        "width": 280,
+        "height": 200,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Keynote Stage",
+        "color": "#27AE60",
+        "strokeColor": "#1E8449",
+        "strokeWidth": 2,
+        "zIndex": 0,
+        "capacity": 800,
+        "sessionId": 1
+      },
+      "layer": "content"
+    },
+    {
+      "id": "session-breakout-a",
+      "type": "session_area",
+      "geometry": {
+        "shape": "rect",
+        "x": 1260,
+        "y": 320,
+        "width": 130,
+        "height": 120,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Breakout Room A",
+        "color": "#27AE60",
+        "strokeColor": "#1E8449",
+        "strokeWidth": 2,
+        "zIndex": 0,
+        "capacity": 80,
+        "sessionId": 2
+      },
+      "layer": "content"
+    },
+    {
+      "id": "session-breakout-b",
+      "type": "session_area",
+      "geometry": {
+        "shape": "rect",
+        "x": 1400,
+        "y": 320,
+        "width": 130,
+        "height": 120,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Breakout Room B",
+        "color": "#27AE60",
+        "strokeColor": "#1E8449",
+        "strokeWidth": 2,
+        "zIndex": 0,
+        "capacity": 80,
+        "sessionId": 3
+      },
+      "layer": "content"
+    },
+    {
+      "id": "session-workshop",
+      "type": "session_area",
+      "geometry": {
+        "shape": "rect",
+        "x": 1260,
+        "y": 470,
+        "width": 280,
+        "height": 110,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Workshop Theatre",
+        "color": "#27AE60",
+        "strokeColor": "#1E8449",
+        "strokeWidth": 2,
+        "zIndex": 0,
+        "capacity": 120,
+        "sessionId": 4
+      },
+      "layer": "content"
+    },
+    {
+      "id": "meeting-room-1",
+      "type": "meeting_room",
+      "geometry": {
+        "shape": "rect",
+        "x": 1260,
+        "y": 610,
+        "width": 130,
+        "height": 100,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Board Room",
+        "color": "#F39C12",
+        "strokeColor": "#D68910",
+        "strokeWidth": 2,
+        "zIndex": 0,
+        "capacity": 16,
+        "meetingRoomId": 1
+      },
+      "layer": "content"
+    },
+    {
+      "id": "meeting-room-2",
+      "type": "meeting_room",
+      "geometry": {
+        "shape": "rect",
+        "x": 1400,
+        "y": 610,
+        "width": 130,
+        "height": 100,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Meeting Room A",
+        "color": "#F39C12",
+        "strokeColor": "#D68910",
+        "strokeWidth": 2,
+        "zIndex": 0,
+        "capacity": 10,
+        "meetingRoomId": 2
+      },
+      "layer": "content"
+    },
+    {
+      "id": "meeting-room-3",
+      "type": "meeting_room",
+      "geometry": {
+        "shape": "rect",
+        "x": 1260,
+        "y": 740,
+        "width": 130,
+        "height": 100,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "Meeting Room B",
+        "color": "#F39C12",
+        "strokeColor": "#D68910",
+        "strokeWidth": 2,
+        "zIndex": 0,
+        "capacity": 10,
+        "meetingRoomId": 3
+      },
+      "layer": "content"
+    },
+    {
+      "id": "meeting-room-vip",
+      "type": "meeting_room",
+      "geometry": {
+        "shape": "rect",
+        "x": 1400,
+        "y": 740,
+        "width": 130,
+        "height": 100,
+        "rotation": 0
+      },
+      "properties": {
+        "name": "VIP Lounge",
+        "color": "#F39C12",
+        "strokeColor": "#D68910",
+        "strokeWidth": 2,
+        "zIndex": 0,
+        "capacity": 20,
+        "meetingRoomId": 4
+      },
+      "layer": "content"
+    }
+  ],
+  "legend": {
+    "entries": [],
+    "position": "bottom-right",
+    "visible": true
+  },
+  "metadata": {
+    "createdAt": "2026-04-08T10:00:00Z",
+    "updatedAt": "2026-04-08T10:00:00Z",
+    "scale": 7,
+    "totalBooths": 150,
+    "assignedBooths": 100,
+    "availableBooths": 20,
+    "reservedBooths": 15,
+    "onHoldBooths": 15,
+    "totalExhibitors": 100
+  },
+  "walkableLayer": {
+    "enabled": false,
+    "cellSize": 15,
+    "cols": 107,
+    "rows": 87,
+    "cells": []
+  }
+}

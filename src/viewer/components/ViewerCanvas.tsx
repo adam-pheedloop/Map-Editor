@@ -16,6 +16,7 @@ import { BackgroundImage } from "../../editor/components/canvas/BackgroundImage"
 import type { ViewerMode, HoveredItem } from "../types";
 import { RouteOverlay } from "./RouteOverlay";
 import { ScaleBar } from "./ScaleBar";
+import { ViewerLegend } from "./ViewerLegend";
 
 interface ViewerCanvasProps {
   data: FloorPlanData;
@@ -330,6 +331,7 @@ export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedElemen
         {routePath && <RouteOverlay path={routePath} />}
       </Stage>
       <ScaleBar dimensions={data.dimensions} scale={scale} />
+      <ViewerLegend legend={data.legend} />
     </div>
   );
 }

@@ -87,7 +87,7 @@
       "severity": "medium",
       "area": "Viewer — Text Elements",
       "description": "Text elements placed in the editor do not render their actual content in the viewer. Instead they display a generic placeholder 'Text' block. The viewer is likely not reading the text content from the element's properties, or the TextShape component used in the editor is not being rendered in the viewer at all.",
-      "status": "open"
+      "status": "fixed"
     },
     {
       "id": 11,

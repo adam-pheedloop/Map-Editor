@@ -107,7 +107,7 @@ function ViewerElement({
         }
       }}
     >
-      {geo.shape === "rect" && element.type !== "icon" && (
+      {geo.shape === "rect" && element.type !== "icon" && element.type !== "label" && (
         <>
           <Rect
             width={geo.width}
@@ -209,6 +209,26 @@ function ViewerElement({
           strokeWidth={strokeWidth}
         />
       )}
+      {element.type === "label" && geo.shape === "rect" && (() => {
+        const g = geo as RectGeometry;
+        const parts: string[] = [];
+        if (element.properties.fontWeight === "bold") parts.push("bold");
+        if (element.properties.fontStyle === "italic") parts.push("italic");
+        return (
+          <Text
+            text={element.properties.text ?? ""}
+            width={g.width}
+            height={g.height}
+            fill={color}
+            fontSize={element.properties.fontSize ?? 14}
+            fontStyle={parts.length > 0 ? parts.join(" ") : "normal"}
+            textDecoration={element.properties.textDecoration === "underline" ? "underline" : ""}
+            align={element.properties.textAlign ?? "left"}
+            verticalAlign="middle"
+            listening={false}
+          />
+        );
+      })()}
       {element.type === "icon" && geo.shape === "rect" && element.properties.iconName && (
         <ViewerIcon
           iconName={element.properties.iconName}

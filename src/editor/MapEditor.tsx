@@ -26,6 +26,8 @@ import { HelpDialog } from "./components/panels/HelpDialog";
 import { CanvasResizeDialog } from "./components/panels/CanvasResizeDialog";
 import { CalibrationDialog } from "./components/panels/CalibrationDialog";
 import { TypeDefaultsDialog } from "./components/panels/TypeDefaultsDialog";
+import { LegendDialog } from "./components/panels/LegendDialog";
+import { LegendCanvasOverlay } from "./components/canvas/LegendCanvasOverlay";
 import { LayerPanel } from "./components/panels/LayerPanel";
 import { Rulers } from "./components/Rulers";
 import type { FloorPlanData, LayerId, LayerDefinition } from "../types";
@@ -58,6 +60,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     deleteElements,
     moveElements,
     updateElementType,
+    updateLegend,
     updateTypeStyles,
     setBackgroundImage,
     setBackgroundColor,
@@ -118,6 +121,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   const [showResizeDialog, setShowResizeDialog] = useState(false);
   const [isCalibrating, setIsCalibrating] = useState(false);
   const [showTypeDefaultsDialog, setShowTypeDefaultsDialog] = useState(false);
+  const [showLegendDialog, setShowLegendDialog] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
     elementId: string;
     x: number;
@@ -586,6 +590,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
         debug={debug}
         onDebugClick={() => setShowMapDebug(true)}
         onHelpClick={() => setShowHelp(true)}
+        onLegendClick={() => setShowLegendDialog(true)}
         fileMenuItems={[
           {
             label: "Export as PNG",
@@ -786,6 +791,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   onToggleVisibility={toggleLayerVisibility}
                   topOffset={showRulers ? 26 : 8}
                 />
+                <LegendCanvasOverlay legend={data.legend} />
               </div>
               <StatusBar
                 scale={scale}
@@ -875,6 +881,13 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           typeStyles={data.typeStyles ?? {}}
           onUpdateTypeStyles={updateTypeStyles}
           onClose={() => setShowTypeDefaultsDialog(false)}
+        />
+      )}
+      {showLegendDialog && (
+        <LegendDialog
+          legend={data.legend}
+          onSave={(updated) => updateLegend(updated)}
+          onClose={() => setShowLegendDialog(false)}
         />
       )}
       {calibration.state.step === "confirming" && calibration.pixelDistance != null && (

@@ -414,24 +414,7 @@
     }
   ],
   "legend": {
-    "entries": [
-      {
-        "label": "Available",
-        "color": "#4A90D9"
-      },
-      {
-        "label": "Reserved",
-        "color": "#E74C3C"
-      },
-      {
-        "label": "Session Area",
-        "color": "#27AE60"
-      },
-      {
-        "label": "Meeting Room",
-        "color": "#F39C12"
-      }
-    ],
+    "entries": [],
     "position": "bottom-right",
     "visible": true
   },

@@ -194,8 +194,10 @@ export const DEFAULT_TYPE_STYLES: TypeStyles = {
 };
 
 export interface LegendEntry {
+  id: string;
   label: string;
   color: string;
+  visible: boolean;
 }
 
 export interface Legend {

@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from "react";
-import type { FloorPlanData, FloorPlanElement, ElementType, Geometry, ElementProperties, BackgroundImage, Dimensions, WalkableGrid, ScaleCalibration, Unit, ElementTypeDefaults } from "../../types";
+import type { FloorPlanData, FloorPlanElement, ElementType, Geometry, ElementProperties, BackgroundImage, Dimensions, WalkableGrid, ScaleCalibration, Unit, ElementTypeDefaults, Legend } from "../../types";
 import { ELEMENT_TYPE_TO_LAYER, DEFAULT_TYPE_STYLES } from "../../types";
 import { createWalkableGrid } from "../utils/walkableGrid";
 import { derivePixelsPerUnit } from "../../utils/unitConversion";
@@ -15,6 +15,22 @@ function loadFromStorage(): FloorPlanData | null {
   } catch {
     return null;
   }
+}
+
+function backfillLegendEntryIds(data: FloorPlanData): FloorPlanData {
+  const needsBackfill = data.legend.entries.some((e) => !e.id || e.visible === undefined);
+  if (!needsBackfill) return data;
+  return {
+    ...data,
+    legend: {
+      ...data.legend,
+      entries: data.legend.entries.map((e) => ({
+        ...e,
+        id: e.id ?? crypto.randomUUID(),
+        visible: e.visible ?? true,
+      })),
+    },
+  };
 }
 
 function backfillTypeStyles(data: FloorPlanData): FloorPlanData {
@@ -42,7 +58,7 @@ export function useEditorState(
   initialData: FloorPlanData,
   { persist = false }: UseEditorStateOptions = {}
 ) {
-  const loadedData = backfillTypeStyles(backfillLayers(persist ? loadFromStorage() ?? initialData : initialData));
+  const loadedData = backfillLegendEntryIds(backfillTypeStyles(backfillLayers(persist ? loadFromStorage() ?? initialData : initialData)));
   const { present: data, set: setData, replace: replaceData, undo, redo, canUndo, canRedo } = useHistory<FloorPlanData>(loadedData);
 
   // Auto-save to localStorage
@@ -330,6 +346,12 @@ export function useEditorState(
     setData((prev) => ({ ...prev, walkableLayer: grid }));
   }, []);
 
+  // --- Legend ---
+
+  const updateLegend = useCallback((updates: Partial<Legend>) => {
+    setData((prev) => ({ ...prev, legend: { ...prev.legend, ...updates } }));
+  }, []);
+
   // --- Type style defaults ---
 
   const updateTypeStyles = useCallback(
@@ -423,6 +445,8 @@ export function useEditorState(
     clearWalkableGrid,
     setWalkableGridResolution,
     setWalkableGrid,
+    // Legend
+    updateLegend,
     // Type style defaults
     updateTypeStyles,
     // Scale calibration

@@ -307,14 +307,9 @@ export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedElemen
             const highlighted = isSelected || !!isSearchMatch;
             const dimmed =
               isInert ||
+              (mode === "exhibitor" && isBooth && isOccupied && !highlighted) ||
               (hasHighlight && !isSelected) ||
               (isSearching && !isSearchMatch && !isSelected);
-
-            // In exhibitor mode, occupied booths get a muted treatment when not highlighted
-            const overrideColor =
-              mode === "exhibitor" && isBooth && isOccupied && !highlighted
-                ? "#6B7280"
-                : undefined;
 
             const buildClickItem = (): HoveredItem | null => {
               if (isBooth && boothCode) {
@@ -336,7 +331,7 @@ export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedElemen
                 isHighlighted={highlighted}
                 isDimmed={dimmed}
                 isHovered={isHovered && !highlighted && !isInert}
-                overrideColor={overrideColor}
+
                 onMouseEnter={!isInert && isInteractive ? () => setHoveredElementId(element.id) : undefined}
                 onMouseLeave={!isInert && isInteractive ? () => setHoveredElementId(null) : undefined}
                 onClick={!isInert && isInteractive ? (e) => {

@@ -166,6 +166,33 @@ export interface FloorPlanElement {
   properties: ElementProperties;
 }
 
+/** Visual defaults saved per element type. All fields optional — only set overrides are stored. */
+export interface ElementTypeDefaults {
+  color?: string;
+  strokeColor?: string;
+  strokeWidth?: number;
+  opacity?: number;
+  labelColor?: string;
+  labelFontSize?: number;
+  labelBold?: boolean;
+  labelItalic?: boolean;
+  labelUnderline?: boolean;
+  labelBackground?: { color: string; opacity: number };
+  labelVisible?: boolean;
+  labelPositionV?: "top" | "middle" | "bottom";
+  labelPositionH?: "left" | "center" | "right";
+}
+
+/** Open string keys — Phase 11 uses "booth", "session_area", "meeting_room".
+ *  Future user-created sub-types add their own keys without a schema migration. */
+export type TypeStyles = Record<string, ElementTypeDefaults>;
+
+export const DEFAULT_TYPE_STYLES: TypeStyles = {
+  booth:        { color: "#94a3b8", strokeColor: "#888888", strokeWidth: 1 },
+  session_area: { color: "#27AE60", strokeColor: "#888888", strokeWidth: 1 },
+  meeting_room: { color: "#F39C12", strokeColor: "#888888", strokeWidth: 1 },
+};
+
 export interface LegendEntry {
   label: string;
   color: string;
@@ -226,6 +253,7 @@ export interface FloorPlanData {
   dimensions: Dimensions;
   elements: FloorPlanElement[];
   legend: Legend;
+  typeStyles?: TypeStyles;
   backgroundImage?: BackgroundImage;
   backgroundColor?: string;
   walkableLayer?: WalkableGrid;

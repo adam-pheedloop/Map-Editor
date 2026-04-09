@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { FloorPlanElement, ElementProperties, Geometry, BackgroundImage, LayerId, Dimensions } from "../../../types";
+import type { FloorPlanElement, ElementProperties, Geometry, BackgroundImage, LayerId, Dimensions, ElementTypeDefaults } from "../../../types";
 import { getToolUIConfig } from "../../tools/registry";
 import type { PropertiesPanelField } from "../canvas/elements/types";
 import { formatMeasurement, formatArea } from "../../../utils/unitConversion";
@@ -26,6 +26,7 @@ interface PropertiesPanelProps {
   onRemoveBackground?: () => void;
   onUploadBackground?: () => void;
   onBackgroundColorChange?: (color: string) => void;
+  onUpdateTypeStyles: (key: string, updates: Partial<ElementTypeDefaults>) => void;
 }
 
 function getCommonValue<T>(elements: FloorPlanElement[], getter: (el: FloorPlanElement) => T): T | undefined {
@@ -56,6 +57,25 @@ function getDimensions(element: FloorPlanElement): { width: number; height: numb
   return { width: 0, height: 0, length: 0 };
 }
 
+function extractTypeDefaults(props: ElementProperties): ElementTypeDefaults {
+  return {
+    color: props.color,
+    strokeColor: props.strokeColor,
+    strokeWidth: props.strokeWidth,
+    opacity: props.opacity,
+    labelColor: props.labelColor,
+    labelFontSize: props.labelFontSize,
+    labelBold: props.labelBold,
+    labelItalic: props.labelItalic,
+    labelUnderline: props.labelUnderline,
+    labelBackground: props.labelBackground,
+    labelVisible: props.labelVisible,
+    labelPositionV: props.labelPositionV,
+    labelPositionH: props.labelPositionH,
+  };
+}
+
+
 export function PropertiesPanel({
   element,
   selectedElements,
@@ -75,6 +95,7 @@ export function PropertiesPanel({
   onRemoveBackground,
   onUploadBackground,
   onBackgroundColorChange,
+  onUpdateTypeStyles,
 }: PropertiesPanelProps) {
   const [tab, setTab] = useState<"properties" | "debug">("properties");
 
@@ -511,6 +532,16 @@ export function PropertiesPanel({
         {canConvertToBooth && (
           <Button variant="outline" color="primary" className="w-full" onClick={() => onConvertToBooth?.(element.id)}>
             Convert to Booth
+          </Button>
+        )}
+        {(element.type === "booth" || element.type === "session_area" || element.type === "meeting_room") && (
+          <Button
+            variant="outline"
+            color="neutral"
+            className="w-full text-xs"
+            onClick={() => onUpdateTypeStyles(element.type, extractTypeDefaults(element.properties))}
+          >
+            Save as Default Style
           </Button>
         )}
         <Button variant="outline" color="negative" className="w-full" onClick={() => onDelete(element.id)}>

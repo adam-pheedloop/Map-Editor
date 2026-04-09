@@ -25,10 +25,11 @@ import { GridSettingsDialog } from "./components/panels/GridSettingsDialog";
 import { HelpDialog } from "./components/panels/HelpDialog";
 import { CanvasResizeDialog } from "./components/panels/CanvasResizeDialog";
 import { CalibrationDialog } from "./components/panels/CalibrationDialog";
+import { TypeDefaultsDialog } from "./components/panels/TypeDefaultsDialog";
 import { LayerPanel } from "./components/panels/LayerPanel";
 import { Rulers } from "./components/Rulers";
 import type { FloorPlanData, LayerId, LayerDefinition } from "../types";
-import { DEFAULT_LAYERS, ELEMENT_TYPE_TO_LAYER } from "../types";
+import { DEFAULT_LAYERS, ELEMENT_TYPE_TO_LAYER, DEFAULT_TYPE_STYLES } from "../types";
 
 const INITIAL_DEFAULTS: DrawingDefaults = {
   fill: "#94a3b8",
@@ -57,6 +58,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     deleteElements,
     moveElements,
     updateElementType,
+    updateTypeStyles,
     setBackgroundImage,
     setBackgroundColor,
     reorderElement,
@@ -115,6 +117,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   const [showGridDialog, setShowGridDialog] = useState(false);
   const [showResizeDialog, setShowResizeDialog] = useState(false);
   const [isCalibrating, setIsCalibrating] = useState(false);
+  const [showTypeDefaultsDialog, setShowTypeDefaultsDialog] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
     elementId: string;
     x: number;
@@ -320,13 +323,16 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   const handleToolComplete = useCallback(
     (result: import("./tools/types").ToolResult) => {
       if (result.type === "element") {
-        addElement(result.element);
-        selectOne(result.element.id);
+        const el = result.element;
+        const typeStyle = data.typeStyles?.[el.type] ?? DEFAULT_TYPE_STYLES[el.type] ?? {};
+        const merged = { ...el, properties: { ...el.properties, ...typeStyle } };
+        addElement(merged);
+        selectOne(merged.id);
         setActiveTool("select");
       }
       // "measurement" and "none" — no action needed
     },
-    [addElement, selectOne]
+    [addElement, selectOne, data.typeStyles]
   );
 
   // Generic geometry update handler (replaces per-shape callbacks for handles)
@@ -674,6 +680,11 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
         ]}
         toolsMenuItems={[
           {
+            label: "Element Defaults...",
+            onClick: () => setShowTypeDefaultsDialog(true),
+          },
+          { type: "divider" as const },
+          {
             label: "Configure Grid...",
             onClick: () => setShowGridDialog(true),
           },
@@ -793,6 +804,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
               backgroundColor={data.backgroundColor}
               activeLayerId={activeLayerId}
               debug={debug}
+              onUpdateTypeStyles={updateTypeStyles}
               onUpdateProperties={(id, updates) => {
                 if (isMultiSelect) {
                   for (const sid of selectedIds) updateProperties(sid, updates);
@@ -857,6 +869,13 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
       )}
       {showHelp && (
         <HelpDialog onClose={() => setShowHelp(false)} />
+      )}
+      {showTypeDefaultsDialog && (
+        <TypeDefaultsDialog
+          typeStyles={data.typeStyles ?? {}}
+          onUpdateTypeStyles={updateTypeStyles}
+          onClose={() => setShowTypeDefaultsDialog(false)}
+        />
       )}
       {calibration.state.step === "confirming" && calibration.pixelDistance != null && (
         <CalibrationDialog

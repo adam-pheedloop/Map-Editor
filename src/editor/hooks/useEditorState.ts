@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from "react";
-import type { FloorPlanData, FloorPlanElement, ElementType, Geometry, ElementProperties, BackgroundImage, Dimensions, WalkableGrid, ScaleCalibration, Unit } from "../../types";
-import { ELEMENT_TYPE_TO_LAYER } from "../../types";
+import type { FloorPlanData, FloorPlanElement, ElementType, Geometry, ElementProperties, BackgroundImage, Dimensions, WalkableGrid, ScaleCalibration, Unit, ElementTypeDefaults } from "../../types";
+import { ELEMENT_TYPE_TO_LAYER, DEFAULT_TYPE_STYLES } from "../../types";
 import { createWalkableGrid } from "../utils/walkableGrid";
 import { derivePixelsPerUnit } from "../../utils/unitConversion";
 import { useHistory } from "./useHistory";
@@ -15,6 +15,11 @@ function loadFromStorage(): FloorPlanData | null {
   } catch {
     return null;
   }
+}
+
+function backfillTypeStyles(data: FloorPlanData): FloorPlanData {
+  if (data.typeStyles) return data;
+  return { ...data, typeStyles: DEFAULT_TYPE_STYLES };
 }
 
 /** Ensures every element has a `layer` property, assigning from type mapping if missing. */
@@ -37,7 +42,7 @@ export function useEditorState(
   initialData: FloorPlanData,
   { persist = false }: UseEditorStateOptions = {}
 ) {
-  const loadedData = backfillLayers(persist ? loadFromStorage() ?? initialData : initialData);
+  const loadedData = backfillTypeStyles(backfillLayers(persist ? loadFromStorage() ?? initialData : initialData));
   const { present: data, set: setData, replace: replaceData, undo, redo, canUndo, canRedo } = useHistory<FloorPlanData>(loadedData);
 
   // Auto-save to localStorage
@@ -325,6 +330,21 @@ export function useEditorState(
     setData((prev) => ({ ...prev, walkableLayer: grid }));
   }, []);
 
+  // --- Type style defaults ---
+
+  const updateTypeStyles = useCallback(
+    (key: string, updates: Partial<ElementTypeDefaults>) => {
+      setData((prev) => ({
+        ...prev,
+        typeStyles: {
+          ...prev.typeStyles,
+          [key]: { ...(prev.typeStyles?.[key] ?? {}), ...updates },
+        },
+      }));
+    },
+    []
+  );
+
   // --- Scale calibration ---
 
   const setCalibration = useCallback((cal: ScaleCalibration) => {
@@ -403,6 +423,8 @@ export function useEditorState(
     clearWalkableGrid,
     setWalkableGridResolution,
     setWalkableGrid,
+    // Type style defaults
+    updateTypeStyles,
     // Scale calibration
     setCalibration,
     clearCalibration,

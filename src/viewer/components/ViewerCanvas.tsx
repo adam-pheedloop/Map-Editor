@@ -16,6 +16,7 @@ import { BackgroundImage } from "../../editor/components/canvas/BackgroundImage"
 import type { ViewerMode, HoveredItem } from "../types";
 import { RouteOverlay } from "./RouteOverlay";
 import { ScaleBar } from "./ScaleBar";
+import { ViewerLegend } from "./ViewerLegend";
 
 interface ViewerCanvasProps {
   data: FloorPlanData;
@@ -106,7 +107,7 @@ function ViewerElement({
         }
       }}
     >
-      {geo.shape === "rect" && element.type !== "icon" && (
+      {geo.shape === "rect" && element.type !== "icon" && element.type !== "label" && (
         <>
           <Rect
             width={geo.width}
@@ -208,6 +209,26 @@ function ViewerElement({
           strokeWidth={strokeWidth}
         />
       )}
+      {element.type === "label" && geo.shape === "rect" && (() => {
+        const g = geo as RectGeometry;
+        const parts: string[] = [];
+        if (element.properties.fontWeight === "bold") parts.push("bold");
+        if (element.properties.fontStyle === "italic") parts.push("italic");
+        return (
+          <Text
+            text={element.properties.text ?? ""}
+            width={g.width}
+            height={g.height}
+            fill={color}
+            fontSize={element.properties.fontSize ?? 14}
+            fontStyle={parts.length > 0 ? parts.join(" ") : "normal"}
+            textDecoration={element.properties.textDecoration === "underline" ? "underline" : ""}
+            align={element.properties.textAlign ?? "left"}
+            verticalAlign="middle"
+            listening={false}
+          />
+        );
+      })()}
       {element.type === "icon" && geo.shape === "rect" && element.properties.iconName && (
         <ViewerIcon
           iconName={element.properties.iconName}
@@ -286,14 +307,9 @@ export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedElemen
             const highlighted = isSelected || !!isSearchMatch;
             const dimmed =
               isInert ||
+              (mode === "exhibitor" && isBooth && isOccupied && !highlighted) ||
               (hasHighlight && !isSelected) ||
               (isSearching && !isSearchMatch && !isSelected);
-
-            // In exhibitor mode, occupied booths get a muted treatment when not highlighted
-            const overrideColor =
-              mode === "exhibitor" && isBooth && isOccupied && !highlighted
-                ? "#6B7280"
-                : undefined;
 
             const buildClickItem = (): HoveredItem | null => {
               if (isBooth && boothCode) {
@@ -315,7 +331,7 @@ export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedElemen
                 isHighlighted={highlighted}
                 isDimmed={dimmed}
                 isHovered={isHovered && !highlighted && !isInert}
-                overrideColor={overrideColor}
+
                 onMouseEnter={!isInert && isInteractive ? () => setHoveredElementId(element.id) : undefined}
                 onMouseLeave={!isInert && isInteractive ? () => setHoveredElementId(null) : undefined}
                 onClick={!isInert && isInteractive ? (e) => {
@@ -330,6 +346,7 @@ export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedElemen
         {routePath && <RouteOverlay path={routePath} />}
       </Stage>
       <ScaleBar dimensions={data.dimensions} scale={scale} />
+      <ViewerLegend legend={data.legend} />
     </div>
   );
 }

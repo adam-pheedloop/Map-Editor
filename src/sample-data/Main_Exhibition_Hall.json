@@ -24,7 +24,9 @@
         "name": "Booth A101",
         "color": "#4A90D9",
         "zIndex": 1,
-        "area": 5120
+        "area": 5120,
+        "boothSlug": "EXHBOTNZNA02PFZ3HDXV",
+        "boothState": "sold"
       },
       "layer": "content"
     },
@@ -43,7 +45,9 @@
         "name": "Booth A102",
         "color": "#4A90D9",
         "zIndex": 1,
-        "area": 5120
+        "area": 5120,
+        "boothSlug": "EXHBOTMQ742K5PAO67SP",
+        "boothState": "sold"
       },
       "layer": "content"
     },
@@ -60,9 +64,11 @@
       "properties": {
         "boothCode": "A103",
         "name": "Booth A103",
-        "color": "#E74C3C",
+        "color": "#4A90D9",
         "zIndex": 1,
-        "area": 5120
+        "area": 5120,
+        "boothSlug": "EXHBOTZHX86RR9FBRI8T",
+        "boothState": "sold"
       },
       "layer": "content"
     },
@@ -81,7 +87,9 @@
         "name": "Booth B101",
         "color": "#4A90D9",
         "zIndex": 1,
-        "area": 5120
+        "area": 5120,
+        "boothSlug": "EXHBOTCBKQSXFHJO2HM8",
+        "boothState": "sold"
       },
       "layer": "content"
     },
@@ -98,9 +106,11 @@
       "properties": {
         "boothCode": "B102",
         "name": "Booth B102",
-        "color": "#4A90D9",
+        "color": "#F39C12",
         "zIndex": 1,
-        "area": 5120
+        "area": 5120,
+        "boothSlug": "EXHBOTKWDZMHOVW9JRB6",
+        "boothState": "reserved"
       },
       "layer": "content"
     },
@@ -119,7 +129,9 @@
         "name": "Booth C101",
         "color": "#4A90D9",
         "zIndex": 1,
-        "area": 5120
+        "area": 5120,
+        "boothSlug": "EXHBOTKLVAA0LIKKNM7O",
+        "boothState": "sold"
       },
       "layer": "content"
     },
@@ -138,7 +150,9 @@
         "name": "Booth C102",
         "color": "#4A90D9",
         "zIndex": 1,
-        "area": 5120
+        "area": 5120,
+        "boothSlug": "EXHBOTD9EH60FACRNNGF",
+        "boothState": "sold"
       },
       "layer": "content"
     },
@@ -155,9 +169,11 @@
       "properties": {
         "boothCode": "C103",
         "name": "Booth C103",
-        "color": "#E74C3C",
+        "color": "#9B59B6",
         "zIndex": 1,
-        "area": 5120
+        "area": 5120,
+        "boothSlug": "EXHBOTWFU5SEYAMUN7VM",
+        "boothState": "on_hold"
       },
       "layer": "content"
     },
@@ -176,7 +192,9 @@
         "name": "Booth C104",
         "color": "#4A90D9",
         "zIndex": 1,
-        "area": 5120
+        "area": 5120,
+        "boothSlug": "EXHBOT20F838RG8QS03X",
+        "boothState": "sold"
       },
       "layer": "content"
     },
@@ -193,9 +211,11 @@
       "properties": {
         "boothCode": "C105",
         "name": "Booth C105",
-        "color": "#4A90D9",
+        "color": "#F39C12",
         "zIndex": 1,
-        "area": 5120
+        "area": 5120,
+        "boothSlug": "EXHBOTSLE3WZLMOFNM38",
+        "boothState": "reserved"
       },
       "layer": "content"
     },
@@ -214,7 +234,9 @@
         "name": "Booth D101",
         "color": "#4A90D9",
         "zIndex": 1,
-        "area": 5120
+        "area": 5120,
+        "boothSlug": "EXHBOT6YAPT4R5O1L0VH",
+        "boothState": "sold"
       },
       "layer": "content"
     },
@@ -231,9 +253,11 @@
       "properties": {
         "boothCode": "D102",
         "name": "Booth D102",
-        "color": "#E74C3C",
+        "color": "#9B59B6",
         "zIndex": 1,
-        "area": 5120
+        "area": 5120,
+        "boothSlug": "EXHBOT4KO9WHEMBO2UJ4",
+        "boothState": "on_hold"
       },
       "layer": "content"
     },
@@ -252,7 +276,9 @@
         "name": "Booth D103",
         "color": "#4A90D9",
         "zIndex": 1,
-        "area": 5120
+        "area": 5120,
+        "boothSlug": "EXHBOTAFX4X7SKH5NB06",
+        "boothState": "sold"
       },
       "layer": "content"
     },
@@ -269,9 +295,11 @@
       "properties": {
         "boothCode": "D104",
         "name": "Booth D104",
-        "color": "#4A90D9",
+        "color": "#94a3b8",
         "zIndex": 1,
-        "area": 5120
+        "area": 5120,
+        "boothSlug": "EXHBOTDCGR3VX6LWYF1U",
+        "boothState": "available"
       },
       "layer": "content"
     },
@@ -290,7 +318,9 @@
         "name": "Booth D105",
         "color": "#4A90D9",
         "zIndex": 1,
-        "area": 5120
+        "area": 5120,
+        "boothSlug": "EXHBOTDL55EMVXITXUUB",
+        "boothState": "sold"
       },
       "layer": "content"
     },
@@ -310,7 +340,7 @@
         "color": "#27AE60",
         "zIndex": 0,
         "capacity": 500,
-        "sessionId": "TALK-001"
+        "sessionId": 1
       },
       "layer": "content"
     },
@@ -330,7 +360,7 @@
         "color": "#F39C12",
         "zIndex": 0,
         "capacity": 20,
-        "meetingRoomId": "ROOM-001"
+        "meetingRoomId": 1
       },
       "layer": "content"
     },
@@ -350,7 +380,8 @@
         "strokeColor": "#1E8449",
         "strokeWidth": 2,
         "zIndex": 1,
-        "capacity": 50
+        "capacity": 50,
+        "sessionId": 2
       },
       "layer": "content"
     },
@@ -370,7 +401,8 @@
         "strokeColor": "#1E8449",
         "strokeWidth": 2,
         "zIndex": 1,
-        "capacity": 30
+        "capacity": 30,
+        "sessionId": 5
       },
       "layer": "content"
     },
@@ -390,7 +422,8 @@
         "strokeColor": "#D68910",
         "strokeWidth": 2,
         "zIndex": 1,
-        "capacity": 12
+        "capacity": 12,
+        "meetingRoomId": 4
       },
       "layer": "content"
     },
@@ -414,24 +447,7 @@
     }
   ],
   "legend": {
-    "entries": [
-      {
-        "label": "Available",
-        "color": "#4A90D9"
-      },
-      {
-        "label": "Reserved",
-        "color": "#E74C3C"
-      },
-      {
-        "label": "Session Area",
-        "color": "#27AE60"
-      },
-      {
-        "label": "Meeting Room",
-        "color": "#F39C12"
-      }
-    ],
+    "entries": [],
     "position": "bottom-right",
     "visible": true
   },

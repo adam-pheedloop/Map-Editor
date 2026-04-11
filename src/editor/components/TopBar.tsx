@@ -10,6 +10,7 @@ interface TopBarProps {
   debug?: boolean;
   onDebugClick?: () => void;
   onHelpClick?: () => void;
+  onLegendClick?: () => void;
   fileMenuItems?: MenuEntry[];
   editMenuItems?: MenuEntry[];
   viewMenuItems?: MenuEntry[];
@@ -20,6 +21,7 @@ export function TopBar({
   debug,
   onDebugClick,
   onHelpClick,
+  onLegendClick,
   fileMenuItems = [],
   editMenuItems = [],
   viewMenuItems = [],
@@ -66,6 +68,7 @@ export function TopBar({
         </MenuButton>
         {toolsOpen && <DropdownMenu items={toolsMenuItems} onClose={() => setToolsOpen(false)} />}
       </div>
+      <MenuButton onClick={() => { closeAll(); onLegendClick?.(); }}>Legend</MenuButton>
       <div className="flex-1" />
       <MenuButton onClick={onHelpClick} title="Help & Shortcuts">
         <PiQuestion size={16} />

@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-05",
+  "lastUpdated": "2026-04-08",
   "issues": [
     {
       "id": 1,
@@ -80,6 +80,14 @@
       "area": "Viewer — Wayfinding / A* Pathfinding",
       "description": "When routing to an enclosed location (meeting room, session area), the A* path terminates at the nearest walkable cell on the element's bounding box perimeter — which may be mid-wall rather than the actual doorway. The system has no concept of where a door is. Proposed fix: add optional entrance point(s) to location element types (booth, session_area, meeting_room, poi). Each entrance is a Point in ElementProperties placed by the organiser at the doorway. Wayfinding routes to the nearest entrance point instead of the bounding box edge. Supports multiple entrances. Falls back to current behaviour if none are defined. Estimated ~3–4 pts: schema change, editor handle UI, wayfinding resolver update.",
       "status": "open"
+    },
+    {
+      "id": 12,
+      "title": "Text elements display as placeholder 'Text' block in viewer",
+      "severity": "medium",
+      "area": "Viewer — Text Elements",
+      "description": "Text elements placed in the editor do not render their actual content in the viewer. Instead they display a generic placeholder 'Text' block. The viewer is likely not reading the text content from the element's properties, or the TextShape component used in the editor is not being rendered in the viewer at all.",
+      "status": "fixed"
     },
     {
       "id": 11,

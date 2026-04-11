@@ -26,7 +26,7 @@ export function ScaleBar({ dimensions, scale }: ScaleBarProps) {
 
   return (
     <div
-      className="absolute bottom-4 right-4 z-10 flex flex-col items-end gap-0.5 pointer-events-none select-none"
+      className="absolute bottom-4 left-4 z-10 flex flex-col items-start gap-0.5 pointer-events-none select-none"
     >
       <span className="text-[10px] font-medium text-gray-600 bg-white/80 px-1 rounded">
         {niceUnits} {dimensions.unit}

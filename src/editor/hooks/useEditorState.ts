@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from "react";
-import type { FloorPlanData, FloorPlanElement, ElementType, Geometry, ElementProperties, BackgroundImage, Dimensions, WalkableGrid, ScaleCalibration, Unit, ElementTypeDefaults, Legend } from "../../types";
-import { ELEMENT_TYPE_TO_LAYER, DEFAULT_TYPE_STYLES } from "../../types";
+import type { FloorPlanData, FloorPlanElement, ElementType, Geometry, ElementProperties, BackgroundImage, Dimensions, WalkableGrid, ScaleCalibration, Unit, ElementTypeDefaults, Legend, ViewerAppearance } from "../../types";
+import { ELEMENT_TYPE_TO_LAYER, DEFAULT_TYPE_STYLES, DEFAULT_VIEWER_APPEARANCE } from "../../types";
 import { createWalkableGrid } from "../utils/walkableGrid";
 import { derivePixelsPerUnit } from "../../utils/unitConversion";
 import { useHistory } from "./useHistory";
@@ -38,6 +38,11 @@ function backfillTypeStyles(data: FloorPlanData): FloorPlanData {
   return { ...data, typeStyles: DEFAULT_TYPE_STYLES };
 }
 
+function backfillViewerAppearance(data: FloorPlanData): FloorPlanData {
+  if (data.viewerAppearance) return data;
+  return { ...data, viewerAppearance: DEFAULT_VIEWER_APPEARANCE };
+}
+
 /** Ensures every element has a `layer` property, assigning from type mapping if missing. */
 function backfillLayers(data: FloorPlanData): FloorPlanData {
   const needsBackfill = data.elements.some((el) => !el.layer);
@@ -58,7 +63,7 @@ export function useEditorState(
   initialData: FloorPlanData,
   { persist = false }: UseEditorStateOptions = {}
 ) {
-  const loadedData = backfillLegendEntryIds(backfillTypeStyles(backfillLayers(persist ? loadFromStorage() ?? initialData : initialData)));
+  const loadedData = backfillViewerAppearance(backfillLegendEntryIds(backfillTypeStyles(backfillLayers(persist ? loadFromStorage() ?? initialData : initialData))));
   const { present: data, set: setData, replace: replaceData, undo, redo, canUndo, canRedo } = useHistory<FloorPlanData>(loadedData);
 
   // Auto-save to localStorage
@@ -75,7 +80,7 @@ export function useEditorState(
       ...prev,
       elements: [...prev.elements, withLayer],
     }));
-  }, []);
+  }, [setData]);
 
   const addElements = useCallback((elements: FloorPlanElement[]) => {
     setData((prev) => ({
@@ -87,7 +92,7 @@ export function useEditorState(
         ),
       ],
     }));
-  }, []);
+  }, [setData]);
 
   const updateElement = useCallback(
     (id: string, geometry: Partial<Geometry>) => {
@@ -100,7 +105,7 @@ export function useEditorState(
         ),
       }));
     },
-    []
+    [setData]
   );
 
   const updateProperties = useCallback(
@@ -114,7 +119,7 @@ export function useEditorState(
         ),
       }));
     },
-    []
+    [setData]
   );
 
   /** Update properties without pushing to undo stack. Use for live slider previews. */
@@ -129,7 +134,7 @@ export function useEditorState(
         ),
       }));
     },
-    []
+    [replaceData]
   );
 
   const batchUpdateProperties = useCallback(
@@ -146,7 +151,7 @@ export function useEditorState(
         };
       });
     },
-    []
+    [setData]
   );
 
   const deleteElement = useCallback((id: string) => {
@@ -154,14 +159,14 @@ export function useEditorState(
       ...prev,
       elements: prev.elements.filter((el) => el.id !== id),
     }));
-  }, []);
+  }, [setData]);
 
   const deleteElements = useCallback((ids: Set<string>) => {
     setData((prev) => ({
       ...prev,
       elements: prev.elements.filter((el) => !ids.has(el.id)),
     }));
-  }, []);
+  }, [setData]);
 
   const moveElements = useCallback(
     (updates: Array<{ id: string; x: number; y: number }>) => {
@@ -177,7 +182,7 @@ export function useEditorState(
         };
       });
     },
-    []
+    [setData]
   );
 
   const updateElementType = useCallback((id: string, newType: ElementType, propertyOverrides?: Partial<ElementProperties>) => {
@@ -189,18 +194,18 @@ export function useEditorState(
           : el
       ),
     }));
-  }, []);
+  }, [setData]);
 
   const setBackgroundImage = useCallback((bg: BackgroundImage | undefined) => {
     setData((prev) => ({ ...prev, backgroundImage: bg }));
-  }, []);
+  }, [setData]);
 
   const updateDimensions = useCallback((dims: Partial<Dimensions>) => {
     setData((prev) => ({
       ...prev,
       dimensions: { ...prev.dimensions, ...dims },
     }));
-  }, []);
+  }, [setData]);
 
   const reorderElement = useCallback(
     (id: string, direction: "forward" | "backward" | "front" | "back") => {
@@ -246,12 +251,12 @@ export function useEditorState(
         };
       });
     },
-    []
+    [setData]
   );
 
   const setBackgroundColor = useCallback((color: string) => {
     setData((prev) => ({ ...prev, backgroundColor: color }));
-  }, []);
+  }, [setData]);
 
   const clearStorage = useCallback(() => {
     localStorage.removeItem(STORAGE_KEY);
@@ -268,7 +273,7 @@ export function useEditorState(
         walkableLayer: createWalkableGrid(prev.dimensions.width, prev.dimensions.height),
       };
     });
-  }, []);
+  }, [setData]);
 
   /** Set a single cell value. */
   const setWalkableCell = useCallback((col: number, row: number, value: 0 | 1) => {
@@ -281,7 +286,7 @@ export function useEditorState(
       );
       return { ...prev, walkableLayer: { ...grid, cells: newCells } };
     });
-  }, []);
+  }, [setData]);
 
   /** Set a rectangular range of cells. Pushes a single undo entry. */
   const setWalkableCellRange = useCallback(
@@ -300,7 +305,7 @@ export function useEditorState(
         return { ...prev, walkableLayer: { ...grid, cells: newCells } };
       });
     },
-    []
+    [setData]
   );
 
   /** Apply a batch of cell changes as a single undo entry (used for paint strokes). */
@@ -318,7 +323,7 @@ export function useEditorState(
         return { ...prev, walkableLayer: { ...grid, cells: newCells } };
       });
     },
-    []
+    [setData]
   );
 
   /** Clear the entire grid (all impassable). */
@@ -331,7 +336,7 @@ export function useEditorState(
         walkableLayer: createWalkableGrid(prev.dimensions.width, prev.dimensions.height, grid.cellSize),
       };
     });
-  }, []);
+  }, [setData]);
 
   /** Change grid resolution — reinitializes the grid. */
   const setWalkableGridResolution = useCallback((cellSize: number) => {
@@ -339,18 +344,18 @@ export function useEditorState(
       ...prev,
       walkableLayer: createWalkableGrid(prev.dimensions.width, prev.dimensions.height, cellSize),
     }));
-  }, []);
+  }, [setData]);
 
   /** Replace the entire walkable grid (for auto-generation). */
   const setWalkableGrid = useCallback((grid: WalkableGrid) => {
     setData((prev) => ({ ...prev, walkableLayer: grid }));
-  }, []);
+  }, [setData]);
 
   // --- Legend ---
 
   const updateLegend = useCallback((updates: Partial<Legend>) => {
     setData((prev) => ({ ...prev, legend: { ...prev.legend, ...updates } }));
-  }, []);
+  }, [setData]);
 
   // --- Type style defaults ---
 
@@ -364,8 +369,17 @@ export function useEditorState(
         },
       }));
     },
-    []
+    [setData]
   );
+
+  // --- Viewer appearance ---
+
+  const updateViewerAppearance = useCallback((updates: Partial<ViewerAppearance>) => {
+    replaceData((prev) => ({
+      ...prev,
+      viewerAppearance: { ...DEFAULT_VIEWER_APPEARANCE, ...prev.viewerAppearance, ...updates },
+    }));
+  }, [replaceData]);
 
   // --- Scale calibration ---
 
@@ -376,7 +390,7 @@ export function useEditorState(
       scaleCalibration: cal,
       dimensions: { ...prev.dimensions, pixelsPerUnit: ppu, unit: cal.unit },
     }));
-  }, []);
+  }, [setData]);
 
   const clearCalibration = useCallback(() => {
     setData((prev) => ({
@@ -384,7 +398,7 @@ export function useEditorState(
       scaleCalibration: undefined,
       dimensions: { ...prev.dimensions, pixelsPerUnit: 1, unit: "px" },
     }));
-  }, []);
+  }, [setData]);
 
   /** Change the display unit while keeping calibration intact. Recomputes pixelsPerUnit for the new unit. */
   const setDisplayUnit = useCallback((newUnit: Unit) => {
@@ -418,7 +432,7 @@ export function useEditorState(
         },
       };
     });
-  }, []);
+  }, [setData]);
 
   return {
     data,
@@ -449,6 +463,8 @@ export function useEditorState(
     updateLegend,
     // Type style defaults
     updateTypeStyles,
+    // Viewer appearance
+    updateViewerAppearance,
     // Scale calibration
     setCalibration,
     clearCalibration,

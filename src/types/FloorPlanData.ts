@@ -193,6 +193,33 @@ export const DEFAULT_TYPE_STYLES: TypeStyles = {
   meeting_room: { color: "#F39C12", strokeColor: "#888888", strokeWidth: 1 },
 };
 
+export type StateVisualTreatment =
+  | { type: "opacity"; value: number }
+  | { type: "hatch"; pattern: "diagonal" | "cross" | "horizontal" | "vertical" }
+  | { type: "border"; color: string; style: "solid" | "dashed"; width: number }
+  | { type: "none" };
+
+export type OrganizerBoothState = "available" | "reserved" | "on_hold" | "sold";
+export type AttendeeBoothState = "available" | "occupied";
+
+export interface ViewerAppearance {
+  organizer: Record<OrganizerBoothState, StateVisualTreatment>;
+  attendee: Record<AttendeeBoothState, StateVisualTreatment>;
+}
+
+export const DEFAULT_VIEWER_APPEARANCE: ViewerAppearance = {
+  organizer: {
+    available: { type: "hatch", pattern: "diagonal" },
+    reserved:  { type: "hatch", pattern: "cross" },
+    on_hold:   { type: "border", color: "#888888", style: "dashed", width: 2 },
+    sold:      { type: "none" },
+  },
+  attendee: {
+    available: { type: "none" },
+    occupied:  { type: "opacity", value: 0.35 },
+  },
+};
+
 export interface LegendEntry {
   id: string;
   label: string;
@@ -256,6 +283,7 @@ export interface FloorPlanData {
   elements: FloorPlanElement[];
   legend: Legend;
   typeStyles?: TypeStyles;
+  viewerAppearance?: ViewerAppearance;
   backgroundImage?: BackgroundImage;
   backgroundColor?: string;
   walkableLayer?: WalkableGrid;

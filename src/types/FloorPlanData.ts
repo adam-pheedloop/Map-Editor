@@ -124,7 +124,6 @@ export interface ElementProperties {
   strokeWidth?: number;
   zIndex: number;
   // Booth-specific
-  boothCode?: string;
   boothSlug?: string;
   exhibitorId?: string | null;
   capacity?: number | null;

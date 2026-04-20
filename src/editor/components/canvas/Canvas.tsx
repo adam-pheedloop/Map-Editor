@@ -18,6 +18,7 @@ import { CalibrationPreview } from "./CalibrationPreview";
 import type { CalibrationState } from "../../hooks/useCalibration";
 import { useAlignmentGuides } from "../../hooks/useAlignmentGuides";
 import { getElementBounds, lineIntersectsRect } from "../../utils/bounds";
+import { PolygonVertexHandles } from "../../tools/handles/PolygonVertexHandles";
 
 // ---------------------------------------------------------------------------
 // ToolHost — mounts/unmounts with key={tool.id} to manage hook lifecycle
@@ -230,7 +231,12 @@ export function Canvas({
   const handleDef = selectedElement
     ? findToolForElement(selectedElement.geometry.shape, selectedElement.type)
     : undefined;
-  const HandleComponent = handleDef?.HandleComponent;
+  // Polygon vertex handles apply to any polygon element regardless of its type
+  // (booth, session_area, meeting_room, or plain shape).
+  const HandleComponent =
+    selectedElement?.geometry.shape === "polygon"
+      ? PolygonVertexHandles
+      : handleDef?.HandleComponent;
 
   // --- Mouse event handlers ---
 

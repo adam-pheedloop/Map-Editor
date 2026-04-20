@@ -1,4 +1,4 @@
-import { Rect, Line, Text, Group } from "react-konva";
+import { Rect, Line, Ellipse, Circle, Text, Group } from "react-konva";
 import type { Geometry, ElementProperties } from "../../../../types";
 import { getLabelXY, getLabelFontStyle, getLabelRenderProps } from "./labelUtils";
 import { LabelWithBackground } from "./LabelWithBackground";
@@ -9,15 +9,27 @@ interface BoothShapeProps {
   color: string;
   strokeColor: string;
   strokeWidth: number;
-  boothCode: string;
   properties: ElementProperties;
 }
 
-export function BoothShape({ geo, color, strokeColor, strokeWidth, boothCode, properties }: BoothShapeProps) {
+export function BoothShape({ geo, color, strokeColor, strokeWidth, properties }: BoothShapeProps) {
   const lp = getLabelRenderProps(properties);
   const bounds = getGeometryBounds(geo);
-  const labelPos = getLabelXY(lp.labelPositionV, lp.labelPositionH, bounds.width, bounds.height);
+  const rawLabelPos = getLabelXY(lp.labelPositionV, lp.labelPositionH, bounds.width, bounds.height);
   const fontStyle = getLabelFontStyle(lp.labelBold, lp.labelItalic);
+  const displayName = properties.name;
+
+  // For polygon geometry the points can be offset from (0,0) in local space.
+  // Shift the label container to start at the polygon's min-point corner.
+  const labelPos = geo.shape === "polygon" ? (() => {
+    const pts = geo.points;
+    let minX = Infinity, minY = Infinity;
+    for (let i = 0; i < pts.length; i += 2) {
+      if (pts[i] < minX) minX = pts[i];
+      if (pts[i + 1] < minY) minY = pts[i + 1];
+    }
+    return { ...rawLabelPos, x: rawLabelPos.x + (isFinite(minX) ? minX : 0), y: rawLabelPos.y + (isFinite(minY) ? minY : 0) };
+  })() : rawLabelPos;
 
   return (
     <>
@@ -42,6 +54,29 @@ export function BoothShape({ geo, color, strokeColor, strokeWidth, boothCode, pr
           opacity={0.9}
         />
       )}
+      {geo.shape === "ellipse" && (
+        <Ellipse
+          x={geo.radiusX}
+          y={geo.radiusY}
+          radiusX={geo.radiusX}
+          radiusY={geo.radiusY}
+          fill={color}
+          stroke={strokeColor}
+          strokeWidth={strokeWidth}
+          opacity={0.9}
+        />
+      )}
+      {geo.shape === "circle" && (
+        <Circle
+          x={geo.radius}
+          y={geo.radius}
+          radius={geo.radius}
+          fill={color}
+          stroke={strokeColor}
+          strokeWidth={strokeWidth}
+          opacity={0.9}
+        />
+      )}
       <Text
         text="🏪"
         x={3}
@@ -49,10 +84,10 @@ export function BoothShape({ geo, color, strokeColor, strokeWidth, boothCode, pr
         fontSize={10}
         listening={false}
       />
-      {boothCode && (
+      {displayName && (
         <Group opacity={lp.labelVisible ? 1 : 0.35} listening={false}>
           <LabelWithBackground
-            text={lp.labelVisible ? boothCode : `${boothCode} ⊘`}
+            text={lp.labelVisible ? displayName : `${displayName} ⊘`}
             labelPos={labelPos}
             fontSize={lp.labelFontSize}
             fill={lp.labelColor}

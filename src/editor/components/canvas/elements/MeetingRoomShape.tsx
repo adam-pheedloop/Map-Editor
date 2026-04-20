@@ -1,4 +1,4 @@
-import { Rect, Line, Text, Group } from "react-konva";
+import { Rect, Line, Ellipse, Circle, Text, Group } from "react-konva";
 import type { Geometry, ElementProperties } from "../../../../types";
 import { getLabelXY, getLabelFontStyle, getLabelRenderProps } from "./labelUtils";
 import { LabelWithBackground } from "./LabelWithBackground";
@@ -15,9 +15,19 @@ interface MeetingRoomShapeProps {
 export function MeetingRoomShape({ geo, color, strokeColor, strokeWidth, properties }: MeetingRoomShapeProps) {
   const lp = getLabelRenderProps(properties);
   const bounds = getGeometryBounds(geo);
-  const labelPos = getLabelXY(lp.labelPositionV, lp.labelPositionH, bounds.width, bounds.height);
+  const rawLabelPos = getLabelXY(lp.labelPositionV, lp.labelPositionH, bounds.width, bounds.height);
   const fontStyle = getLabelFontStyle(lp.labelBold, lp.labelItalic);
   const displayName = properties.name ?? "Meeting Room";
+
+  const labelPos = geo.shape === "polygon" ? (() => {
+    const pts = geo.points;
+    let minX = Infinity, minY = Infinity;
+    for (let i = 0; i < pts.length; i += 2) {
+      if (pts[i] < minX) minX = pts[i];
+      if (pts[i + 1] < minY) minY = pts[i + 1];
+    }
+    return { ...rawLabelPos, x: rawLabelPos.x + (isFinite(minX) ? minX : 0), y: rawLabelPos.y + (isFinite(minY) ? minY : 0) };
+  })() : rawLabelPos;
 
   return (
     <>
@@ -36,6 +46,29 @@ export function MeetingRoomShape({ geo, color, strokeColor, strokeWidth, propert
         <Line
           points={[...geo.points]}
           closed
+          fill={color}
+          stroke={strokeColor}
+          strokeWidth={strokeWidth}
+          opacity={0.9}
+        />
+      )}
+      {geo.shape === "ellipse" && (
+        <Ellipse
+          x={geo.radiusX}
+          y={geo.radiusY}
+          radiusX={geo.radiusX}
+          radiusY={geo.radiusY}
+          fill={color}
+          stroke={strokeColor}
+          strokeWidth={strokeWidth}
+          opacity={0.9}
+        />
+      )}
+      {geo.shape === "circle" && (
+        <Circle
+          x={geo.radius}
+          y={geo.radius}
+          radius={geo.radius}
           fill={color}
           stroke={strokeColor}
           strokeWidth={strokeWidth}

@@ -30,6 +30,7 @@ export interface MeetingRoom {
 export interface SessionLocation {
   id: number;
   title: string;
+  capacity: number;
 }
 
 /**

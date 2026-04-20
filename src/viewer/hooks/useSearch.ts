@@ -29,13 +29,13 @@ export function useSearch(
     const entries: SearchResult[] = [];
 
     for (const el of elements) {
-      if (el.type === "booth" && el.properties.boothCode) {
-        const code = el.properties.boothCode;
+      if (el.type === "booth" && el.properties.name) {
+        const code = el.properties.name;
         const exhibitor = exhibitorsByBooth.get(code);
         entries.push({
           elementId: el.id,
           elementType: "booth",
-          name: el.properties.name || `Booth ${code}`,
+          name: code,
           code,
           exhibitorName: exhibitor?.name ?? null,
         } satisfies SearchResult);

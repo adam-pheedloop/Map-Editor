@@ -36,8 +36,8 @@ export function MapSidebar({ elements, exhibitors, selectedItem, onSelect }: Map
   const boothByCode = useMemo(() => {
     const map = new Map<string, FloorPlanElement>();
     for (const el of elements) {
-      if (el.type === "booth" && el.properties.boothCode) {
-        map.set(el.properties.boothCode, el);
+      if (el.type === "booth" && el.properties.name) {
+        map.set(el.properties.name, el);
       }
     }
     return map;

@@ -45,13 +45,13 @@ export function useDirections(
     const entries: SearchResult[] = [];
 
     for (const el of data.elements) {
-      if (el.type === "booth" && el.properties.boothCode) {
-        const code = el.properties.boothCode;
+      if (el.type === "booth" && el.properties.name) {
+        const code = el.properties.name;
         const exhibitor = exhibitorsByBooth.get(code);
         entries.push({
           elementId: el.id,
           elementType: "booth",
-          name: el.properties.name || `Booth ${code}`,
+          name: code,
           code,
           exhibitorName: exhibitor?.name ?? null,
         } satisfies SearchResult);
@@ -150,7 +150,7 @@ export function useDirections(
       // Legacy boothCode-based lookup
       if (loc.boothCode) {
         const el = data.elements.find(
-          (e) => e.type === "booth" && e.properties.boothCode === loc.boothCode
+          (e) => e.type === "booth" && e.properties.name === loc.boothCode
         );
         if (el) return resolveBoothToCell(grid, el);
       }
@@ -195,12 +195,12 @@ export function useDirections(
       if (!el) return;
 
       let location: DirectionsLocation;
-      if (el.type === "booth" && el.properties.boothCode) {
-        const exhibitor = exhibitorsByBooth.get(el.properties.boothCode);
+      if (el.type === "booth" && el.properties.name) {
+        const exhibitor = exhibitorsByBooth.get(el.properties.name);
         location = {
           type: exhibitor ? "exhibitor" : "booth",
-          label: exhibitor?.name || el.properties.name || `Booth ${el.properties.boothCode}`,
-          boothCode: el.properties.boothCode,
+          label: exhibitor?.name || el.properties.name,
+          boothCode: el.properties.name,
           elementId: el.id,
         };
       } else if (el.type === "session_area") {

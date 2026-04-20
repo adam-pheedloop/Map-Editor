@@ -20,8 +20,7 @@
         "height": 64
       },
       "properties": {
-        "boothCode": "A101",
-        "name": "Booth A101",
+        "name": "1",
         "color": "#4A90D9",
         "zIndex": 1,
         "area": 5120,
@@ -41,8 +40,7 @@
         "height": 64
       },
       "properties": {
-        "boothCode": "A102",
-        "name": "Booth A102",
+        "name": "2",
         "color": "#4A90D9",
         "zIndex": 1,
         "area": 5120,
@@ -62,8 +60,7 @@
         "height": 64
       },
       "properties": {
-        "boothCode": "A103",
-        "name": "Booth A103",
+        "name": "3",
         "color": "#4A90D9",
         "zIndex": 1,
         "area": 5120,
@@ -83,8 +80,7 @@
         "height": 64
       },
       "properties": {
-        "boothCode": "B101",
-        "name": "Booth B101",
+        "name": "4",
         "color": "#4A90D9",
         "zIndex": 1,
         "area": 5120,
@@ -104,8 +100,7 @@
         "height": 64
       },
       "properties": {
-        "boothCode": "B102",
-        "name": "Booth B102",
+        "name": "5",
         "color": "#F39C12",
         "zIndex": 1,
         "area": 5120,
@@ -125,8 +120,7 @@
         "height": 64
       },
       "properties": {
-        "boothCode": "C101",
-        "name": "Booth C101",
+        "name": "6",
         "color": "#4A90D9",
         "zIndex": 1,
         "area": 5120,
@@ -146,8 +140,7 @@
         "height": 64
       },
       "properties": {
-        "boothCode": "C102",
-        "name": "Booth C102",
+        "name": "7",
         "color": "#4A90D9",
         "zIndex": 1,
         "area": 5120,
@@ -167,8 +160,7 @@
         "height": 64
       },
       "properties": {
-        "boothCode": "C103",
-        "name": "Booth C103",
+        "name": "8",
         "color": "#9B59B6",
         "zIndex": 1,
         "area": 5120,
@@ -188,8 +180,7 @@
         "height": 64
       },
       "properties": {
-        "boothCode": "C104",
-        "name": "Booth C104",
+        "name": "9",
         "color": "#4A90D9",
         "zIndex": 1,
         "area": 5120,
@@ -209,8 +200,7 @@
         "height": 64
       },
       "properties": {
-        "boothCode": "C105",
-        "name": "Booth C105",
+        "name": "10",
         "color": "#F39C12",
         "zIndex": 1,
         "area": 5120,
@@ -230,8 +220,7 @@
         "height": 64
       },
       "properties": {
-        "boothCode": "D101",
-        "name": "Booth D101",
+        "name": "11",
         "color": "#4A90D9",
         "zIndex": 1,
         "area": 5120,
@@ -251,8 +240,7 @@
         "height": 64
       },
       "properties": {
-        "boothCode": "D102",
-        "name": "Booth D102",
+        "name": "12",
         "color": "#9B59B6",
         "zIndex": 1,
         "area": 5120,
@@ -272,8 +260,7 @@
         "height": 64
       },
       "properties": {
-        "boothCode": "D103",
-        "name": "Booth D103",
+        "name": "13",
         "color": "#4A90D9",
         "zIndex": 1,
         "area": 5120,
@@ -293,8 +280,7 @@
         "height": 64
       },
       "properties": {
-        "boothCode": "D104",
-        "name": "Booth D104",
+        "name": "14",
         "color": "#94a3b8",
         "zIndex": 1,
         "area": 5120,
@@ -314,8 +300,7 @@
         "height": 64
       },
       "properties": {
-        "boothCode": "D105",
-        "name": "Booth D105",
+        "name": "15",
         "color": "#4A90D9",
         "zIndex": 1,
         "area": 5120,
@@ -356,7 +341,7 @@
         "rotation": 0
       },
       "properties": {
-        "name": "Meeting Room 1",
+        "name": "Board Room",
         "color": "#F39C12",
         "zIndex": 0,
         "capacity": 20,

@@ -40,9 +40,6 @@ function ViewerIcon({ iconName, color, width, height }: { iconName: string; colo
 }
 
 function getLabel(element: FloorPlanElement): string {
-  if (element.type === "booth" && element.properties.boothCode) {
-    return element.properties.boothCode;
-  }
   return element.properties.name || "";
 }
 
@@ -295,7 +292,7 @@ export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedElemen
             const isSessionArea = element.type === "session_area";
             const isMeetingRoom = element.type === "meeting_room";
             const isInteractive = isBooth || isSessionArea || isMeetingRoom;
-            const boothCode = element.properties.boothCode;
+            const boothCode = element.properties.name;
             const isOccupied = isBooth && boothCode ? occupiedBoothCodes.has(boothCode) : false;
 
             // In attendee mode, unoccupied booths are faded and non-interactive

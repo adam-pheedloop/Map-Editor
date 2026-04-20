@@ -13,7 +13,11 @@ interface OptionsBarProps {
   onDefaultsChange: (updates: Partial<DrawingDefaults>) => void;
 }
 
-export function OptionsBar({ defaults, config, onDefaultsChange }: OptionsBarProps) {
+export function OptionsBar({
+  defaults,
+  config,
+  onDefaultsChange,
+}: OptionsBarProps) {
   const fields = new Set<OptionsBarField>(config.optionsBar);
 
   return (

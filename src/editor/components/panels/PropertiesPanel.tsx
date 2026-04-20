@@ -315,17 +315,6 @@ export function PropertiesPanel({
           </div>
         )}
 
-        {fields.has("boothCode") && (
-          <div className="flex flex-col gap-1.5">
-            <SectionLabel>Booth Code</SectionLabel>
-            <TextInput
-              value={element.properties.boothCode || ""}
-              placeholder="e.g. A101"
-              onChange={(e) => onUpdateProperties(element.id, { boothCode: e.target.value || undefined })}
-            />
-          </div>
-        )}
-
         {fields.has("capacity") && (
           <div className="flex flex-col gap-1.5">
             <SectionLabel>Capacity</SectionLabel>
@@ -370,7 +359,7 @@ export function PropertiesPanel({
           />
         </div>
 
-        {(geo.shape === "rect" || geo.shape === "ellipse") && element.type !== "label" && element.type !== "icon" && (
+        {(geo.shape === "rect" || geo.shape === "ellipse" || geo.shape === "polygon" || geo.shape === "circle") && element.type !== "label" && element.type !== "icon" && (
           <LabelSection
             properties={{
               ...element.properties,
@@ -441,7 +430,7 @@ export function PropertiesPanel({
           </div>
         )}
 
-        {(fields.has("width") || fields.has("height")) && (
+        {(fields.has("width") || fields.has("height")) && (geo.shape === "rect" || geo.shape === "ellipse") && (
           <div className="flex flex-col gap-1.5">
             <SectionLabel>Size</SectionLabel>
             {fields.has("width") && (

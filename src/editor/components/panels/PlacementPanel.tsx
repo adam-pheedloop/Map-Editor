@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState, useContext } from "react";
 import {
   PiCaretDown,
   PiCaretUp,
@@ -7,22 +7,120 @@ import {
   PiFunnel,
   PiPlus,
 } from "react-icons/pi";
-import type { PlacementRecords, PlacedRecord } from "../../hooks/usePlacementRecords";
-import type { ExhibitorBooth, SessionLocation, MeetingRoom } from "../../../viewer/types";
+import type {
+  PlacementRecords,
+  PlacedRecord,
+} from "../../hooks/usePlacementRecords";
+import type {
+  ExhibitorBooth,
+  SessionLocation,
+  MeetingRoom,
+} from "../../../viewer/types";
 
 // ---------------------------------------------------------------------------
-// Placement record data transfer
+// Data transfer constants
 // ---------------------------------------------------------------------------
-
-export type PlacementRecordRef =
-  | { type: "booth"; id: string }
-  | { type: "session_area"; id: string }
-  | { type: "meeting_room"; id: string };
 
 export const PLACEMENT_DRAG_TYPE = "application/x-placement-record";
+// Encoding shape in a MIME type allows reading it during dragover (types[] is readable
+// before drop, unlike actual data payload which browsers restrict for security).
+export const PLACEMENT_SHAPE_ELLIPSE_TYPE =
+  "application/x-placement-shape-ellipse";
+
+export interface PlacementRecordRef {
+  type: "booth" | "session_area" | "meeting_room";
+  id: string;
+  defaultShape: "rect" | "ellipse";
+}
 
 // ---------------------------------------------------------------------------
-// Section component
+// Context — lets rows read the section's current defaultShape without prop drilling
+// ---------------------------------------------------------------------------
+
+const SectionShapeContext = React.createContext<"rect" | "ellipse">("rect");
+
+// ---------------------------------------------------------------------------
+// FilterBar
+// ---------------------------------------------------------------------------
+
+function FilterBar({
+  shape,
+  onShapeChange,
+}: {
+  shape: "rect" | "ellipse";
+  onShapeChange: (s: "rect" | "ellipse") => void;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="flex items-center gap-1.5 px-3 py-1.5 border-b border-gray-100 bg-white">
+      <div className="relative">
+        <button
+          type="button"
+          onClick={() => setOpen((v) => !v)}
+          className="flex items-center gap-1 text-xs text-gray-600 border border-gray-200 rounded px-1.5 py-0.5 hover:bg-gray-50 transition-colors"
+        >
+          <span
+            className="inline-block w-2.5 h-2.5 bg-gray-300 shrink-0"
+            style={{ borderRadius: shape === "ellipse" ? "9999px" : "2px" }}
+          />
+          {shape === "ellipse" ? "Circle" : "Rectangle"}
+          <PiCaretDown size={10} className="text-gray-400" />
+        </button>
+
+        {open && (
+          <div className="absolute top-full left-0 mt-0.5 bg-white border border-gray-200 rounded shadow-md z-20 py-0.5 w-28">
+            {(["rect", "ellipse"] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                onClick={() => {
+                  onShapeChange(s);
+                  setOpen(false);
+                }}
+                className={[
+                  "w-full text-left flex items-center gap-1.5 px-2 py-1.5 text-xs hover:bg-gray-50 transition-colors",
+                  shape === s
+                    ? "text-primary-600 font-medium"
+                    : "text-gray-700",
+                ].join(" ")}
+              >
+                <span
+                  className="inline-block w-2.5 h-2.5 bg-gray-300 shrink-0"
+                  style={{ borderRadius: s === "ellipse" ? "9999px" : "2px" }}
+                />
+                {s === "ellipse" ? "Circle" : "Rectangle"}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="flex-1" />
+      <button
+        type="button"
+        className="text-gray-400 hover:text-gray-600 transition-colors p-0.5"
+      >
+        <PiMagnifyingGlass size={13} />
+      </button>
+      <button
+        type="button"
+        className="text-gray-400 hover:text-gray-600 transition-colors p-0.5"
+      >
+        <PiFunnel size={13} />
+      </button>
+      <button
+        type="button"
+        className="text-gray-400 hover:text-gray-600 transition-colors p-0.5"
+      >
+        <PiPlus size={13} />
+      </button>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Section
 // ---------------------------------------------------------------------------
 
 interface SectionConfig {
@@ -36,6 +134,8 @@ interface SectionProps extends SectionConfig {
   unplaced: number;
   isOpen: boolean;
   onToggle: () => void;
+  defaultShape: "rect" | "ellipse";
+  onDefaultShapeChange: (s: "rect" | "ellipse") => void;
   stub?: boolean;
   children?: React.ReactNode;
 }
@@ -48,6 +148,8 @@ function Section({
   iconColor,
   isOpen,
   onToggle,
+  defaultShape,
+  onDefaultShapeChange,
   stub = false,
   children,
 }: SectionProps) {
@@ -66,7 +168,6 @@ function Section({
             : "border-transparent px-3 hover:bg-gray-100",
         ].join(" ")}
       >
-        {/* Shape icon */}
         <span
           className="shrink-0 w-4 h-4"
           style={{
@@ -75,18 +176,16 @@ function Section({
             opacity: 0.7,
           }}
         />
-
-        {/* Title + counts */}
         <span className="flex-1 min-w-0">
-          <span className="block text-sm font-semibold text-gray-800 truncate">{title}</span>
+          <span className="block text-sm font-semibold text-gray-800 truncate">
+            {title}
+          </span>
           {!stub && (
             <span className="block text-xs text-gray-400 tabular-nums">
               Placed: {placed}&nbsp;&nbsp;|&nbsp;&nbsp;Unplaced: {unplaced}
             </span>
           )}
         </span>
-
-        {/* Sparkle (auto-arrange — Phase 13) */}
         <span
           className="shrink-0 text-gray-300 hover:text-primary-400 transition-colors"
           title="Auto-arrange (coming soon)"
@@ -94,8 +193,6 @@ function Section({
         >
           <PiSparkle size={14} />
         </span>
-
-        {/* Chevron */}
         <span className="shrink-0 text-gray-400">
           {isOpen ? <PiCaretUp size={12} /> : <PiCaretDown size={12} />}
         </span>
@@ -103,49 +200,26 @@ function Section({
 
       {/* Body */}
       {isOpen && (
-        <div>
+        <SectionShapeContext.Provider value={defaultShape}>
           {stub ? (
-            <p className="px-3 py-2.5 text-xs text-gray-400 italic">Coming soon</p>
+            <p className="px-3 py-2.5 text-xs text-gray-400 italic">
+              Coming soon
+            </p>
           ) : total === 0 ? (
-            <p className="px-3 py-2.5 text-xs text-gray-400 italic">No records found</p>
+            <p className="px-3 py-2.5 text-xs text-gray-400 italic">
+              No records found
+            </p>
           ) : (
             <>
-              {/* Filter bar */}
-              <FilterBar />
+              <FilterBar
+                shape={defaultShape}
+                onShapeChange={onDefaultShapeChange}
+              />
               {children}
             </>
           )}
-        </div>
+        </SectionShapeContext.Provider>
       )}
-    </div>
-  );
-}
-
-// ---------------------------------------------------------------------------
-// Filter bar (stub — wired in Step 5)
-// ---------------------------------------------------------------------------
-
-function FilterBar() {
-  return (
-    <div className="flex items-center gap-1.5 px-3 py-1.5 border-b border-gray-100 bg-white">
-      <button
-        type="button"
-        className="flex items-center gap-1 text-xs text-gray-600 border border-gray-200 rounded px-1.5 py-0.5 hover:bg-gray-50 transition-colors"
-      >
-        <span className="inline-block w-2.5 h-2.5 rounded-sm bg-gray-300" />
-        Rectangle
-        <PiCaretDown size={10} className="text-gray-400" />
-      </button>
-      <div className="flex-1" />
-      <button type="button" className="text-gray-400 hover:text-gray-600 transition-colors p-0.5">
-        <PiMagnifyingGlass size={13} />
-      </button>
-      <button type="button" className="text-gray-400 hover:text-gray-600 transition-colors p-0.5">
-        <PiFunnel size={13} />
-      </button>
-      <button type="button" className="text-gray-400 hover:text-gray-600 transition-colors p-0.5">
-        <PiPlus size={13} />
-      </button>
     </div>
   );
 }
@@ -156,21 +230,34 @@ function FilterBar() {
 
 function PlacementRow({
   isPlaced,
-  dragRef,
+  recordType,
+  recordId,
   children,
 }: {
   isPlaced: boolean;
-  dragRef: PlacementRecordRef;
+  recordType: PlacementRecordRef["type"];
+  recordId: string;
   children: React.ReactNode;
 }) {
+  const defaultShape = useContext(SectionShapeContext);
+
   const handleDragStart = (e: React.DragEvent) => {
     if (isPlaced) {
       e.preventDefault();
       return;
     }
+    const ref: PlacementRecordRef = {
+      type: recordType,
+      id: recordId,
+      defaultShape,
+    };
     e.dataTransfer.effectAllowed = "copy";
-    e.dataTransfer.setData(PLACEMENT_DRAG_TYPE, JSON.stringify(dragRef));
-    e.dataTransfer.setData("text/plain", JSON.stringify(dragRef));
+    e.dataTransfer.setData(PLACEMENT_DRAG_TYPE, JSON.stringify(ref));
+    e.dataTransfer.setData("text/plain", JSON.stringify(ref));
+    // Encode shape as a MIME type so it can be read during dragover
+    if (defaultShape === "ellipse") {
+      e.dataTransfer.setData(PLACEMENT_SHAPE_ELLIPSE_TYPE, "1");
+    }
   };
 
   return (
@@ -191,12 +278,16 @@ function PlacementRow({
 
 function BoothRow({ record, isPlaced }: PlacedRecord<ExhibitorBooth>) {
   return (
-    <PlacementRow isPlaced={isPlaced} dragRef={{ type: "booth", id: record.slug }}>
-      <span className="flex-1 text-gray-700 truncate">Booth {record.code}</span>
+    <PlacementRow isPlaced={isPlaced} recordType="booth" recordId={record.slug}>
+      <span className="flex-1 text-gray-700 truncate">{record.code}</span>
       {isPlaced ? (
-        <span className="shrink-0 text-xs font-medium text-green-600">Placed</span>
+        <span className="shrink-0 text-xs font-medium text-green-600">
+          Placed
+        </span>
       ) : (
-        <span className="shrink-0 text-xs font-medium text-amber-500">Unplaced</span>
+        <span className="shrink-0 text-xs font-medium text-amber-500">
+          Unplaced
+        </span>
       )}
     </PlacementRow>
   );
@@ -204,12 +295,20 @@ function BoothRow({ record, isPlaced }: PlacedRecord<ExhibitorBooth>) {
 
 function SessionRow({ record, isPlaced }: PlacedRecord<SessionLocation>) {
   return (
-    <PlacementRow isPlaced={isPlaced} dragRef={{ type: "session_area", id: String(record.id) }}>
+    <PlacementRow
+      isPlaced={isPlaced}
+      recordType="session_area"
+      recordId={String(record.id)}
+    >
       <span className="flex-1 text-gray-700 truncate">{record.title}</span>
       {isPlaced ? (
-        <span className="shrink-0 text-xs font-medium text-green-600">Placed</span>
+        <span className="shrink-0 text-xs font-medium text-green-600">
+          Placed
+        </span>
       ) : (
-        <span className="shrink-0 text-xs font-medium text-amber-500">Unplaced</span>
+        <span className="shrink-0 text-xs font-medium text-amber-500">
+          Unplaced
+        </span>
       )}
     </PlacementRow>
   );
@@ -217,17 +316,27 @@ function SessionRow({ record, isPlaced }: PlacedRecord<SessionLocation>) {
 
 function MeetingRoomRow({ record, isPlaced }: PlacedRecord<MeetingRoom>) {
   return (
-    <PlacementRow isPlaced={isPlaced} dragRef={{ type: "meeting_room", id: String(record.id) }}>
+    <PlacementRow
+      isPlaced={isPlaced}
+      recordType="meeting_room"
+      recordId={String(record.id)}
+    >
       <span className="flex-1 text-gray-700 truncate">
         {record.name}
         {record.capacity != null && (
-          <span className="text-gray-400 ml-1 text-xs">· {record.capacity} cap.</span>
+          <span className="text-gray-400 ml-1 text-xs">
+            · {record.capacity} cap.
+          </span>
         )}
       </span>
       {isPlaced ? (
-        <span className="shrink-0 text-xs font-medium text-green-600">Placed</span>
+        <span className="shrink-0 text-xs font-medium text-green-600">
+          Placed
+        </span>
       ) : (
-        <span className="shrink-0 text-xs font-medium text-amber-500">Unplaced</span>
+        <span className="shrink-0 text-xs font-medium text-amber-500">
+          Unplaced
+        </span>
       )}
     </PlacementRow>
   );
@@ -237,18 +346,36 @@ function MeetingRoomRow({ record, isPlaced }: PlacedRecord<MeetingRoom>) {
 // Main component
 // ---------------------------------------------------------------------------
 
+type SectionId = "booths" | "sessions" | "meetingRooms" | "tables";
+
 interface PlacementPanelProps {
   records: PlacementRecords;
 }
 
-type SectionId = "booths" | "sessions" | "meetingRooms" | "tables";
-
 export function PlacementPanel({ records }: PlacementPanelProps) {
-  const { booths, sessions, meetingRooms, boothCounts, sessionCounts, roomCounts } = records;
+  const {
+    booths,
+    sessions,
+    meetingRooms,
+    boothCounts,
+    sessionCounts,
+    roomCounts,
+  } = records;
+
   const [openSection, setOpenSection] = useState<SectionId | null>(null);
+  const [sectionShapes, setSectionShapes] = useState<
+    Record<SectionId, "rect" | "ellipse">
+  >({
+    booths: "rect",
+    sessions: "rect",
+    meetingRooms: "rect",
+    tables: "rect",
+  });
 
   const toggle = (id: SectionId) =>
     setOpenSection((prev) => (prev === id ? null : id));
+  const setShape = (id: SectionId) => (s: "rect" | "ellipse") =>
+    setSectionShapes((prev) => ({ ...prev, [id]: s }));
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -261,6 +388,8 @@ export function PlacementPanel({ records }: PlacementPanelProps) {
           iconColor="#3b82f6"
           isOpen={openSection === "booths"}
           onToggle={() => toggle("booths")}
+          defaultShape={sectionShapes.booths}
+          onDefaultShapeChange={setShape("booths")}
         >
           {booths.map((r) => (
             <BoothRow key={r.record.slug} {...r} />
@@ -275,6 +404,8 @@ export function PlacementPanel({ records }: PlacementPanelProps) {
           iconColor="#8b5cf6"
           isOpen={openSection === "sessions"}
           onToggle={() => toggle("sessions")}
+          defaultShape={sectionShapes.sessions}
+          onDefaultShapeChange={setShape("sessions")}
         >
           {sessions.map((r) => (
             <SessionRow key={r.record.id} {...r} />
@@ -289,6 +420,8 @@ export function PlacementPanel({ records }: PlacementPanelProps) {
           iconColor="#f59e0b"
           isOpen={openSection === "meetingRooms"}
           onToggle={() => toggle("meetingRooms")}
+          defaultShape={sectionShapes.meetingRooms}
+          onDefaultShapeChange={setShape("meetingRooms")}
         >
           {meetingRooms.map((r) => (
             <MeetingRoomRow key={r.record.id} {...r} />
@@ -303,11 +436,12 @@ export function PlacementPanel({ records }: PlacementPanelProps) {
           iconColor="#6b7280"
           isOpen={openSection === "tables"}
           onToggle={() => toggle("tables")}
+          defaultShape={sectionShapes.tables}
+          onDefaultShapeChange={setShape("tables")}
           stub
         />
       </div>
 
-      {/* Footer */}
       <div className="px-3 py-2.5 border-t border-gray-100 shrink-0 text-center">
         <button
           type="button"

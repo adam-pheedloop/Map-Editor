@@ -24,9 +24,6 @@ interface ElementShapeProps {
 }
 
 function getLabel(element: FloorPlanElement): string {
-  if (element.type === "booth" && element.properties.boothCode) {
-    return element.properties.boothCode;
-  }
   return element.properties.name || "";
 }
 
@@ -78,17 +75,16 @@ export function ElementShape({
         onContextMenu(element.id, e.evt.clientX, e.evt.clientY);
       }}
     >
-      {element.type === "booth" && (geo.shape === "rect" || geo.shape === "polygon") && (
+      {element.type === "booth" && (geo.shape === "rect" || geo.shape === "polygon" || geo.shape === "ellipse" || geo.shape === "circle") && (
         <BoothShape
           geo={geo}
           color={color}
           strokeColor={strokeColor}
           strokeWidth={strokeWidth}
-          boothCode={element.properties.boothCode || element.id.slice(0, 6)}
           properties={element.properties}
         />
       )}
-      {element.type === "session_area" && (geo.shape === "rect" || geo.shape === "polygon") && (
+      {element.type === "session_area" && (geo.shape === "rect" || geo.shape === "polygon" || geo.shape === "ellipse" || geo.shape === "circle") && (
         <SessionAreaShape
           geo={geo}
           color={color}
@@ -97,7 +93,7 @@ export function ElementShape({
           properties={element.properties}
         />
       )}
-      {element.type === "meeting_room" && (geo.shape === "rect" || geo.shape === "polygon") && (
+      {element.type === "meeting_room" && (geo.shape === "rect" || geo.shape === "polygon" || geo.shape === "ellipse" || geo.shape === "circle") && (
         <MeetingRoomShape
           geo={geo}
           color={color}
@@ -124,7 +120,7 @@ export function ElementShape({
       {element.type !== "booth" && element.type !== "session_area" && element.type !== "meeting_room" && element.type !== "label" && element.type !== "icon" && geo.shape === "rect" && (
         <RectShape geo={geo} color={color} strokeColor={strokeColor} strokeWidth={strokeWidth} label={label} properties={element.properties} />
       )}
-      {geo.shape === "ellipse" && (
+      {geo.shape === "ellipse" && element.type !== "booth" && element.type !== "session_area" && element.type !== "meeting_room" && (
         <EllipseShape geo={geo} color={color} strokeColor={strokeColor} strokeWidth={strokeWidth} label={label} properties={element.properties} />
       )}
       {geo.shape === "line" && (
@@ -141,7 +137,7 @@ export function ElementShape({
       {geo.shape === "arc" && (
         <ArcShape geo={geo} color={color} strokeWidth={strokeWidth} />
       )}
-      {geo.shape === "polygon" && (
+      {geo.shape === "polygon" && element.type !== "booth" && element.type !== "session_area" && element.type !== "meeting_room" && (
         <PolygonShape geo={geo} color={color} strokeColor={strokeColor} strokeWidth={strokeWidth} />
       )}
     </Group>

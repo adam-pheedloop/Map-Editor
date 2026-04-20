@@ -8,6 +8,9 @@ import { polygonTool } from "./polygon";
 import { textTool } from "./text";
 import { iconTool } from "./icon";
 import { measureTool } from "./measure";
+import { boothTool } from "./booth";
+import { sessionAreaTool } from "./sessionArea";
+import { meetingRoomTool } from "./meetingRoom";
 
 // Order determines toolbar display order.
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -21,6 +24,20 @@ export const TOOL_REGISTRY: ToolDefinition<any>[] = [
   textTool,
   iconTool,
   measureTool,
+];
+
+/**
+ * Extended registry used only for element → UI config lookups.
+ * Includes placement-type tools (booth, session_area, meeting_room) which are
+ * not in the drawing toolbar but still own element types and define their
+ * properties panel / options bar / context menu config.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ELEMENT_TYPE_CONFIG_REGISTRY: ToolDefinition<any>[] = [
+  ...TOOL_REGISTRY,
+  boothTool,
+  sessionAreaTool,
+  meetingRoomTool,
 ];
 
 // O(1) lookup by tool id
@@ -48,10 +65,10 @@ export function findToolForElement(
   elementType?: string
 ): ToolDefinition | undefined {
   if (elementType) {
-    const byType = TOOL_REGISTRY.find((t) => t.ownsElementType === elementType);
+    const byType = ELEMENT_TYPE_CONFIG_REGISTRY.find((t) => t.ownsElementType === elementType);
     if (byType) return byType;
   }
-  return TOOL_REGISTRY.find((t) => t.ownsGeometry?.includes(geometryShape));
+  return ELEMENT_TYPE_CONFIG_REGISTRY.find((t) => t.ownsGeometry?.includes(geometryShape));
 }
 
 /**

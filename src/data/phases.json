@@ -174,19 +174,6 @@
     },
     {
       "id": 12,
-      "title": "Auto-Generate Booths",
-      "summary": "Quickly populate a floor plan with a grid of booths — configurable size, spacing, labeling pattern, with live preview.",
-      "status": "planned",
-      "tasks": [
-        "Grid-of-booths generator dialog",
-        "Configurable booth size & spacing",
-        "Labeling pattern options (numeric, alpha, custom)",
-        "Live canvas preview",
-        "Place generated booths as editable elements"
-      ]
-    },
-    {
-      "id": 13,
       "title": "Editor Polish & Validation",
       "summary": "Middle-click pan, visual undo history, hover states, placement validation, coordinate display, auto-select layer, transform controls toggle, and object grouping.",
       "status": "planned",
@@ -199,6 +186,19 @@
         "Auto-select layer on click — clicking an element automatically activates its layer (mirrors Photoshop 'Auto Select Layer'). Removes the confusion of clicking an object on the wrong layer and getting no selection.",
         "Transform controls toggle — checkbox or View menu option to show/hide selection handles and bounding box. Useful when fine-tuning a dense map and the handles obscure nearby elements.",
         "Object grouping / ungrouping — select multiple elements and group them so they move, scale, and rotate as a unit. Groups are non-destructive (elements retain their individual properties). Useful for moving related elements (e.g. a booth cluster, a stage + surrounding chairs) without multi-selecting every time."
+      ]
+    },
+        {
+      "id": 13,
+      "title": "Auto-Generate Booths",
+      "summary": "Quickly populate a floor plan with a grid of booths — configurable size, spacing, labeling pattern, with live preview.",
+      "status": "planned",
+      "tasks": [
+        "Grid-of-booths generator dialog",
+        "Configurable booth size & spacing",
+        "Labeling pattern options (numeric, alpha, custom)",
+        "Live canvas preview",
+        "Place generated booths as editable elements"
       ]
     },
     {

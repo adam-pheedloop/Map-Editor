@@ -12,6 +12,8 @@ import { TOOL_REGISTRY } from "../../tools/registry";
 import { IconButton } from "../ui";
 import { IconPicker } from "./IconPicker";
 import { getIconEntry } from "../../utils/iconRegistry";
+import type { PlacementRecords } from "../../hooks/usePlacementRecords";
+import { PlacementPanel } from "./PlacementPanel";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -211,6 +213,7 @@ interface ToolSidebarProps {
   onEditorModeChange: (mode: EditorMode) => void;
   mapName: string;
   onMapNameChange: (name: string) => void;
+  placementRecords: PlacementRecords;
 }
 
 export function ToolSidebar({
@@ -225,6 +228,7 @@ export function ToolSidebar({
   onEditorModeChange,
   mapName,
   onMapNameChange,
+  placementRecords,
 }: ToolSidebarProps) {
   // Pathing mode overrides the normal sidebar
   if (isPathingMode && onPathingToolChange && activePathingTool) {
@@ -302,14 +306,8 @@ export function ToolSidebar({
           })}
         </div>
       ) : (
-        <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-3">
-          <p className="text-xs text-gray-500 leading-relaxed">
-            Drag objects onto the map, or select a shape on the map to assign a
-            record to it.
-          </p>
-          <p className="text-xs text-gray-400 italic">
-            Placement panel coming in next step.
-          </p>
+        <div className="flex-1 overflow-hidden flex flex-col">
+          <PlacementPanel records={placementRecords} />
         </div>
       )}
     </div>

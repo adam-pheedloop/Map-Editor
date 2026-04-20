@@ -1,42 +1,165 @@
-import { useState } from "react";
-import { PiCursorFill, PiPaintBrush, PiEraser, PiSquare } from "react-icons/pi";
-import type { ActiveTool, PathingTool } from "../../types";
+import { useState, useEffect, useRef } from "react";
+import {
+  PiCursorFill,
+  PiPaintBrush,
+  PiEraser,
+  PiSquare,
+  PiPencilSimple,
+  PiStorefront,
+} from "react-icons/pi";
+import type { ActiveTool, EditorMode, PathingTool } from "../../types";
 import { TOOL_REGISTRY } from "../../tools/registry";
 import { IconButton } from "../ui";
 import { IconPicker } from "./IconPicker";
 import { getIconEntry } from "../../utils/iconRegistry";
 
+// ---------------------------------------------------------------------------
+// Types
+// ---------------------------------------------------------------------------
+
 interface ToolDef<T extends string> {
   id: T;
   label: string;
-  shortcut: string;
+  shortcut?: string;
   icon: React.ReactNode;
 }
 
-// Select is not in the registry — it's built into Canvas
+// ---------------------------------------------------------------------------
+// Tool lists
+// ---------------------------------------------------------------------------
+
 const selectDef: ToolDef<ActiveTool> = {
   id: "select",
   label: "Select",
   shortcut: "V",
-  icon: <PiCursorFill size={20} />,
+  icon: <PiCursorFill size={16} />,
 };
 
-// Derive tool list from registry
 const toolDefs: ToolDef<ActiveTool>[] = TOOL_REGISTRY.map((t) => ({
   id: t.id as ActiveTool,
   label: t.label,
-  shortcut: t.shortcut ?? "",
+  shortcut: t.shortcut,
   icon: t.icon,
 }));
 
-const pathingTools: ToolDef<PathingTool>[] = [
-  { id: "select", label: "Select", shortcut: "V", icon: <PiCursorFill size={20} /> },
-  { id: "paintWalkable", label: "Paint Walkable", shortcut: "W", icon: <PiPaintBrush size={20} /> },
-  { id: "paintImpassable", label: "Erase (Impassable)", shortcut: "E", icon: <PiEraser size={20} /> },
-  { id: "rectFill", label: "Rectangle Fill", shortcut: "R", icon: <PiSquare size={20} /> },
+const pathingToolDefs: ToolDef<PathingTool>[] = [
+  {
+    id: "select",
+    label: "Select",
+    shortcut: "V",
+    icon: <PiCursorFill size={16} />,
+  },
+  {
+    id: "paintWalkable",
+    label: "Paint Walkable",
+    shortcut: "W",
+    icon: <PiPaintBrush size={16} />,
+  },
+  {
+    id: "paintImpassable",
+    label: "Erase Impassable",
+    shortcut: "E",
+    icon: <PiEraser size={16} />,
+  },
+  {
+    id: "rectFill",
+    label: "Rectangle Fill",
+    shortcut: "R",
+    icon: <PiSquare size={16} />,
+  },
 ];
 
-function ToolButton<T extends string>({
+// ---------------------------------------------------------------------------
+// Sub-components
+// ---------------------------------------------------------------------------
+
+/**
+ * Header row: map name (click to rename) + Design / Placement mode icon buttons.
+ */
+function SidebarHeader({
+  mapName,
+  onMapNameChange,
+  editorMode,
+  onEditorModeChange,
+}: {
+  mapName: string;
+  onMapNameChange: (name: string) => void;
+  editorMode: EditorMode;
+  onEditorModeChange: (mode: EditorMode) => void;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(mapName);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (editing && inputRef.current) {
+      inputRef.current.focus();
+      inputRef.current.select();
+    }
+  }, [editing]);
+
+  useEffect(() => {
+    if (!editing) setDraft(mapName);
+  }, [mapName, editing]);
+
+  const commit = () => {
+    const trimmed = draft.trim();
+    if (trimmed) onMapNameChange(trimmed);
+    else setDraft(mapName);
+    setEditing(false);
+  };
+
+  return (
+    <div className="px-3 py-3 border-b border-gray-100 flex items-center gap-2 min-w-0">
+      {editing ? (
+        <input
+          ref={inputRef}
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onBlur={commit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") commit();
+            if (e.key === "Escape") {
+              setDraft(mapName);
+              setEditing(false);
+            }
+          }}
+          className="flex-1 text-base font-semibold text-gray-800 bg-white border border-primary-400 rounded px-1.5 py-0.5 outline-none focus:ring-1 focus:ring-primary-400"
+        />
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            setDraft(mapName);
+            setEditing(true);
+          }}
+          className="flex-1 text-left text-base font-semibold text-gray-800 truncate hover:text-primary-600 transition-colors"
+          title="Click to rename"
+        >
+          {mapName}
+        </button>
+      )}
+      <IconButton
+        size="sm"
+        active={editorMode === "placement"}
+        onClick={() => onEditorModeChange("placement")}
+        title="Placement Mode"
+      >
+        <PiStorefront size={16} />
+      </IconButton>
+      <IconButton
+        size="sm"
+        active={editorMode === "design"}
+        onClick={() => onEditorModeChange("design")}
+        title="Design Mode"
+      >
+        <PiPencilSimple size={16} />
+      </IconButton>
+    </div>
+  );
+}
+
+function ToolRow<T extends string>({
   tool,
   isActive,
   onClick,
@@ -45,26 +168,36 @@ function ToolButton<T extends string>({
   isActive: boolean;
   onClick: () => void;
 }) {
-  const [showTooltip, setShowTooltip] = useState(false);
-
   return (
-    <div className="relative">
-      <IconButton
-        active={isActive}
-        onClick={onClick}
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
-      >
-        {tool.icon}
-      </IconButton>
-      {showTooltip && !isActive && (
-        <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-gray-800 text-white text-xs rounded whitespace-nowrap z-50 pointer-events-none">
-          {tool.label} ({tool.shortcut})
-        </div>
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        "w-full flex items-center gap-2.5 px-2.5 py-1.5 rounded-md text-sm transition-colors",
+        isActive
+          ? "bg-primary-600 text-white"
+          : "text-gray-600 hover:bg-gray-100 hover:text-gray-800",
+      ].join(" ")}
+    >
+      <span className="shrink-0 flex items-center w-4">{tool.icon}</span>
+      <span className="flex-1 text-left">{tool.label}</span>
+      {tool.shortcut && (
+        <span
+          className={[
+            "text-xs font-mono",
+            isActive ? "text-primary-200" : "text-gray-400",
+          ].join(" ")}
+        >
+          {tool.shortcut}
+        </span>
       )}
-    </div>
+    </button>
   );
 }
+
+// ---------------------------------------------------------------------------
+// Main component
+// ---------------------------------------------------------------------------
 
 interface ToolSidebarProps {
   activeTool: ActiveTool;
@@ -74,6 +207,10 @@ interface ToolSidebarProps {
   isPathingMode?: boolean;
   activePathingTool?: PathingTool;
   onPathingToolChange?: (tool: PathingTool) => void;
+  editorMode: EditorMode;
+  onEditorModeChange: (mode: EditorMode) => void;
+  mapName: string;
+  onMapNameChange: (name: string) => void;
 }
 
 export function ToolSidebar({
@@ -84,63 +221,97 @@ export function ToolSidebar({
   isPathingMode,
   activePathingTool,
   onPathingToolChange,
+  editorMode,
+  onEditorModeChange,
+  mapName,
+  onMapNameChange,
 }: ToolSidebarProps) {
+  // Pathing mode overrides the normal sidebar
   if (isPathingMode && onPathingToolChange && activePathingTool) {
     return (
-      <div className="flex flex-col items-center gap-1 py-2 w-12 shrink-0 bg-white border-r border-gray-200">
-        {pathingTools.map((tool) => (
-          <ToolButton
-            key={tool.id}
-            tool={tool}
-            isActive={activePathingTool === tool.id}
-            onClick={() => onPathingToolChange(tool.id)}
-          />
-        ))}
+      <div className="flex flex-col w-64 shrink-0 bg-white border-r border-gray-200 overflow-hidden">
+        <div className="px-3 py-3 border-b border-gray-100">
+          <div className="text-[10px] uppercase tracking-wider text-gray-400 leading-none mb-1">
+            Pathing Layer
+          </div>
+          <div className="text-base font-semibold text-gray-800 truncate">
+            {mapName}
+          </div>
+        </div>
+        <div className="flex-1 overflow-y-auto py-1 px-1">
+          {pathingToolDefs.map((tool) => (
+            <ToolRow
+              key={tool.id}
+              tool={tool}
+              isActive={activePathingTool === tool.id}
+              onClick={() => onPathingToolChange(tool.id)}
+            />
+          ))}
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center gap-1 py-2 w-12 shrink-0 bg-white border-r border-gray-200">
-      {/* Select tool */}
-      <ToolButton
-        tool={selectDef}
-        isActive={activeTool === "select"}
-        onClick={() => onToolChange("select")}
+    <div className="flex flex-col w-64 shrink-0 bg-white border-r border-gray-200 overflow-hidden">
+      {/* Map name + mode switcher */}
+      <SidebarHeader
+        mapName={mapName}
+        onMapNameChange={onMapNameChange}
+        editorMode={editorMode}
+        onEditorModeChange={onEditorModeChange}
       />
 
-      {/* All drawing tools */}
-      {toolDefs.map((tool) => {
-        // For the icon tool, show the selected icon on the button
-        const displayTool =
-          tool.id === "icon" && activeIconName
-            ? (() => {
-                const entry = getIconEntry(activeIconName);
-                if (!entry) return tool;
-                const ActiveIcon = entry.component;
-                return { ...tool, icon: <ActiveIcon size={20} /> };
-              })()
-            : tool;
+      {/* Tab content */}
+      {editorMode === "design" ? (
+        <div className="flex-1 overflow-y-auto py-1 px-1">
+          <ToolRow
+            tool={selectDef}
+            isActive={activeTool === "select"}
+            onClick={() => onToolChange("select")}
+          />
+          {toolDefs.map((tool) => {
+            const displayTool =
+              tool.id === "icon" && activeIconName
+                ? (() => {
+                    const entry = getIconEntry(activeIconName);
+                    if (!entry) return tool;
+                    const ActiveIcon = entry.component;
+                    return { ...tool, icon: <ActiveIcon size={16} /> };
+                  })()
+                : tool;
 
-        return (
-          <div key={tool.id} className="relative">
-            <ToolButton
-              tool={displayTool}
-              isActive={activeTool === tool.id}
-              onClick={() => onToolChange(tool.id)}
-            />
-            {tool.id === "icon" && activeTool === "icon" && onIconSelect && (
-              <IconPicker
-                selectedId={activeIconName}
-                onSelect={(iconId) => {
-                  onIconSelect(iconId);
-                }}
-                onClose={() => onToolChange("select")}
-              />
-            )}
-          </div>
-        );
-      })}
+            return (
+              <div key={tool.id} className="relative">
+                <ToolRow
+                  tool={displayTool}
+                  isActive={activeTool === tool.id}
+                  onClick={() => onToolChange(tool.id)}
+                />
+                {tool.id === "icon" &&
+                  activeTool === "icon" &&
+                  onIconSelect && (
+                    <IconPicker
+                      selectedId={activeIconName}
+                      onSelect={(iconId) => onIconSelect(iconId)}
+                      onClose={() => onToolChange("select")}
+                    />
+                  )}
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="flex-1 overflow-y-auto p-3 flex flex-col gap-3">
+          <p className="text-xs text-gray-500 leading-relaxed">
+            Drag objects onto the map, or select a shape on the map to assign a
+            record to it.
+          </p>
+          <p className="text-xs text-gray-400 italic">
+            Placement panel coming in next step.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

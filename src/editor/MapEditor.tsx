@@ -1,5 +1,5 @@
 import { useRef, useState, useCallback, useMemo, useEffect } from "react";
-import type { ActiveTool, PathingTool } from "./types";
+import type { ActiveTool, EditorMode, PathingTool } from "./types";
 import type { DrawingDefaults } from "./components/panels/OptionsBar";
 import type { ToolContext } from "./tools/types";
 import { TOOL_MAP } from "./tools/registry";
@@ -60,6 +60,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     deleteElements,
     moveElements,
     updateElementType,
+    setMapName,
     updateLegend,
     updateTypeStyles,
     setBackgroundImage,
@@ -85,6 +86,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   );
   const [activeLayerId, _setActiveLayerId] = useState<LayerId>("content");
   const [activeTool, setActiveTool] = useState<ActiveTool>("select");
+  const [editorMode, setEditorMode] = useState<EditorMode>("design");
   const [activePathingTool, setActivePathingTool] = useState<PathingTool>("select");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [defaults, setDefaults] = useState<DrawingDefaults>(INITIAL_DEFAULTS);
@@ -712,6 +714,10 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           isPathingMode={activeLayerId === "pathing"}
           activePathingTool={activePathingTool}
           onPathingToolChange={setActivePathingTool}
+          editorMode={editorMode}
+          onEditorModeChange={setEditorMode}
+          mapName={data.name}
+          onMapNameChange={setMapName}
         />
         <div className="flex flex-col flex-1 min-w-0 min-h-0">
           {isPathingMode ? (

@@ -127,7 +127,7 @@ export function resolveExhibitorToCell(
   elements: FloorPlanElement[]
 ): Cell | null {
   const booth = elements.find(
-    (el) => el.type === "booth" && el.properties.boothCode === exhibitor.boothCode
+    (el) => el.type === "booth" && el.properties.boothSlug === exhibitor.boothSlug
   );
   if (!booth) return null;
   return resolveBoothToCell(grid, booth);

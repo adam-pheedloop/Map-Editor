@@ -1,5 +1,9 @@
 import { useRef, useState, useCallback, useMemo, useEffect } from "react";
-import type { ActiveTool, PathingTool } from "./types";
+import type { ActiveTool, EditorMode, PathingTool } from "./types";
+import { usePlacementRecords } from "./hooks/usePlacementRecords";
+import { PLACEMENT_DRAG_TYPE, PLACEMENT_SHAPE_ELLIPSE_TYPE } from "./components/panels/PlacementPanel";
+import type { PlacementRecordRef, AutoArrangeRecord } from "./components/panels/PlacementPanel";
+import { getElementBounds } from "./utils/bounds";
 import type { DrawingDefaults } from "./components/panels/OptionsBar";
 import type { ToolContext } from "./tools/types";
 import { TOOL_MAP } from "./tools/registry";
@@ -30,7 +34,7 @@ import { LegendDialog } from "./components/panels/LegendDialog";
 import { LegendCanvasOverlay } from "./components/canvas/LegendCanvasOverlay";
 import { LayerPanel } from "./components/panels/LayerPanel";
 import { Rulers } from "./components/Rulers";
-import type { FloorPlanData, LayerId, LayerDefinition } from "../types";
+import type { FloorPlanData, FloorPlanElement, ElementProperties, Geometry, LayerId, LayerDefinition } from "../types";
 import { DEFAULT_LAYERS, ELEMENT_TYPE_TO_LAYER, DEFAULT_TYPE_STYLES } from "../types";
 
 const INITIAL_DEFAULTS: DrawingDefaults = {
@@ -60,6 +64,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     deleteElements,
     moveElements,
     updateElementType,
+    setMapName,
     updateLegend,
     updateTypeStyles,
     setBackgroundImage,
@@ -85,6 +90,25 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   );
   const [activeLayerId, _setActiveLayerId] = useState<LayerId>("content");
   const [activeTool, setActiveTool] = useState<ActiveTool>("select");
+  const [editorMode, setEditorMode] = useState<EditorMode>("design");
+  const placementRecords = usePlacementRecords(data);
+
+  const unlinkedElementIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const el of data.elements) {
+      if (el.type === "booth") {
+        const slug = el.properties.boothSlug;
+        if (!slug || !placementRecords.knownBoothSlugs.has(slug)) ids.add(el.id);
+      } else if (el.type === "session_area") {
+        const sid = el.properties.sessionId;
+        if (!sid || !placementRecords.knownSessionIds.has(sid)) ids.add(el.id);
+      } else if (el.type === "meeting_room") {
+        const rid = el.properties.meetingRoomId;
+        if (!rid || !placementRecords.knownRoomIds.has(rid)) ids.add(el.id);
+      }
+    }
+    return ids;
+  }, [data.elements, placementRecords.knownBoothSlugs, placementRecords.knownSessionIds, placementRecords.knownRoomIds]);
   const [activePathingTool, setActivePathingTool] = useState<PathingTool>("select");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [defaults, setDefaults] = useState<DrawingDefaults>(INITIAL_DEFAULTS);
@@ -127,6 +151,10 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     x: number;
     y: number;
   } | null>(null);
+
+  // Drag-to-place state — shape is tracked separately to avoid re-renders on every mousemove
+  const [dragOverCanvas, setDragOverCanvas] = useState<{ shape: "rect" | "ellipse" } | null>(null);
+  const ghostDivRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -278,7 +306,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     setPathingTool: setActivePathingTool,
   });
 
-  // Options bar: show selected element's colors or defaults
+  // Options bar: show selected element's colors or drawing defaults
   const activeDefaults: DrawingDefaults = selectedElement
     ? {
         fill: selectedElement.properties.color,
@@ -290,7 +318,16 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           selectedElement.properties.strokeWidth ??
           (selectedElement.geometry.shape === "line" ? 2 : 1),
       }
-    : defaults;
+    : isMultiSelect && selectedElements.length > 0
+      ? {
+          fill: selectedElements[0].properties.color,
+          stroke:
+            selectedElements[0].geometry.shape === "line"
+              ? selectedElements[0].properties.color
+              : selectedElements[0].properties.strokeColor || "#888888",
+          strokeWidth: selectedElements[0].properties.strokeWidth ?? 1,
+        }
+      : defaults;
 
   const handleDefaultsChange = useCallback(
     (updates: Partial<DrawingDefaults>) => {
@@ -329,14 +366,14 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
       if (result.type === "element") {
         const el = result.element;
         const typeStyle = data.typeStyles?.[el.type] ?? DEFAULT_TYPE_STYLES[el.type] ?? {};
-        const merged = { ...el, properties: { ...el.properties, ...typeStyle } };
+        const merged = { ...el, layer: activeLayerId, properties: { ...el.properties, ...typeStyle } };
         addElement(merged);
         selectOne(merged.id);
         setActiveTool("select");
       }
       // "measurement" and "none" — no action needed
     },
-    [addElement, selectOne, data.typeStyles]
+    [addElement, selectOne, data.typeStyles, activeLayerId]
   );
 
   // Generic geometry update handler (replaces per-shape callbacks for handles)
@@ -584,6 +621,193 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     clearWalkableGrid();
   }, [clearWalkableGrid]);
 
+  // ---------------------------------------------------------------------------
+  // Drag-to-place handlers
+  // ---------------------------------------------------------------------------
+
+  /** Returns the topmost solid, assignable element under canvas point (cx, cy). */
+  const hitTestAssignable = useCallback(
+    (cx: number, cy: number): FloorPlanElement | null => {
+      const candidates = data.elements.filter((el) => {
+        const s = el.geometry.shape;
+        return (s === "rect" || s === "polygon" || s === "ellipse" || s === "circle")
+          && (el.layer ?? ELEMENT_TYPE_TO_LAYER[el.type]) === activeLayerId;
+      });
+      return (
+        [...candidates]
+          .sort((a, b) => b.properties.zIndex - a.properties.zIndex)
+          .find((el) => {
+            const b = getElementBounds(el);
+            return cx >= b.left && cx <= b.right && cy >= b.top && cy <= b.bottom;
+          }) ?? null
+      );
+    },
+    [data.elements, activeLayerId]
+  );
+
+  const handleCanvasDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    if (!e.dataTransfer.types.includes(PLACEMENT_DRAG_TYPE)) return;
+    e.preventDefault();
+    const shape = e.dataTransfer.types.includes(PLACEMENT_SHAPE_ELLIPSE_TYPE) ? "ellipse" : "rect";
+    setDragOverCanvas({ shape });
+  }, []);
+
+  /** Update ghost position imperatively to avoid re-rendering the whole tree on every mousemove. */
+  const handleCanvasDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    if (!e.dataTransfer.types.includes(PLACEMENT_DRAG_TYPE)) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "copy";
+    if (!ghostDivRef.current) return;
+    const rect = e.currentTarget.getBoundingClientRect();
+    ghostDivRef.current.style.left = `${e.clientX - rect.left - 60}px`;
+    ghostDivRef.current.style.top  = `${e.clientY - rect.top  - 40}px`;
+  }, []);
+
+  const handleCanvasDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+      setDragOverCanvas(null);
+    }
+  }, []);
+
+  const handlePlacementDrop = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      setDragOverCanvas(null);
+
+      const raw = e.dataTransfer.getData(PLACEMENT_DRAG_TYPE) || e.dataTransfer.getData("text/plain");
+      if (!raw) return;
+      let ref: PlacementRecordRef;
+      try { ref = JSON.parse(raw) as PlacementRecordRef; } catch { return; }
+
+      const containerRect = e.currentTarget.getBoundingClientRect();
+      const cx = (e.clientX - containerRect.left - position.x) / scale;
+      const cy = (e.clientY - containerRect.top  - position.y) / scale;
+
+      // Resolve display name/code from the record pool
+      const displayProps: Partial<ElementProperties> = (() => {
+        if (ref.type === "booth") {
+          const found = placementRecords.booths.find((r) => r.record.slug === ref.id);
+          return found ? { name: found.record.code } : {};
+        }
+        if (ref.type === "session_area") {
+          const found = placementRecords.sessions.find((r) => String(r.record.id) === ref.id);
+          return found ? { name: found.record.title } : {};
+        }
+        // meeting_room
+        const found = placementRecords.meetingRooms.find((r) => String(r.record.id) === ref.id);
+        return found ? { name: found.record.name, ...(found.record.capacity != null ? { capacity: found.record.capacity } : {}) } : {};
+      })();
+
+      const linkingProps: Partial<ElementProperties> =
+        ref.type === "booth"
+          ? { boothSlug: ref.id,  sessionId: undefined, meetingRoomId: undefined, ...displayProps }
+          : ref.type === "session_area"
+          ? { sessionId: ref.id,  boothSlug: undefined, meetingRoomId: undefined, ...displayProps }
+          : { meetingRoomId: ref.id, boothSlug: undefined, sessionId: undefined, ...displayProps };
+
+      const hit = hitTestAssignable(cx, cy);
+
+      if (hit) {
+        // Assign record to the existing shape — single undo entry via updateElementType
+        updateElementType(hit.id, ref.type, linkingProps);
+        selectOne(hit.id);
+      } else {
+        // Create a new element centred on the drop point
+        const typeStyle = data.typeStyles?.[ref.type] ?? DEFAULT_TYPE_STYLES[ref.type] ?? {};
+        const w = typeStyle.defaultWidth ?? 120;
+        const h = typeStyle.defaultHeight ?? 80;
+        const r = Math.min(w, h) / 2;
+        const geometry: Geometry =
+          ref.defaultShape === "ellipse"
+            ? { shape: "ellipse", x: cx - r, y: cy - r, radiusX: r, radiusY: r }
+            : { shape: "rect",   x: cx - w / 2, y: cy - h / 2, width: w, height: h };
+
+        const maxZ = data.elements.reduce((m, el) => Math.max(m, el.properties.zIndex), 0);
+        const newEl: FloorPlanElement = {
+          id: crypto.randomUUID(),
+          type: ref.type,
+          layer: activeLayerId,
+          geometry,
+          properties: {
+            color:       typeStyle.color       ?? "#94a3b8",
+            strokeColor: typeStyle.strokeColor ?? "#888888",
+            strokeWidth: typeStyle.strokeWidth ?? 1,
+            zIndex: maxZ + 1,
+            ...linkingProps,
+          },
+        };
+        addElement(newEl);
+        selectOne(newEl.id);
+      }
+    },
+    [position, scale, data, activeLayerId, placementRecords, hitTestAssignable, updateElementType, addElement, selectOne]
+  );
+
+  const handleAutoArrange = useCallback(
+    (type: "booth" | "session_area" | "meeting_room", records: AutoArrangeRecord[]) => {
+      if (records.length === 0) return;
+
+      const typeStyle = data.typeStyles?.[type] ?? DEFAULT_TYPE_STYLES[type] ?? {};
+      const w = typeStyle.defaultWidth ?? 120;
+      const h = typeStyle.defaultHeight ?? 80;
+      const gap = 10;
+      const cols = Math.ceil(Math.sqrt(records.length));
+
+      // Start to the right of existing content, aligned to its top edge
+      let startX = 50;
+      let startY = 50;
+      if (data.elements.length > 0) {
+        let maxRight = 0;
+        let minTop = Infinity;
+        for (const el of data.elements) {
+          const b = getElementBounds(el);
+          maxRight = Math.max(maxRight, b.right);
+          minTop = Math.min(minTop, b.top);
+        }
+        startX = maxRight + 40;
+        startY = Math.max(50, minTop);
+      }
+
+      const maxZ = data.elements.reduce((m, el) => Math.max(m, el.properties.zIndex), 0);
+
+      const newElements: FloorPlanElement[] = records.map((rec, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const linkingProps =
+          type === "booth"
+            ? { boothSlug: rec.recordId }
+            : type === "session_area"
+            ? { sessionId: rec.recordId }
+            : { meetingRoomId: rec.recordId };
+
+        return {
+          id: crypto.randomUUID(),
+          type,
+          layer: "content" as LayerId,
+          geometry: {
+            shape: "rect" as const,
+            x: startX + col * (w + gap),
+            y: startY + row * (h + gap),
+            width: w,
+            height: h,
+          },
+          properties: {
+            name: rec.recordName,
+            color: typeStyle.color ?? "#94a3b8",
+            strokeColor: typeStyle.strokeColor ?? "#888888",
+            strokeWidth: typeStyle.strokeWidth ?? 1,
+            zIndex: maxZ + 1 + i,
+            ...linkingProps,
+          },
+        };
+      });
+
+      addElements(newElements);
+      setSelectedIds(new Set(newElements.map((el) => el.id)));
+    },
+    [data, addElements, setSelectedIds],
+  );
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <TopBar
@@ -712,6 +936,12 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           isPathingMode={activeLayerId === "pathing"}
           activePathingTool={activePathingTool}
           onPathingToolChange={setActivePathingTool}
+          editorMode={editorMode}
+          onEditorModeChange={setEditorMode}
+          mapName={data.name}
+          onMapNameChange={setMapName}
+          placementRecords={placementRecords}
+          onAutoArrange={handleAutoArrange}
         />
         <div className="flex flex-col flex-1 min-w-0 min-h-0">
           {isPathingMode ? (
@@ -727,18 +957,26 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           ) : (
             <OptionsBar
               defaults={activeDefaults}
-              config={selectedElement
-                ? getToolUIConfig(selectedElement.geometry.shape, selectedElement.type)
-                : resolvedTool
-                  ? { optionsBar: resolvedTool.optionsBar, propertiesPanel: resolvedTool.propertiesPanel, contextMenu: resolvedTool.contextMenu }
-                  : { optionsBar: [], propertiesPanel: [], contextMenu: [] }
+              config={isMultiSelect
+                ? { optionsBar: ["fill", "stroke", "strokeWidth"] as import("./components/canvas/elements/types").OptionsBarField[], propertiesPanel: [], contextMenu: [] }
+                : selectedElement
+                  ? getToolUIConfig(selectedElement.geometry.shape, selectedElement.type)
+                  : resolvedTool
+                    ? { optionsBar: resolvedTool.optionsBar, propertiesPanel: resolvedTool.propertiesPanel, contextMenu: resolvedTool.contextMenu }
+                    : { optionsBar: [], propertiesPanel: [], contextMenu: [] }
               }
               onDefaultsChange={handleDefaultsChange}
             />
           )}
           <div className="flex flex-1 overflow-hidden">
             <div className="flex flex-col flex-1 min-w-0">
-              <div className="relative flex-1 flex flex-col min-h-0 overflow-hidden">
+              <div
+                className="relative flex-1 flex flex-col min-h-0 overflow-hidden"
+                onDragEnter={handleCanvasDragEnter}
+                onDragOver={handleCanvasDragOver}
+                onDragLeave={handleCanvasDragLeave}
+                onDrop={handlePlacementDrop}
+              >
                 <Canvas
                   data={data}
                   activeTool={resolvedTool}
@@ -776,6 +1014,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   existingCalibration={data.scaleCalibration}
                   onCalibrationClick={calibration.handleMouseDown}
                   onCalibrationMouseMove={calibration.handleMouseMove}
+                  unlinkedElementIds={unlinkedElementIds}
                 />
                 <Rulers
                   visible={showRulers}
@@ -792,6 +1031,19 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   topOffset={showRulers ? 26 : 8}
                 />
                 <LegendCanvasOverlay legend={data.legend} />
+
+                {/* Drag-to-place ghost preview */}
+                {dragOverCanvas && (
+                  <div
+                    ref={ghostDivRef}
+                    className="pointer-events-none absolute z-50 opacity-50 border-2 border-white"
+                    style={
+                      dragOverCanvas.shape === "ellipse"
+                        ? { width: 120, height: 120, borderRadius: "9999px", backgroundColor: "#8b5cf6" }
+                        : { width: 120, height: 80,  borderRadius: "4px",    backgroundColor: "#3b82f6" }
+                    }
+                  />
+                )}
               </div>
               <StatusBar
                 scale={scale}
@@ -805,6 +1057,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
               element={selectedElement}
               selectedElements={selectedElements}
               selectedCount={selectedIds.size}
+              isSelectedUnlinked={selectedElement ? unlinkedElementIds.has(selectedElement.id) : false}
               dimensions={data.dimensions}
               backgroundImage={data.backgroundImage}
               backgroundColor={data.backgroundColor}

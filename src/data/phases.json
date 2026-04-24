@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-04",
+  "lastUpdated": "2026-04-24",
   "phases": [
     {
       "id": 1,
@@ -162,18 +162,39 @@
     {
       "id": 11,
       "title": "Legend Persistence & Customization",
-      "summary": "Configurable, persisted legend with custom entries, colors, positioning, and optional category filtering in the viewer.",
-      "status": "planned",
+      "summary": "Configurable, persisted legend with custom entries, colors, positioning, viewer canvas overlay, and viewer appearance controls for booth states.",
+      "status": "done",
       "tasks": [
-        "Legend editor (add / edit / remove entries)",
-        "Custom colors per legend entry",
-        "Legend position & size controls",
-        "Persist legend in floor plan data",
-        "Category filter toggle in viewer"
+        "Legend editor dialog (add / edit / remove entries, custom colors)",
+        "Legend position picker (four corners)",
+        "Persist legend in floor plan data (FloorPlanData.legend)",
+        "LegendCanvasOverlay — renders legend on Konva stage in editor",
+        "Viewer appearance — per-state visual treatments for organizer and attendee views (opacity, hatch, border, none)",
+        "TypeDefaultsPanel — per-type visual defaults (fill, stroke, opacity, label) saved in typeStyles"
       ]
     },
     {
       "id": 12,
+      "title": "Placement Mode Pivot & Editor Polish",
+      "summary": "Pivoted location elements (booths, sessions, meeting rooms) from drawing tools to a dedicated Placement Mode panel. Drag-to-place, click-to-assign, per-section search and filters, configurable placement dimensions, and auto-arrange. Viewer boothSlug linkage fix.",
+      "status": "done",
+      "tasks": [
+        "Tool sidebar redesign — wider (w-64), labeled tools, Design / Placement Mode tab switcher",
+        "Removed booth / session location / meeting room drawing tools from sidebar (ToolGroup component deleted)",
+        "usePlacementRecords hook — derives placed/unplaced status from canvas elements vs record pool; clean swap point for Phase 15 backend wiring",
+        "PlacementPanel — collapsible sections (Booths, Session Locations, Meeting Rooms, Tables stub) with placed/unplaced counts",
+        "Per-section search (magnifying glass toggle) and status filter (funnel popover: All / Placed / Unplaced)",
+        "Drag-to-place — HTML5 drag from panel row, ghost preview on canvas, drop creates linked element",
+        "Click-to-assign — select existing element on canvas then click record row to link them; incompatible type notice",
+        "Placement drop dimensions wired to ElementTypeDefaults (defaultWidth / defaultHeight fields added to interface and DEFAULT_TYPE_STYLES)",
+        "Default Width / Height inputs in TypeDefaultsPanel",
+        "Save as Default Style now captures element geometry dimensions alongside visual properties",
+        "Auto-arrange (sparkle) — grid-places all unplaced records of a type to the right of existing content as a single undo entry; tooltip reflects full unplaced count regardless of active filter",
+        "Viewer boothSlug linkage fix — exhibitors linked by boothSlug (stable PheedLoop DB identifier) not boothCode (display label); fixes broken exhibitor↔booth associations"
+      ]
+    },
+        {
+      "id": 13,
       "title": "Auto-Generate Booths",
       "summary": "Quickly populate a floor plan with a grid of booths — configurable size, spacing, labeling pattern, with live preview.",
       "status": "planned",
@@ -183,22 +204,6 @@
         "Labeling pattern options (numeric, alpha, custom)",
         "Live canvas preview",
         "Place generated booths as editable elements"
-      ]
-    },
-    {
-      "id": 13,
-      "title": "Editor Polish & Validation",
-      "summary": "Middle-click pan, visual undo history, hover states, placement validation, coordinate display, auto-select layer, transform controls toggle, and object grouping.",
-      "status": "planned",
-      "tasks": [
-        "Middle-click / space-drag pan",
-        "Visual undo history panel",
-        "Hover state feedback on canvas elements",
-        "Booth overlap / boundary validation",
-        "Cursor coordinate display",
-        "Auto-select layer on click — clicking an element automatically activates its layer (mirrors Photoshop 'Auto Select Layer'). Removes the confusion of clicking an object on the wrong layer and getting no selection.",
-        "Transform controls toggle — checkbox or View menu option to show/hide selection handles and bounding box. Useful when fine-tuning a dense map and the handles obscure nearby elements.",
-        "Object grouping / ungrouping — select multiple elements and group them so they move, scale, and rotate as a unit. Groups are non-destructive (elements retain their individual properties). Useful for moving related elements (e.g. a booth cluster, a stage + surrounding chairs) without multi-selecting every time."
       ]
     },
     {

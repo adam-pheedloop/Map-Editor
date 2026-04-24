@@ -11,33 +11,38 @@ interface MapSidebarProps {
 
 type TabId = "exhibitors" | "sessions" | "meetingRooms";
 
-export function MapSidebar({ elements, exhibitors, selectedItem, onSelect }: MapSidebarProps) {
+export function MapSidebar({
+  elements,
+  exhibitors,
+  selectedItem,
+  onSelect,
+}: MapSidebarProps) {
   const sessionElements = useMemo(
     () =>
       [...elements.filter((el) => el.type === "session_area")].sort((a, b) =>
-        (a.properties.name || "").localeCompare(b.properties.name || "")
+        (a.properties.name || "").localeCompare(b.properties.name || ""),
       ),
-    [elements]
+    [elements],
   );
 
   const meetingRoomElements = useMemo(
     () =>
       [...elements.filter((el) => el.type === "meeting_room")].sort((a, b) =>
-        (a.properties.name || "").localeCompare(b.properties.name || "")
+        (a.properties.name || "").localeCompare(b.properties.name || ""),
       ),
-    [elements]
+    [elements],
   );
 
   const sortedExhibitors = useMemo(
     () => [...exhibitors].sort((a, b) => a.name.localeCompare(b.name)),
-    [exhibitors]
+    [exhibitors],
   );
 
-  const boothByCode = useMemo(() => {
+  const boothBySlug = useMemo(() => {
     const map = new Map<string, FloorPlanElement>();
     for (const el of elements) {
-      if (el.type === "booth" && el.properties.boothCode) {
-        map.set(el.properties.boothCode, el);
+      if (el.type === "booth" && el.properties.boothSlug) {
+        map.set(el.properties.boothSlug, el);
       }
     }
     return map;
@@ -45,17 +50,35 @@ export function MapSidebar({ elements, exhibitors, selectedItem, onSelect }: Map
 
   const visibleTabs = useMemo(
     () =>
-      ([
-        { id: "exhibitors" as TabId, label: "Exhibitors", count: exhibitors.length },
-        { id: "sessions" as TabId, label: "Sessions", count: sessionElements.length },
-        { id: "meetingRooms" as TabId, label: "Meeting Rooms", count: meetingRoomElements.length },
-      ] as const).filter((tab) => tab.count > 0),
-    [exhibitors.length, sessionElements.length, meetingRoomElements.length]
+      (
+        [
+          {
+            id: "exhibitors" as TabId,
+            label: "Exhibitors",
+            count: exhibitors.length,
+          },
+          {
+            id: "sessions" as TabId,
+            label: "Sessions",
+            count: sessionElements.length,
+          },
+          {
+            id: "meetingRooms" as TabId,
+            label: "Meeting Rooms",
+            count: meetingRoomElements.length,
+          },
+        ] as const
+      ).filter((tab) => tab.count > 0),
+    [exhibitors.length, sessionElements.length, meetingRoomElements.length],
   );
 
-  const [activeTab, setActiveTab] = useState<TabId>(() => visibleTabs[0]?.id ?? "exhibitors");
+  const [activeTab, setActiveTab] = useState<TabId>(
+    () => visibleTabs[0]?.id ?? "exhibitors",
+  );
 
-  const currentTab = visibleTabs.some((t) => t.id === activeTab) ? activeTab : (visibleTabs[0]?.id ?? "exhibitors");
+  const currentTab = visibleTabs.some((t) => t.id === activeTab)
+    ? activeTab
+    : (visibleTabs[0]?.id ?? "exhibitors");
 
   return (
     <div className="w-64 shrink-0 bg-white border-l border-gray-200 flex flex-col">
@@ -90,14 +113,20 @@ export function MapSidebar({ elements, exhibitors, selectedItem, onSelect }: Map
       <div className="flex-1 overflow-y-auto">
         {currentTab === "exhibitors" &&
           sortedExhibitors.map((exhibitor) => {
-            const boothEl = boothByCode.get(exhibitor.boothCode);
-            const isSelected = boothEl ? selectedItem?.elementId === boothEl.id : false;
+            const boothEl = boothBySlug.get(exhibitor.boothSlug);
+            const isSelected = boothEl
+              ? selectedItem?.elementId === boothEl.id
+              : false;
             return (
               <button
                 key={exhibitor.id}
                 onClick={() => {
                   if (!boothEl) return;
-                  onSelect({ type: "booth", elementId: boothEl.id, boothCode: exhibitor.boothCode });
+                  onSelect({
+                    type: "booth",
+                    elementId: boothEl.id,
+                    boothSlug: exhibitor.boothSlug,
+                  });
                 }}
                 className={`w-full text-left px-3 py-2 border-b border-gray-100 cursor-pointer transition-colors ${
                   isSelected ? "bg-primary-100" : "hover:bg-gray-50"
@@ -105,11 +134,19 @@ export function MapSidebar({ elements, exhibitors, selectedItem, onSelect }: Map
               >
                 <div className="flex items-center gap-2">
                   {exhibitor.logo && (
-                    <img src={exhibitor.logo} alt="" className="w-7 h-7 rounded shrink-0" />
+                    <img
+                      src={exhibitor.logo}
+                      alt=""
+                      className="w-7 h-7 rounded shrink-0"
+                    />
                   )}
                   <div>
-                    <div className="text-xs font-medium text-gray-800">{exhibitor.name}</div>
-                    <div className="text-[11px] text-gray-400">Booth {exhibitor.boothCode}</div>
+                    <div className="text-xs font-medium text-gray-800">
+                      {exhibitor.name}
+                    </div>
+                    <div className="text-[11px] text-gray-400">
+                      {boothEl?.properties.name ?? ""}
+                    </div>
                   </div>
                 </div>
               </button>
@@ -122,7 +159,13 @@ export function MapSidebar({ elements, exhibitors, selectedItem, onSelect }: Map
             return (
               <button
                 key={el.id}
-                onClick={() => onSelect({ type: "session_area", elementId: el.id, sessionId: el.properties.sessionId ?? null })}
+                onClick={() =>
+                  onSelect({
+                    type: "session_area",
+                    elementId: el.id,
+                    sessionId: el.properties.sessionId ?? null,
+                  })
+                }
                 className={`w-full text-left px-3 py-2 border-b border-gray-100 cursor-pointer transition-colors ${
                   isSelected ? "bg-primary-100" : "hover:bg-gray-50"
                 }`}
@@ -140,7 +183,13 @@ export function MapSidebar({ elements, exhibitors, selectedItem, onSelect }: Map
             return (
               <button
                 key={el.id}
-                onClick={() => onSelect({ type: "meeting_room", elementId: el.id, meetingRoomId: el.properties.meetingRoomId ?? null })}
+                onClick={() =>
+                  onSelect({
+                    type: "meeting_room",
+                    elementId: el.id,
+                    meetingRoomId: el.properties.meetingRoomId ?? null,
+                  })
+                }
                 className={`w-full text-left px-3 py-2 border-b border-gray-100 cursor-pointer transition-colors ${
                   isSelected ? "bg-primary-100" : "hover:bg-gray-50"
                 }`}

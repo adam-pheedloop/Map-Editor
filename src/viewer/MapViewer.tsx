@@ -45,15 +45,15 @@ export function MapViewer({ data, exhibitors, mode = "attendee" }: MapViewerProp
     return () => observer.disconnect();
   }, []);
 
-  const occupiedBoothCodes = useMemo(
-    () => new Set(exhibitors.map((ex) => ex.boothCode)),
+  const occupiedBoothSlugs = useMemo(
+    () => new Set(exhibitors.map((ex) => ex.boothSlug)),
     [exhibitors]
   );
 
   const exhibitorsByBooth = useMemo(() => {
     const map = new Map<string, Exhibitor>();
     for (const ex of exhibitors) {
-      map.set(ex.boothCode, ex);
+      map.set(ex.boothSlug, ex);
     }
     return map;
   }, [exhibitors]);
@@ -80,7 +80,7 @@ export function MapViewer({ data, exhibitors, mode = "attendee" }: MapViewerProp
   const handleResultSelect = useCallback((result: SearchResult) => {
     let item: HoveredItem;
     if (result.elementType === "booth") {
-      item = { type: "booth", elementId: result.elementId, boothCode: result.code! };
+      item = { type: "booth", elementId: result.elementId, boothSlug: result.code! };
     } else if (result.elementType === "session_area") {
       item = { type: "session_area", elementId: result.elementId, sessionId: result.code };
     } else {
@@ -144,7 +144,7 @@ export function MapViewer({ data, exhibitors, mode = "attendee" }: MapViewerProp
         <ViewerCanvas
           data={data}
           mode={mode}
-          occupiedBoothCodes={occupiedBoothCodes}
+          occupiedBoothSlugs={occupiedBoothSlugs}
           highlightedElementId={selectedItem?.elementId ?? null}
           searchMatchIds={isSearching ? matchedElementIds : null}
           routePath={directions.routePath}
@@ -200,8 +200,8 @@ export function MapViewer({ data, exhibitors, mode = "attendee" }: MapViewerProp
         )}
         {popover && !isMobile && popover.item.type === "booth" && (
           <BoothPopover
-            boothCode={popover.item.boothCode}
-            exhibitor={exhibitorsByBooth.get(popover.item.boothCode) ?? null}
+            boothCode={popover.name}
+            exhibitor={exhibitorsByBooth.get(popover.item.boothSlug) ?? null}
             x={popover.x}
             y={popover.y}
             onClose={handlePopoverClose}

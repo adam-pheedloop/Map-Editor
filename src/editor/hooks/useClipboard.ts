@@ -32,11 +32,6 @@ export function useClipboard() {
         (geo as { y: number }).y += offset;
       }
 
-      // Clear booth code for copied booths
-      if (newElement.type === "booth") {
-        newElement.properties.boothCode = undefined;
-      }
-
       return newElement;
     });
   }, [buffer]);

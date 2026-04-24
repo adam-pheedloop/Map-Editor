@@ -351,6 +351,12 @@ export function useEditorState(
     setData((prev) => ({ ...prev, walkableLayer: grid }));
   }, [setData]);
 
+  // --- Map name ---
+
+  const setMapName = useCallback((name: string) => {
+    setData((prev) => ({ ...prev, name }));
+  }, [setData]);
+
   // --- Legend ---
 
   const updateLegend = useCallback((updates: Partial<Legend>) => {
@@ -459,6 +465,8 @@ export function useEditorState(
     clearWalkableGrid,
     setWalkableGridResolution,
     setWalkableGrid,
+    // Map name
+    setMapName,
     // Legend
     updateLegend,
     // Type style defaults

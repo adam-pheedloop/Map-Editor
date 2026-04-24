@@ -124,7 +124,6 @@ export interface ElementProperties {
   strokeWidth?: number;
   zIndex: number;
   // Booth-specific
-  boothCode?: string;
   boothSlug?: string;
   exhibitorId?: string | null;
   capacity?: number | null;
@@ -172,6 +171,8 @@ export interface ElementTypeDefaults {
   strokeColor?: string;
   strokeWidth?: number;
   opacity?: number;
+  defaultWidth?: number;
+  defaultHeight?: number;
   labelColor?: string;
   labelFontSize?: number;
   labelBold?: boolean;
@@ -188,9 +189,9 @@ export interface ElementTypeDefaults {
 export type TypeStyles = Record<string, ElementTypeDefaults>;
 
 export const DEFAULT_TYPE_STYLES: TypeStyles = {
-  booth:        { color: "#94a3b8", strokeColor: "#888888", strokeWidth: 1 },
-  session_area: { color: "#27AE60", strokeColor: "#888888", strokeWidth: 1 },
-  meeting_room: { color: "#F39C12", strokeColor: "#888888", strokeWidth: 1 },
+  booth:        { color: "#94a3b8", strokeColor: "#888888", strokeWidth: 1, defaultWidth: 120, defaultHeight: 80 },
+  session_area: { color: "#27AE60", strokeColor: "#888888", strokeWidth: 1, defaultWidth: 200, defaultHeight: 150 },
+  meeting_room: { color: "#F39C12", strokeColor: "#888888", strokeWidth: 1, defaultWidth: 160, defaultHeight: 120 },
 };
 
 export type StateVisualTreatment =

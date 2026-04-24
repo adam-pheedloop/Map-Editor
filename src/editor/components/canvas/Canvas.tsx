@@ -18,6 +18,7 @@ import { CalibrationPreview } from "./CalibrationPreview";
 import type { CalibrationState } from "../../hooks/useCalibration";
 import { useAlignmentGuides } from "../../hooks/useAlignmentGuides";
 import { getElementBounds, lineIntersectsRect } from "../../utils/bounds";
+import { PolygonVertexHandles } from "../../tools/handles/PolygonVertexHandles";
 
 // ---------------------------------------------------------------------------
 // ToolHost — mounts/unmounts with key={tool.id} to manage hook lifecycle
@@ -113,6 +114,7 @@ interface CanvasProps {
   existingCalibration?: FloorPlanData["scaleCalibration"];
   onCalibrationClick?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
   onCalibrationMouseMove?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
+  unlinkedElementIds?: Set<string>;
 }
 
 export function Canvas({
@@ -152,6 +154,7 @@ export function Canvas({
   existingCalibration,
   onCalibrationClick,
   onCalibrationMouseMove,
+  unlinkedElementIds,
 }: CanvasProps) {
   const isSelectMode = activeTool === null;
 
@@ -230,7 +233,12 @@ export function Canvas({
   const handleDef = selectedElement
     ? findToolForElement(selectedElement.geometry.shape, selectedElement.type)
     : undefined;
-  const HandleComponent = handleDef?.HandleComponent;
+  // Polygon vertex handles apply to any polygon element regardless of its type
+  // (booth, session_area, meeting_room, or plain shape).
+  const HandleComponent =
+    selectedElement?.geometry.shape === "polygon"
+      ? PolygonVertexHandles
+      : handleDef?.HandleComponent;
 
   // --- Mouse event handlers ---
 
@@ -570,6 +578,7 @@ export function Canvas({
                   element={element}
                   isSelectMode={isSelectMode && isActiveLayer}
                   isSelected={selectedIds.has(element.id)}
+                  isLinked={!unlinkedElementIds?.has(element.id)}
                   onSelect={onSelect}
                   onDragStart={handleElementDragStart}
                   onDragMove={handleElementDragMove}

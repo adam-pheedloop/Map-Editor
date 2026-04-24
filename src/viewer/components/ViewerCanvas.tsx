@@ -21,7 +21,7 @@ import { ViewerLegend } from "./ViewerLegend";
 interface ViewerCanvasProps {
   data: FloorPlanData;
   mode: ViewerMode;
-  occupiedBoothCodes: Set<string>;
+  occupiedBoothSlugs: Set<string>;
   highlightedElementId: string | null;
   searchMatchIds: Set<string> | null;
   routePath: { x: number; y: number }[] | null;
@@ -40,9 +40,6 @@ function ViewerIcon({ iconName, color, width, height }: { iconName: string; colo
 }
 
 function getLabel(element: FloorPlanElement): string {
-  if (element.type === "booth" && element.properties.boothCode) {
-    return element.properties.boothCode;
-  }
   return element.properties.name || "";
 }
 
@@ -200,15 +197,46 @@ function ViewerElement({
           />
         );
       })()}
-      {geo.shape === "polygon" && (
-        <Line
-          points={[...(geo as PolygonGeometry).points]}
-          closed
-          fill={color}
-          stroke={strokeColor}
-          strokeWidth={strokeWidth}
-        />
-      )}
+      {geo.shape === "polygon" && (() => {
+        const pts = (geo as PolygonGeometry).points;
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        for (let i = 0; i < pts.length; i += 2) {
+          if (pts[i] < minX) minX = pts[i];
+          if (pts[i] > maxX) maxX = pts[i];
+          if (pts[i + 1] < minY) minY = pts[i + 1];
+          if (pts[i + 1] > maxY) maxY = pts[i + 1];
+        }
+        const polyW = maxX - minX;
+        const polyH = maxY - minY;
+        return (
+          <>
+            <Line
+              points={[...pts]}
+              closed
+              fill={color}
+              stroke={strokeColor}
+              strokeWidth={strokeWidth}
+            />
+            {label && element.properties.labelVisible !== false && (
+              <Text
+                x={isFinite(minX) ? minX : 0}
+                y={isFinite(minY) ? minY : 0}
+                width={isFinite(polyW) ? polyW : 0}
+                height={isFinite(polyH) ? polyH : 0}
+                align={element.properties.labelPositionH ?? "center"}
+                verticalAlign={element.properties.labelPositionV ?? "middle"}
+                padding={4}
+                text={label}
+                fontSize={element.properties.labelFontSize ?? 12}
+                fill={element.properties.labelColor ?? "#fff"}
+                fontStyle={`${element.properties.labelBold !== false ? "bold" : ""}${element.properties.labelItalic ? " italic" : ""}`.trim() || "normal"}
+                textDecoration={element.properties.labelUnderline ? "underline" : ""}
+                listening={false}
+              />
+            )}
+          </>
+        );
+      })()}
       {element.type === "label" && geo.shape === "rect" && (() => {
         const g = geo as RectGeometry;
         const parts: string[] = [];
@@ -241,7 +269,7 @@ function ViewerElement({
   );
 }
 
-export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedElementId, searchMatchIds, routePath, onElementClick }: ViewerCanvasProps) {
+export function ViewerCanvas({ data, mode, occupiedBoothSlugs, highlightedElementId, searchMatchIds, routePath, onElementClick }: ViewerCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredElementId, setHoveredElementId] = useState<string | null>(null);
   const isSearching = !!searchMatchIds && searchMatchIds.size > 0;
@@ -295,8 +323,8 @@ export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedElemen
             const isSessionArea = element.type === "session_area";
             const isMeetingRoom = element.type === "meeting_room";
             const isInteractive = isBooth || isSessionArea || isMeetingRoom;
-            const boothCode = element.properties.boothCode;
-            const isOccupied = isBooth && boothCode ? occupiedBoothCodes.has(boothCode) : false;
+            const boothSlug = element.properties.boothSlug ?? "";
+            const isOccupied = isBooth && boothSlug ? occupiedBoothSlugs.has(boothSlug) : false;
 
             // In attendee mode, unoccupied booths are faded and non-interactive
             const isInert = mode === "attendee" && isBooth && !isOccupied;
@@ -312,8 +340,8 @@ export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedElemen
               (isSearching && !isSearchMatch && !isSelected);
 
             const buildClickItem = (): HoveredItem | null => {
-              if (isBooth && boothCode) {
-                return { type: "booth", elementId: element.id, boothCode };
+              if (isBooth && boothSlug) {
+                return { type: "booth", elementId: element.id, boothSlug };
               }
               if (isSessionArea) {
                 return { type: "session_area", elementId: element.id, sessionId: element.properties.sessionId ?? null };

@@ -17,7 +17,6 @@ const shortcuts: { category: string; items: { keys: string; description: string 
       { keys: "A", description: "Arrow tool" },
       { keys: "C", description: "Arc tool" },
       { keys: "P", description: "Polygon tool" },
-      { keys: "B", description: "Booth tool" },
       { keys: "T", description: "Text tool" },
       { keys: "I", description: "Icon tool" },
       { keys: "M", description: "Measure tool" },
@@ -113,21 +112,29 @@ export function HelpDialog({ onClose }: HelpDialogProps) {
       <div className="flex-1 overflow-y-auto p-4">
         {tab === "start" && (
           <>
-            <h3 className="text-xs font-semibold text-gray-800 mb-2">Quick Start</h3>
+            <h3 className="text-xs font-semibold text-gray-800 mb-2">Design Mode vs Placement Mode</h3>
             <ul className="text-xs text-gray-600 space-y-1.5">
-              <li>Select a tool from the <strong>left sidebar</strong> to start drawing</li>
-              <li><strong>Click and drag</strong> on the canvas to draw shapes</li>
-              <li>Click an element to <strong>select</strong> it — resize, rotate, or edit properties in the right panel</li>
-              <li>Use the <strong>options bar</strong> above the canvas to change fill, stroke, and stroke width</li>
-              <li>Upload a background floor plan via <strong>Background</strong> in the menu bar</li>
-              <li>Use <strong>Tools &gt; Configure Grid</strong> to customize the grid overlay</li>
-              <li>Hold <strong>Space</strong> and drag to pan the canvas</li>
+              <li>The left sidebar has two tabs: <strong>Design</strong> and <strong>Placement</strong></li>
+              <li><strong>Design</strong> — drawing tools for building the floor plan shell: walls, aisles, labels, icons, and annotations</li>
+              <li><strong>Placement</strong> — place PheedLoop records (booths, session locations, meeting rooms) onto the map</li>
             </ul>
 
-            <h3 className="text-xs font-semibold text-gray-800 mt-4 mb-2">Drawing Tools</h3>
+            <h3 className="text-xs font-semibold text-gray-800 mt-4 mb-2">Placing Records (Placement Mode)</h3>
             <ul className="text-xs text-gray-600 space-y-1.5">
-              <li><strong>Arrow</strong> (A) — click and drag to draw an arrow. Select to change arrowhead style (triangle/chevron) and size in the properties panel</li>
-              <li><strong>Arc</strong> (C) — click to set start point, click to set end point, then move mouse to bend the curve and click to finalize. Escape to cancel</li>
+              <li>Switch to the <strong>Placement</strong> tab to see your booths, session locations, and meeting rooms</li>
+              <li><strong>Drag a record</strong> from the list onto the canvas to place it as a new shape</li>
+              <li>Use the <strong>Rectangle / Circle</strong> selector in each section to choose the shape new placements will use</li>
+              <li><strong>Drop onto an existing shape</strong> to assign that record to it — the shape becomes a linked booth, session, or meeting room</li>
+              <li>Placed records are dimmed in the list; unplaced records show at full opacity and are ready to drag</li>
+            </ul>
+
+            <h3 className="text-xs font-semibold text-gray-800 mt-4 mb-2">Drawing Tools (Design Mode)</h3>
+            <ul className="text-xs text-gray-600 space-y-1.5">
+              <li>Select a tool from the <strong>Design</strong> tab and <strong>click and drag</strong> on the canvas to draw</li>
+              <li>Click an element to <strong>select</strong> it — resize, rotate, or edit properties in the right panel</li>
+              <li>Use the <strong>options bar</strong> above the canvas to change fill, stroke, and stroke width</li>
+              <li><strong>Arrow</strong> (A) — click and drag to draw an arrow. Select to change arrowhead style and size in the properties panel</li>
+              <li><strong>Arc</strong> (C) — click to set start point, click to set end point, then move the mouse to bend the curve and click to finalize</li>
               <li><strong>Polygon</strong> (P) — click to place vertices. Close by clicking near the first vertex, pressing Enter, or double-clicking. Minimum 3 vertices. Escape to cancel</li>
               <li>Select any arrow, arc, or polygon to see <strong>control handles</strong> for reshaping</li>
               <li>Hold <strong>Shift</strong> while drawing lines, arrows, or polygon edges to snap to 45° angles</li>
@@ -137,9 +144,9 @@ export function HelpDialog({ onClose }: HelpDialogProps) {
             <ul className="text-xs text-gray-600 space-y-1.5">
               <li>Click the <strong>layer icon</strong> (top-right of canvas) to open the layer panel</li>
               <li>Four layers: <strong>Background</strong>, <strong>Content</strong>, <strong>Pathing</strong>, and <strong>Markup</strong></li>
-              <li>Click a layer to make it <strong>active</strong> — only elements on the active layer are selectable</li>
+              <li>Click a layer to make it <strong>active</strong> — new elements and placed records are added to the active layer</li>
+              <li>Only elements on the active layer are selectable</li>
               <li>Toggle the <strong>eye icon</strong> to show/hide a layer</li>
-              <li>Booths and rooms live on <strong>Content</strong>; labels, icons, and shapes on <strong>Markup</strong></li>
             </ul>
 
             <h3 className="text-xs font-semibold text-gray-800 mt-4 mb-2">Scale & Measurement</h3>
@@ -150,7 +157,6 @@ export function HelpDialog({ onClose }: HelpDialogProps) {
               <li>Change display units (ft / m) anytime in the <strong>status bar</strong> without re-calibrating</li>
               <li>Toggle <strong>View &gt; Show Rulers</strong> to see rulers along the canvas edges — they show real-world units when calibrated</li>
               <li>Use the <strong>Measure tool</strong> (M) to measure distances — click and drag between two points</li>
-              <li>Booth area, element dimensions, and canvas size all display in real-world units once calibrated</li>
             </ul>
 
             <h3 className="text-xs font-semibold text-gray-800 mt-4 mb-2">Wayfinding (Pathing Layer)</h3>

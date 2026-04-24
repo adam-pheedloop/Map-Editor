@@ -1,7 +1,6 @@
 import type { ToolDefinition, OptionsBarField, PropertiesPanelField, ContextMenuAction } from "./types";
 import { rectangleTool } from "./rectangle";
 import { ellipseTool } from "./ellipse";
-import { boothTool } from "./booth";
 import { lineTool } from "./line";
 import { arrowTool } from "./arrow";
 import { arcTool } from "./arc";
@@ -9,6 +8,7 @@ import { polygonTool } from "./polygon";
 import { textTool } from "./text";
 import { iconTool } from "./icon";
 import { measureTool } from "./measure";
+import { boothTool } from "./booth";
 import { sessionAreaTool } from "./sessionArea";
 import { meetingRoomTool } from "./meetingRoom";
 
@@ -21,16 +21,24 @@ export const TOOL_REGISTRY: ToolDefinition<any>[] = [
   arrowTool,
   arcTool,
   polygonTool,
-  boothTool,
-  sessionAreaTool,
-  meetingRoomTool,
   textTool,
   iconTool,
   measureTool,
 ];
 
-/** Tool IDs that belong in the "Locations" tool group. */
-export const LOCATION_TOOL_IDS: readonly string[] = ["booth", "session_area", "meeting_room"];
+/**
+ * Extended registry used only for element → UI config lookups.
+ * Includes placement-type tools (booth, session_area, meeting_room) which are
+ * not in the drawing toolbar but still own element types and define their
+ * properties panel / options bar / context menu config.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const ELEMENT_TYPE_CONFIG_REGISTRY: ToolDefinition<any>[] = [
+  ...TOOL_REGISTRY,
+  boothTool,
+  sessionAreaTool,
+  meetingRoomTool,
+];
 
 // O(1) lookup by tool id
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -57,10 +65,10 @@ export function findToolForElement(
   elementType?: string
 ): ToolDefinition | undefined {
   if (elementType) {
-    const byType = TOOL_REGISTRY.find((t) => t.ownsElementType === elementType);
+    const byType = ELEMENT_TYPE_CONFIG_REGISTRY.find((t) => t.ownsElementType === elementType);
     if (byType) return byType;
   }
-  return TOOL_REGISTRY.find((t) => t.ownsGeometry?.includes(geometryShape));
+  return ELEMENT_TYPE_CONFIG_REGISTRY.find((t) => t.ownsGeometry?.includes(geometryShape));
 }
 
 /**

@@ -3,7 +3,7 @@ export type ViewerMode = "attendee" | "exhibitor";
 export interface Exhibitor {
   id: string;
   name: string;
-  boothCode: string;
+  boothSlug: string;
   logo?: string;
 }
 
@@ -30,6 +30,7 @@ export interface MeetingRoom {
 export interface SessionLocation {
   id: number;
   title: string;
+  capacity: number;
 }
 
 /**
@@ -52,6 +53,6 @@ export interface ExhibitorBooth {
  * Future: add | { type: "poi"; elementId: string } without structural changes.
  */
 export type HoveredItem =
-  | { type: "booth"; elementId: string; boothCode: string }
+  | { type: "booth"; elementId: string; boothSlug: string }
   | { type: "session_area"; elementId: string; sessionId?: string | null }
   | { type: "meeting_room"; elementId: string; meetingRoomId?: string | null };

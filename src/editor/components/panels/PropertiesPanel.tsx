@@ -101,7 +101,20 @@ function getDimensions(element: FloorPlanElement): {
   return { width: 0, height: 0, length: 0 };
 }
 
-function extractTypeDefaults(props: ElementProperties): ElementTypeDefaults {
+function extractTypeDefaults(props: ElementProperties, geometry: Geometry): ElementTypeDefaults {
+  let defaultWidth: number | undefined;
+  let defaultHeight: number | undefined;
+  if (geometry.shape === "rect") {
+    defaultWidth = geometry.width;
+    defaultHeight = geometry.height;
+  } else if (geometry.shape === "ellipse") {
+    defaultWidth = geometry.radiusX * 2;
+    defaultHeight = geometry.radiusY * 2;
+  } else if (geometry.shape === "circle") {
+    defaultWidth = geometry.radius * 2;
+    defaultHeight = geometry.radius * 2;
+  }
+
   return {
     color: props.color,
     strokeColor: props.strokeColor,
@@ -116,6 +129,8 @@ function extractTypeDefaults(props: ElementProperties): ElementTypeDefaults {
     labelVisible: props.labelVisible,
     labelPositionV: props.labelPositionV,
     labelPositionH: props.labelPositionH,
+    defaultWidth,
+    defaultHeight,
   };
 }
 
@@ -735,7 +750,7 @@ export function PropertiesPanel({
             onClick={() =>
               onUpdateTypeStyles(
                 element.type,
-                extractTypeDefaults(element.properties),
+                extractTypeDefaults(element.properties, element.geometry),
               )
             }
           >

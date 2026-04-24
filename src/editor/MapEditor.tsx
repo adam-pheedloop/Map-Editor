@@ -714,8 +714,9 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
       } else {
         // Create a new element centred on the drop point
         const typeStyle = data.typeStyles?.[ref.type] ?? DEFAULT_TYPE_STYLES[ref.type] ?? {};
-        const w = 120, h = 80;
-        const r = 60;
+        const w = typeStyle.defaultWidth ?? 120;
+        const h = typeStyle.defaultHeight ?? 80;
+        const r = Math.min(w, h) / 2;
         const geometry: Geometry =
           ref.defaultShape === "ellipse"
             ? { shape: "ellipse", x: cx - r, y: cy - r, radiusX: r, radiusY: r }

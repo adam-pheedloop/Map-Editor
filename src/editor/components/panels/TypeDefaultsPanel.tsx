@@ -83,6 +83,22 @@ function TypeSection({ typeKey, defaults, onChange }: TypeSectionProps) {
               />
             </div>
           </div>
+          <div className="flex gap-3">
+            <div className="flex flex-col gap-1.5 flex-1">
+              <SectionLabel>Default Width</SectionLabel>
+              <NumberInput
+                value={defaults.defaultWidth ?? 120}
+                onChange={(v) => onChange({ defaultWidth: Math.max(1, v) })}
+              />
+            </div>
+            <div className="flex flex-col gap-1.5 flex-1">
+              <SectionLabel>Default Height</SectionLabel>
+              <NumberInput
+                value={defaults.defaultHeight ?? 80}
+                onChange={(v) => onChange({ defaultHeight: Math.max(1, v) })}
+              />
+            </div>
+          </div>
           <div className="flex flex-col gap-1.5">
             <div className="flex items-center justify-between">
               <SectionLabel>Opacity</SectionLabel>

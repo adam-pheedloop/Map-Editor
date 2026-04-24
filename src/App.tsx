@@ -9,7 +9,7 @@ import { MapEditor } from "./editor";
 import { MapViewer } from "./viewer";
 import { Roadmap } from "./roadmap/Roadmap";
 import { KnownIssues } from "./roadmap/KnownIssues";
-import { sampleMap } from "./sample-data/sample-map";
+import { exhibitionHallMap } from "./sample-data/exhibition-hall-map";
 import { sampleExhibitors } from "./sample-data/sample-exhibitors";
 import type { FloorPlanData } from "./types";
 import type { ViewerMode } from "./viewer/types";
@@ -42,7 +42,7 @@ function ViewerRoute({
   viewport: Viewport;
   mode: ViewerMode;
 }) {
-  const data = loadViewerData() ?? sampleMap;
+  const data = loadViewerData() ?? exhibitionHallMap;
   const viewer = (
     <MapViewer data={data} exhibitors={sampleExhibitors} mode={mode} />
   );
@@ -173,7 +173,7 @@ function App() {
       </nav>
       <div className="flex-1 overflow-hidden">
         {route === "editor" && (
-          <MapEditor initialData={sampleMap} persist debug />
+          <MapEditor initialData={exhibitionHallMap} persist debug />
         )}
         {route === "viewer" && (
           <ViewerRoute viewport={viewport} mode={viewerMode} />

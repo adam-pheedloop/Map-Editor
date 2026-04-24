@@ -92,6 +92,23 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   const [activeTool, setActiveTool] = useState<ActiveTool>("select");
   const [editorMode, setEditorMode] = useState<EditorMode>("design");
   const placementRecords = usePlacementRecords(data);
+
+  const unlinkedElementIds = useMemo(() => {
+    const ids = new Set<string>();
+    for (const el of data.elements) {
+      if (el.type === "booth") {
+        const slug = el.properties.boothSlug;
+        if (!slug || !placementRecords.knownBoothSlugs.has(slug)) ids.add(el.id);
+      } else if (el.type === "session_area") {
+        const sid = el.properties.sessionId;
+        if (!sid || !placementRecords.knownSessionIds.has(sid)) ids.add(el.id);
+      } else if (el.type === "meeting_room") {
+        const rid = el.properties.meetingRoomId;
+        if (!rid || !placementRecords.knownRoomIds.has(rid)) ids.add(el.id);
+      }
+    }
+    return ids;
+  }, [data.elements, placementRecords.knownBoothSlugs, placementRecords.knownSessionIds, placementRecords.knownRoomIds]);
   const [activePathingTool, setActivePathingTool] = useState<PathingTool>("select");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [defaults, setDefaults] = useState<DrawingDefaults>(INITIAL_DEFAULTS);
@@ -919,6 +936,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   existingCalibration={data.scaleCalibration}
                   onCalibrationClick={calibration.handleMouseDown}
                   onCalibrationMouseMove={calibration.handleMouseMove}
+                  unlinkedElementIds={unlinkedElementIds}
                 />
                 <Rulers
                   visible={showRulers}
@@ -961,6 +979,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
               element={selectedElement}
               selectedElements={selectedElements}
               selectedCount={selectedIds.size}
+              isSelectedUnlinked={selectedElement ? unlinkedElementIds.has(selectedElement.id) : false}
               dimensions={data.dimensions}
               backgroundImage={data.backgroundImage}
               backgroundColor={data.backgroundColor}

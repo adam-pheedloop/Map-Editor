@@ -10,9 +10,10 @@ interface MeetingRoomShapeProps {
   strokeColor: string;
   strokeWidth: number;
   properties: ElementProperties;
+  isLinked: boolean;
 }
 
-export function MeetingRoomShape({ geo, color, strokeColor, strokeWidth, properties }: MeetingRoomShapeProps) {
+export function MeetingRoomShape({ geo, color, strokeColor, strokeWidth, properties, isLinked }: MeetingRoomShapeProps) {
   const lp = getLabelRenderProps(properties);
   const bounds = getGeometryBounds(geo);
   const rawLabelPos = getLabelXY(lp.labelPositionV, lp.labelPositionH, bounds.width, bounds.height);
@@ -29,6 +30,9 @@ export function MeetingRoomShape({ geo, color, strokeColor, strokeWidth, propert
     return { ...rawLabelPos, x: rawLabelPos.x + (isFinite(minX) ? minX : 0), y: rawLabelPos.y + (isFinite(minY) ? minY : 0) };
   })() : rawLabelPos;
 
+  const shapeStroke = isLinked ? strokeColor : "#ef4444";
+  const shapeDash = isLinked ? undefined : [8, 4];
+
   return (
     <>
       {geo.shape === "rect" && (
@@ -36,10 +40,11 @@ export function MeetingRoomShape({ geo, color, strokeColor, strokeWidth, propert
           width={geo.width}
           height={geo.height}
           fill={color}
-          stroke={strokeColor}
+          stroke={shapeStroke}
           strokeWidth={strokeWidth}
+          dash={shapeDash}
           cornerRadius={2}
-          opacity={0.9}
+          opacity={isLinked ? 0.9 : 0.5}
         />
       )}
       {geo.shape === "polygon" && (
@@ -47,9 +52,10 @@ export function MeetingRoomShape({ geo, color, strokeColor, strokeWidth, propert
           points={[...geo.points]}
           closed
           fill={color}
-          stroke={strokeColor}
+          stroke={shapeStroke}
           strokeWidth={strokeWidth}
-          opacity={0.9}
+          dash={shapeDash}
+          opacity={isLinked ? 0.9 : 0.5}
         />
       )}
       {geo.shape === "ellipse" && (
@@ -59,9 +65,10 @@ export function MeetingRoomShape({ geo, color, strokeColor, strokeWidth, propert
           radiusX={geo.radiusX}
           radiusY={geo.radiusY}
           fill={color}
-          stroke={strokeColor}
+          stroke={shapeStroke}
           strokeWidth={strokeWidth}
-          opacity={0.9}
+          dash={shapeDash}
+          opacity={isLinked ? 0.9 : 0.5}
         />
       )}
       {geo.shape === "circle" && (
@@ -70,9 +77,10 @@ export function MeetingRoomShape({ geo, color, strokeColor, strokeWidth, propert
           y={geo.radius}
           radius={geo.radius}
           fill={color}
-          stroke={strokeColor}
+          stroke={shapeStroke}
           strokeWidth={strokeWidth}
-          opacity={0.9}
+          dash={shapeDash}
+          opacity={isLinked ? 0.9 : 0.5}
         />
       )}
       <Text
@@ -82,6 +90,16 @@ export function MeetingRoomShape({ geo, color, strokeColor, strokeWidth, propert
         fontSize={10}
         listening={false}
       />
+      {!isLinked && (
+        <Text
+          text="Unlinked"
+          x={3}
+          y={14}
+          fontSize={9}
+          fill="#ef4444"
+          listening={false}
+        />
+      )}
       {displayName && (
         <Group opacity={lp.labelVisible ? 1 : 0.35} listening={false}>
           <LabelWithBackground

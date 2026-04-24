@@ -26,6 +26,10 @@ export interface PlacementRecords {
   boothCounts: RecordCounts;
   sessionCounts: RecordCounts;
   roomCounts: RecordCounts;
+  /** All slugs/IDs that exist in the record pool — used to detect orphaned elements. */
+  knownBoothSlugs: Set<string>;
+  knownSessionIds: Set<string>;
+  knownRoomIds: Set<string>;
 }
 
 // ---------------------------------------------------------------------------
@@ -89,6 +93,9 @@ export function usePlacementRecords(data: FloorPlanData): PlacementRecords {
       boothCounts:   countOf(booths),
       sessionCounts: countOf(sessions),
       roomCounts:    countOf(meetingRooms),
+      knownBoothSlugs: new Set(conferenceExpoBooths.map((r) => r.slug)),
+      knownSessionIds: new Set(sampleSessionLocations.map((r) => String(r.id))),
+      knownRoomIds:    new Set(sampleMeetingRooms.map((r) => String(r.id))),
     };
   }, [data.elements]);
 }

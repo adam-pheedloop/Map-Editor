@@ -11,6 +11,7 @@ interface PropertiesPanelProps {
   element: FloorPlanElement | null;
   selectedElements: FloorPlanElement[];
   selectedCount: number;
+  isSelectedUnlinked: boolean;
   dimensions: Dimensions;
   backgroundImage?: BackgroundImage;
   backgroundColor?: string;
@@ -80,6 +81,7 @@ export function PropertiesPanel({
   element,
   selectedElements,
   selectedCount,
+  isSelectedUnlinked,
   dimensions,
   backgroundImage,
   backgroundColor,
@@ -305,6 +307,12 @@ export function PropertiesPanel({
         </div>
       ) : (
       <div className="flex flex-col gap-4 p-3 overflow-y-auto flex-1">
+        {isSelectedUnlinked && (
+          <div className="flex items-start gap-1.5 px-2 py-1.5 rounded bg-red-50 border border-red-200">
+            <span className="text-red-500 text-[10px] font-medium leading-4">Unlinked</span>
+            <span className="text-red-400 text-[10px] leading-4">— switch to Placement Mode and drag a record onto this shape to link it.</span>
+          </div>
+        )}
         {fields.has("name") && (
           <div className="flex flex-col gap-1.5">
             <SectionLabel>Name</SectionLabel>

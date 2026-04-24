@@ -16,6 +16,7 @@ interface ElementShapeProps {
   element: FloorPlanElement;
   isSelectMode: boolean;
   isSelected: boolean;
+  isLinked: boolean;
   onSelect: (id: string, shiftKey?: boolean) => void;
   onDragStart: (id: string) => void;
   onDragMove: (id: string, x: number, y: number) => void;
@@ -31,6 +32,7 @@ export function ElementShape({
   element,
   isSelectMode,
   isSelected: _isSelected,
+  isLinked,
   onSelect,
   onDragStart,
   onDragMove,
@@ -82,6 +84,7 @@ export function ElementShape({
           strokeColor={strokeColor}
           strokeWidth={strokeWidth}
           properties={element.properties}
+          isLinked={isLinked}
         />
       )}
       {element.type === "session_area" && (geo.shape === "rect" || geo.shape === "polygon" || geo.shape === "ellipse" || geo.shape === "circle") && (
@@ -91,6 +94,7 @@ export function ElementShape({
           strokeColor={strokeColor}
           strokeWidth={strokeWidth}
           properties={element.properties}
+          isLinked={isLinked}
         />
       )}
       {element.type === "meeting_room" && (geo.shape === "rect" || geo.shape === "polygon" || geo.shape === "ellipse" || geo.shape === "circle") && (
@@ -100,6 +104,7 @@ export function ElementShape({
           strokeColor={strokeColor}
           strokeWidth={strokeWidth}
           properties={element.properties}
+          isLinked={isLinked}
         />
       )}
       {element.type === "label" && geo.shape === "rect" && (

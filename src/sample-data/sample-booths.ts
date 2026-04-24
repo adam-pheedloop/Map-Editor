@@ -38,7 +38,6 @@ export const conferenceExpoBooths: ExhibitorBooth[] = [
   { slug: "EXHBOTWFU5SEYAMUN7VM", code: "8", area: 100 },
   { slug: "EXHBOT20F838RG8QS03X", code: "9", area: 100 },
   { slug: "EXHBOTSLE3WZLMOFNM38", code: "10", area: 100 },
-  { slug: "EXHBOT6YAPT4R5O1L0VH", code: "11", area: 100 },
   { slug: "EXHBOT4KO9WHEMBO2UJ4", code: "12", area: 100 },
   { slug: "EXHBOTAFX4X7SKH5NB06", code: "13", area: 100 },
   { slug: "EXHBOTDCGR3VX6LWYF1U", code: "14", area: 100 },

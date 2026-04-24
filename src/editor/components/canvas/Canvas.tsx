@@ -114,6 +114,7 @@ interface CanvasProps {
   existingCalibration?: FloorPlanData["scaleCalibration"];
   onCalibrationClick?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
   onCalibrationMouseMove?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
+  unlinkedElementIds?: Set<string>;
 }
 
 export function Canvas({
@@ -153,6 +154,7 @@ export function Canvas({
   existingCalibration,
   onCalibrationClick,
   onCalibrationMouseMove,
+  unlinkedElementIds,
 }: CanvasProps) {
   const isSelectMode = activeTool === null;
 
@@ -576,6 +578,7 @@ export function Canvas({
                   element={element}
                   isSelectMode={isSelectMode && isActiveLayer}
                   isSelected={selectedIds.has(element.id)}
+                  isLinked={!unlinkedElementIds?.has(element.id)}
                   onSelect={onSelect}
                   onDragStart={handleElementDragStart}
                   onDragMove={handleElementDragMove}

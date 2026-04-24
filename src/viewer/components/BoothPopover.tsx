@@ -10,7 +10,14 @@ interface BoothPopoverProps {
   onGetDirections?: () => void;
 }
 
-export function BoothPopover({ boothCode, exhibitor, x, y, onClose, onGetDirections }: BoothPopoverProps) {
+export function BoothPopover({
+  boothCode,
+  exhibitor,
+  x,
+  y,
+  onClose,
+  onGetDirections,
+}: BoothPopoverProps) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -36,13 +43,15 @@ export function BoothPopover({ boothCode, exhibitor, x, y, onClose, onGetDirecti
       className="fixed bg-white border border-gray-200 rounded-lg shadow-lg p-3 z-[9999] min-w-[180px]"
       style={{ left: x + 12, top: y - 20 }}
     >
-      <div className="text-xs font-semibold text-gray-800">
-        Booth {boothCode}
-      </div>
+      <div className="text-xs font-semibold text-gray-800">{boothCode}</div>
       {exhibitor ? (
         <div className="flex items-center gap-2 mt-1.5">
           {exhibitor.logo && (
-            <img src={exhibitor.logo} alt="" className="w-8 h-8 rounded shrink-0" />
+            <img
+              src={exhibitor.logo}
+              alt=""
+              className="w-8 h-8 rounded shrink-0"
+            />
           )}
           <div className="text-sm font-medium text-gray-900">
             {exhibitor.name}

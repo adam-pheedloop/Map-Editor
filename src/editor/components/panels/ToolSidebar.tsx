@@ -14,6 +14,7 @@ import { IconPicker } from "./IconPicker";
 import { getIconEntry } from "../../utils/iconRegistry";
 import type { PlacementRecords } from "../../hooks/usePlacementRecords";
 import { PlacementPanel } from "./PlacementPanel";
+import type { AutoArrangeRecord } from "./PlacementPanel";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -214,6 +215,7 @@ interface ToolSidebarProps {
   mapName: string;
   onMapNameChange: (name: string) => void;
   placementRecords: PlacementRecords;
+  onAutoArrange: (type: "booth" | "session_area" | "meeting_room", records: AutoArrangeRecord[]) => void;
 }
 
 export function ToolSidebar({
@@ -229,6 +231,7 @@ export function ToolSidebar({
   mapName,
   onMapNameChange,
   placementRecords,
+  onAutoArrange,
 }: ToolSidebarProps) {
   // Pathing mode overrides the normal sidebar
   if (isPathingMode && onPathingToolChange && activePathingTool) {
@@ -307,7 +310,7 @@ export function ToolSidebar({
         </div>
       ) : (
         <div className="flex-1 overflow-hidden flex flex-col">
-          <PlacementPanel records={placementRecords} />
+          <PlacementPanel records={placementRecords} onAutoArrange={onAutoArrange} />
         </div>
       )}
     </div>

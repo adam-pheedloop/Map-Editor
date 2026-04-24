@@ -33,6 +33,11 @@ export interface PlacementRecordRef {
   defaultShape: "rect" | "ellipse";
 }
 
+export interface AutoArrangeRecord {
+  recordId: string;
+  recordName: string;
+}
+
 // ---------------------------------------------------------------------------
 // Context — lets rows read the section's current defaultShape without prop drilling
 // ---------------------------------------------------------------------------
@@ -242,6 +247,7 @@ interface SectionProps extends SectionConfig {
   onQueryChange: (q: string) => void;
   statusFilter: StatusFilter;
   onStatusFilterChange: (f: StatusFilter) => void;
+  onAutoArrange?: () => void;
   stub?: boolean;
   children?: React.ReactNode;
 }
@@ -260,6 +266,7 @@ function Section({
   onQueryChange,
   statusFilter,
   onStatusFilterChange,
+  onAutoArrange,
   stub = false,
   children,
 }: SectionProps) {
@@ -297,9 +304,17 @@ function Section({
           )}
         </span>
         <span
-          className="shrink-0 text-gray-300 hover:text-primary-400 transition-colors"
-          title="Auto-arrange (coming soon)"
-          onClick={(e) => e.stopPropagation()}
+          className={[
+            "shrink-0 transition-colors",
+            !stub && unplaced > 0 && onAutoArrange
+              ? "text-amber-400 hover:text-amber-500 cursor-pointer"
+              : "text-gray-200 cursor-default",
+          ].join(" ")}
+          title={!stub && unplaced > 0 ? `Auto-place ${unplaced} unplaced` : "No unplaced items"}
+          onClick={(e) => {
+            e.stopPropagation();
+            if (!stub && unplaced > 0) onAutoArrange?.();
+          }}
         >
           <PiSparkle size={14} />
         </span>
@@ -464,9 +479,10 @@ type SectionId = "booths" | "sessions" | "meetingRooms" | "tables";
 
 interface PlacementPanelProps {
   records: PlacementRecords;
+  onAutoArrange: (type: "booth" | "session_area" | "meeting_room", records: AutoArrangeRecord[]) => void;
 }
 
-export function PlacementPanel({ records }: PlacementPanelProps) {
+export function PlacementPanel({ records, onAutoArrange }: PlacementPanelProps) {
   const { booths, sessions, meetingRooms } = records;
 
   type SectionFilter = { query: string; status: StatusFilter };
@@ -528,6 +544,14 @@ export function PlacementPanel({ records }: PlacementPanelProps) {
           onQueryChange={(q) => updateFilter("booths", { query: q })}
           statusFilter={sectionFilters.booths.status}
           onStatusFilterChange={(s) => updateFilter("booths", { status: s })}
+          onAutoArrange={() =>
+            onAutoArrange(
+              "booth",
+              booths
+                .filter((r) => !r.isPlaced)
+                .map((r) => ({ recordId: r.record.slug, recordName: r.record.code })),
+            )
+          }
         >
           {filteredBooths.map((r) => (
             <BoothRow key={r.record.slug} {...r} />
@@ -548,6 +572,14 @@ export function PlacementPanel({ records }: PlacementPanelProps) {
           onQueryChange={(q) => updateFilter("sessions", { query: q })}
           statusFilter={sectionFilters.sessions.status}
           onStatusFilterChange={(s) => updateFilter("sessions", { status: s })}
+          onAutoArrange={() =>
+            onAutoArrange(
+              "session_area",
+              sessions
+                .filter((r) => !r.isPlaced)
+                .map((r) => ({ recordId: String(r.record.id), recordName: r.record.title })),
+            )
+          }
         >
           {filteredSessions.map((r) => (
             <SessionRow key={r.record.id} {...r} />
@@ -568,6 +600,14 @@ export function PlacementPanel({ records }: PlacementPanelProps) {
           onQueryChange={(q) => updateFilter("meetingRooms", { query: q })}
           statusFilter={sectionFilters.meetingRooms.status}
           onStatusFilterChange={(s) => updateFilter("meetingRooms", { status: s })}
+          onAutoArrange={() =>
+            onAutoArrange(
+              "meeting_room",
+              meetingRooms
+                .filter((r) => !r.isPlaced)
+                .map((r) => ({ recordId: String(r.record.id), recordName: r.record.name })),
+            )
+          }
         >
           {filteredRooms.map((r) => (
             <MeetingRoomRow key={r.record.id} {...r} />

@@ -2,7 +2,7 @@ import { useRef, useState, useCallback, useMemo, useEffect } from "react";
 import type { ActiveTool, EditorMode, PathingTool } from "./types";
 import { usePlacementRecords } from "./hooks/usePlacementRecords";
 import { PLACEMENT_DRAG_TYPE, PLACEMENT_SHAPE_ELLIPSE_TYPE } from "./components/panels/PlacementPanel";
-import type { PlacementRecordRef } from "./components/panels/PlacementPanel";
+import type { PlacementRecordRef, AutoArrangeRecord } from "./components/panels/PlacementPanel";
 import { getElementBounds } from "./utils/bounds";
 import type { DrawingDefaults } from "./components/panels/OptionsBar";
 import type { ToolContext } from "./tools/types";
@@ -743,6 +743,71 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     [position, scale, data, activeLayerId, placementRecords, hitTestAssignable, updateElementType, addElement, selectOne]
   );
 
+  const handleAutoArrange = useCallback(
+    (type: "booth" | "session_area" | "meeting_room", records: AutoArrangeRecord[]) => {
+      if (records.length === 0) return;
+
+      const typeStyle = data.typeStyles?.[type] ?? DEFAULT_TYPE_STYLES[type] ?? {};
+      const w = typeStyle.defaultWidth ?? 120;
+      const h = typeStyle.defaultHeight ?? 80;
+      const gap = 10;
+      const cols = Math.ceil(Math.sqrt(records.length));
+
+      // Start to the right of existing content, aligned to its top edge
+      let startX = 50;
+      let startY = 50;
+      if (data.elements.length > 0) {
+        let maxRight = 0;
+        let minTop = Infinity;
+        for (const el of data.elements) {
+          const b = getElementBounds(el);
+          maxRight = Math.max(maxRight, b.right);
+          minTop = Math.min(minTop, b.top);
+        }
+        startX = maxRight + 40;
+        startY = Math.max(50, minTop);
+      }
+
+      const maxZ = data.elements.reduce((m, el) => Math.max(m, el.properties.zIndex), 0);
+
+      const newElements: FloorPlanElement[] = records.map((rec, i) => {
+        const col = i % cols;
+        const row = Math.floor(i / cols);
+        const linkingProps =
+          type === "booth"
+            ? { boothSlug: rec.recordId }
+            : type === "session_area"
+            ? { sessionId: rec.recordId }
+            : { meetingRoomId: rec.recordId };
+
+        return {
+          id: crypto.randomUUID(),
+          type,
+          layer: "content" as LayerId,
+          geometry: {
+            shape: "rect" as const,
+            x: startX + col * (w + gap),
+            y: startY + row * (h + gap),
+            width: w,
+            height: h,
+          },
+          properties: {
+            name: rec.recordName,
+            color: typeStyle.color ?? "#94a3b8",
+            strokeColor: typeStyle.strokeColor ?? "#888888",
+            strokeWidth: typeStyle.strokeWidth ?? 1,
+            zIndex: maxZ + 1 + i,
+            ...linkingProps,
+          },
+        };
+      });
+
+      addElements(newElements);
+      setSelectedIds(new Set(newElements.map((el) => el.id)));
+    },
+    [data, addElements, setSelectedIds],
+  );
+
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <TopBar
@@ -876,6 +941,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           mapName={data.name}
           onMapNameChange={setMapName}
           placementRecords={placementRecords}
+          onAutoArrange={handleAutoArrange}
         />
         <div className="flex flex-col flex-1 min-w-0 min-h-0">
           {isPathingMode ? (

@@ -306,7 +306,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     setPathingTool: setActivePathingTool,
   });
 
-  // Options bar: show selected element's colors or defaults
+  // Options bar: show selected element's colors or drawing defaults
   const activeDefaults: DrawingDefaults = selectedElement
     ? {
         fill: selectedElement.properties.color,
@@ -318,7 +318,16 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           selectedElement.properties.strokeWidth ??
           (selectedElement.geometry.shape === "line" ? 2 : 1),
       }
-    : defaults;
+    : isMultiSelect && selectedElements.length > 0
+      ? {
+          fill: selectedElements[0].properties.color,
+          stroke:
+            selectedElements[0].geometry.shape === "line"
+              ? selectedElements[0].properties.color
+              : selectedElements[0].properties.strokeColor || "#888888",
+          strokeWidth: selectedElements[0].properties.strokeWidth ?? 1,
+        }
+      : defaults;
 
   const handleDefaultsChange = useCallback(
     (updates: Partial<DrawingDefaults>) => {
@@ -881,11 +890,13 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           ) : (
             <OptionsBar
               defaults={activeDefaults}
-              config={selectedElement
-                ? getToolUIConfig(selectedElement.geometry.shape, selectedElement.type)
-                : resolvedTool
-                  ? { optionsBar: resolvedTool.optionsBar, propertiesPanel: resolvedTool.propertiesPanel, contextMenu: resolvedTool.contextMenu }
-                  : { optionsBar: [], propertiesPanel: [], contextMenu: [] }
+              config={isMultiSelect
+                ? { optionsBar: ["fill", "stroke", "strokeWidth"] as import("./components/canvas/elements/types").OptionsBarField[], propertiesPanel: [], contextMenu: [] }
+                : selectedElement
+                  ? getToolUIConfig(selectedElement.geometry.shape, selectedElement.type)
+                  : resolvedTool
+                    ? { optionsBar: resolvedTool.optionsBar, propertiesPanel: resolvedTool.propertiesPanel, contextMenu: resolvedTool.contextMenu }
+                    : { optionsBar: [], propertiesPanel: [], contextMenu: [] }
               }
               onDefaultsChange={handleDefaultsChange}
             />

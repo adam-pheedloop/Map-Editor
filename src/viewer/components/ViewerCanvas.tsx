@@ -197,15 +197,46 @@ function ViewerElement({
           />
         );
       })()}
-      {geo.shape === "polygon" && (
-        <Line
-          points={[...(geo as PolygonGeometry).points]}
-          closed
-          fill={color}
-          stroke={strokeColor}
-          strokeWidth={strokeWidth}
-        />
-      )}
+      {geo.shape === "polygon" && (() => {
+        const pts = (geo as PolygonGeometry).points;
+        let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+        for (let i = 0; i < pts.length; i += 2) {
+          if (pts[i] < minX) minX = pts[i];
+          if (pts[i] > maxX) maxX = pts[i];
+          if (pts[i + 1] < minY) minY = pts[i + 1];
+          if (pts[i + 1] > maxY) maxY = pts[i + 1];
+        }
+        const polyW = maxX - minX;
+        const polyH = maxY - minY;
+        return (
+          <>
+            <Line
+              points={[...pts]}
+              closed
+              fill={color}
+              stroke={strokeColor}
+              strokeWidth={strokeWidth}
+            />
+            {label && element.properties.labelVisible !== false && (
+              <Text
+                x={isFinite(minX) ? minX : 0}
+                y={isFinite(minY) ? minY : 0}
+                width={isFinite(polyW) ? polyW : 0}
+                height={isFinite(polyH) ? polyH : 0}
+                align={element.properties.labelPositionH ?? "center"}
+                verticalAlign={element.properties.labelPositionV ?? "middle"}
+                padding={4}
+                text={label}
+                fontSize={element.properties.labelFontSize ?? 12}
+                fill={element.properties.labelColor ?? "#fff"}
+                fontStyle={`${element.properties.labelBold !== false ? "bold" : ""}${element.properties.labelItalic ? " italic" : ""}`.trim() || "normal"}
+                textDecoration={element.properties.labelUnderline ? "underline" : ""}
+                listening={false}
+              />
+            )}
+          </>
+        );
+      })()}
       {element.type === "label" && geo.shape === "rect" && (() => {
         const g = geo as RectGeometry;
         const parts: string[] = [];

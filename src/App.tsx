@@ -10,7 +10,7 @@ import { MapViewer } from "./viewer";
 import { Roadmap } from "./roadmap/Roadmap";
 import { KnownIssues } from "./roadmap/KnownIssues";
 import { exhibitionHallMap } from "./sample-data/exhibition-hall-map";
-import { sampleExhibitors } from "./sample-data/sample-exhibitors";
+import { conferenceExpoExhibitors } from "./sample-data/sample-exhibitors";
 import type { FloorPlanData } from "./types";
 import type { ViewerMode } from "./viewer/types";
 
@@ -44,7 +44,7 @@ function ViewerRoute({
 }) {
   const data = loadViewerData() ?? exhibitionHallMap;
   const viewer = (
-    <MapViewer data={data} exhibitors={sampleExhibitors} mode={mode} />
+    <MapViewer data={data} exhibitors={conferenceExpoExhibitors} mode={mode} />
   );
 
   if (viewport === "mobile") {

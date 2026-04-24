@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-04-08",
+  "lastUpdated": "2026-04-24",
   "issues": [
     {
       "id": 1,
@@ -95,7 +95,9 @@
       "severity": "architecture",
       "area": "Editor / Viewer — Data Model",
       "description": "Booths, session locations, and meeting rooms exist independently in the PheedLoop database — they can be created, configured, and assigned outside the map editor entirely. The map should reference these records, not own them. Key implications: (1) primary placement UX should be import/linking from existing DB records, not create-new; (2) deleting a location from the map must not delete the DB record; (3) display names may need to be sourced from the DB rather than stored locally in ElementProperties; (4) unlinked placeholder shapes should be visually distinct from linked shapes. Must be resolved before Phase 15 (Backend Integration) ships to production.",
-      "status": "open"
+      "status": "fixed",
+      "fixedIn": "Phase 12",
+      "fixNote": "Pattern B (pick first, place later) shipped as Placement Mode. Location drawing tools removed from sidebar. usePlacementRecords hook is the clean swap point for Phase 15 backend wiring. Viewer boothSlug linkage fixed — associations now use the stable PheedLoop DB identifier."
     }
   ]
 }

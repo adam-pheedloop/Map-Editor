@@ -239,6 +239,8 @@ interface SectionProps extends SectionConfig {
   title: string;
   placed: number;
   unplaced: number;
+  /** Total unplaced across the full (unfiltered) record pool — used by the sparkle button. */
+  totalUnplaced: number;
   isOpen: boolean;
   onToggle: () => void;
   defaultShape: "rect" | "ellipse";
@@ -256,6 +258,7 @@ function Section({
   title,
   placed,
   unplaced,
+  totalUnplaced,
   iconShape,
   iconColor,
   isOpen,
@@ -306,14 +309,14 @@ function Section({
         <span
           className={[
             "shrink-0 transition-colors",
-            !stub && unplaced > 0 && onAutoArrange
+            !stub && totalUnplaced > 0 && onAutoArrange
               ? "text-amber-400 hover:text-amber-500 cursor-pointer"
               : "text-gray-200 cursor-default",
           ].join(" ")}
-          title={!stub && unplaced > 0 ? `Auto-place ${unplaced} unplaced` : "No unplaced items"}
+          title={!stub && totalUnplaced > 0 ? `Auto-place ${totalUnplaced} unplaced` : "No unplaced items"}
           onClick={(e) => {
             e.stopPropagation();
-            if (!stub && unplaced > 0) onAutoArrange?.();
+            if (!stub && totalUnplaced > 0) onAutoArrange?.();
           }}
         >
           <PiSparkle size={14} />
@@ -534,6 +537,7 @@ export function PlacementPanel({ records, onAutoArrange }: PlacementPanelProps) 
           title="Booths"
           placed={filteredBooths.filter((r) => r.isPlaced).length}
           unplaced={filteredBooths.filter((r) => !r.isPlaced).length}
+          totalUnplaced={booths.filter((r) => !r.isPlaced).length}
           iconShape="rect"
           iconColor="#3b82f6"
           isOpen={openSection === "booths"}
@@ -562,6 +566,7 @@ export function PlacementPanel({ records, onAutoArrange }: PlacementPanelProps) 
           title="Session Locations"
           placed={filteredSessions.filter((r) => r.isPlaced).length}
           unplaced={filteredSessions.filter((r) => !r.isPlaced).length}
+          totalUnplaced={sessions.filter((r) => !r.isPlaced).length}
           iconShape="oval"
           iconColor="#8b5cf6"
           isOpen={openSection === "sessions"}
@@ -590,6 +595,7 @@ export function PlacementPanel({ records, onAutoArrange }: PlacementPanelProps) 
           title="Meeting Rooms"
           placed={filteredRooms.filter((r) => r.isPlaced).length}
           unplaced={filteredRooms.filter((r) => !r.isPlaced).length}
+          totalUnplaced={meetingRooms.filter((r) => !r.isPlaced).length}
           iconShape="rect"
           iconColor="#f59e0b"
           isOpen={openSection === "meetingRooms"}
@@ -618,6 +624,7 @@ export function PlacementPanel({ records, onAutoArrange }: PlacementPanelProps) 
           title="Tables"
           placed={0}
           unplaced={0}
+          totalUnplaced={0}
           iconShape="rect"
           iconColor="#6b7280"
           isOpen={openSection === "tables"}

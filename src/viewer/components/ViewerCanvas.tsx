@@ -21,7 +21,7 @@ import { ViewerLegend } from "./ViewerLegend";
 interface ViewerCanvasProps {
   data: FloorPlanData;
   mode: ViewerMode;
-  occupiedBoothCodes: Set<string>;
+  occupiedBoothSlugs: Set<string>;
   highlightedElementId: string | null;
   searchMatchIds: Set<string> | null;
   routePath: { x: number; y: number }[] | null;
@@ -269,7 +269,7 @@ function ViewerElement({
   );
 }
 
-export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedElementId, searchMatchIds, routePath, onElementClick }: ViewerCanvasProps) {
+export function ViewerCanvas({ data, mode, occupiedBoothSlugs, highlightedElementId, searchMatchIds, routePath, onElementClick }: ViewerCanvasProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [hoveredElementId, setHoveredElementId] = useState<string | null>(null);
   const isSearching = !!searchMatchIds && searchMatchIds.size > 0;
@@ -323,8 +323,8 @@ export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedElemen
             const isSessionArea = element.type === "session_area";
             const isMeetingRoom = element.type === "meeting_room";
             const isInteractive = isBooth || isSessionArea || isMeetingRoom;
-            const boothCode = element.properties.name;
-            const isOccupied = isBooth && boothCode ? occupiedBoothCodes.has(boothCode) : false;
+            const boothSlug = element.properties.boothSlug ?? "";
+            const isOccupied = isBooth && boothSlug ? occupiedBoothSlugs.has(boothSlug) : false;
 
             // In attendee mode, unoccupied booths are faded and non-interactive
             const isInert = mode === "attendee" && isBooth && !isOccupied;
@@ -340,8 +340,8 @@ export function ViewerCanvas({ data, mode, occupiedBoothCodes, highlightedElemen
               (isSearching && !isSearchMatch && !isSelected);
 
             const buildClickItem = (): HoveredItem | null => {
-              if (isBooth && boothCode) {
-                return { type: "booth", elementId: element.id, boothCode };
+              if (isBooth && boothSlug) {
+                return { type: "booth", elementId: element.id, boothSlug };
               }
               if (isSessionArea) {
                 return { type: "session_area", elementId: element.id, sessionId: element.properties.sessionId ?? null };

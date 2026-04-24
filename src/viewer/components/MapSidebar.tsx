@@ -33,11 +33,11 @@ export function MapSidebar({ elements, exhibitors, selectedItem, onSelect }: Map
     [exhibitors]
   );
 
-  const boothByCode = useMemo(() => {
+  const boothBySlug = useMemo(() => {
     const map = new Map<string, FloorPlanElement>();
     for (const el of elements) {
-      if (el.type === "booth" && el.properties.name) {
-        map.set(el.properties.name, el);
+      if (el.type === "booth" && el.properties.boothSlug) {
+        map.set(el.properties.boothSlug, el);
       }
     }
     return map;
@@ -90,14 +90,14 @@ export function MapSidebar({ elements, exhibitors, selectedItem, onSelect }: Map
       <div className="flex-1 overflow-y-auto">
         {currentTab === "exhibitors" &&
           sortedExhibitors.map((exhibitor) => {
-            const boothEl = boothByCode.get(exhibitor.boothCode);
+            const boothEl = boothBySlug.get(exhibitor.boothSlug);
             const isSelected = boothEl ? selectedItem?.elementId === boothEl.id : false;
             return (
               <button
                 key={exhibitor.id}
                 onClick={() => {
                   if (!boothEl) return;
-                  onSelect({ type: "booth", elementId: boothEl.id, boothCode: exhibitor.boothCode });
+                  onSelect({ type: "booth", elementId: boothEl.id, boothSlug: exhibitor.boothSlug });
                 }}
                 className={`w-full text-left px-3 py-2 border-b border-gray-100 cursor-pointer transition-colors ${
                   isSelected ? "bg-primary-100" : "hover:bg-gray-50"
@@ -109,7 +109,7 @@ export function MapSidebar({ elements, exhibitors, selectedItem, onSelect }: Map
                   )}
                   <div>
                     <div className="text-xs font-medium text-gray-800">{exhibitor.name}</div>
-                    <div className="text-[11px] text-gray-400">Booth {exhibitor.boothCode}</div>
+                    <div className="text-[11px] text-gray-400">Booth {boothEl?.properties.name ?? ""}</div>
                   </div>
                 </div>
               </button>

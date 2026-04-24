@@ -19,7 +19,7 @@ export function useSearch(
   const exhibitorsByBooth = useMemo(() => {
     const map = new Map<string, Exhibitor>();
     for (const ex of exhibitors) {
-      map.set(ex.boothCode, ex);
+      map.set(ex.boothSlug, ex);
     }
     return map;
   }, [exhibitors]);
@@ -31,12 +31,12 @@ export function useSearch(
     for (const el of elements) {
       if (el.type === "booth" && el.properties.name) {
         const code = el.properties.name;
-        const exhibitor = exhibitorsByBooth.get(code);
+        const exhibitor = exhibitorsByBooth.get(el.properties.boothSlug ?? "");
         entries.push({
           elementId: el.id,
           elementType: "booth",
           name: code,
-          code,
+          code: el.properties.boothSlug ?? code,
           exhibitorName: exhibitor?.name ?? null,
         } satisfies SearchResult);
       } else if (el.type === "session_area") {

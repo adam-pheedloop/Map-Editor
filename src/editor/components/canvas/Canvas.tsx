@@ -164,6 +164,9 @@ export function Canvas({
   unlinkedElementIds,
   showTransformControls = true,
   overlappingElementIds,
+  activeGroupId,
+  onDoubleClick,
+  onGroupTransformEnd: _onGroupTransformEnd,
 }: CanvasProps) {
   const isSelectMode = activeTool === null;
 
@@ -685,7 +688,9 @@ export function Canvas({
                   isLinked={!unlinkedElementIds?.has(element.id)}
                   isHovered={isSelectMode && hoveredElementId === element.id}
                   isOverlapping={overlappingElementIds?.has(element.id) ?? false}
+                  isDimmed={activeGroupId != null && element.properties.groupId !== activeGroupId}
                   onSelect={onSelect}
+                  onDoubleClick={onDoubleClick}
                   onDragStart={handleElementDragStart}
                   onDragMove={handleElementDragMove}
                   onDragEnd={handleElementDragEnd}

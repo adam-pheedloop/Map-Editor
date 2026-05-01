@@ -26,6 +26,8 @@ interface ElementShapeProps {
   onContextMenu: (elementId: string, screenX: number, screenY: number) => void;
   onMouseEnter?: () => void;
   onMouseLeave?: () => void;
+  isDimmed?: boolean;
+  onDoubleClick?: (id: string) => void;
 }
 
 function getLabel(element: FloorPlanElement): string {
@@ -46,6 +48,8 @@ export function ElementShape({
   onContextMenu,
   onMouseEnter,
   onMouseLeave,
+  isDimmed = false,
+  onDoubleClick,
 }: ElementShapeProps) {
   const geo = element.geometry;
   const label = getLabel(element);
@@ -69,12 +73,18 @@ export function ElementShape({
       x={x}
       y={y}
       rotation={rotation}
-      opacity={element.properties.opacity ?? 1}
-      draggable={isSelectMode}
+      opacity={isDimmed ? 0.35 : (element.properties.opacity ?? 1)}
+      listening={!isDimmed}
+      draggable={isSelectMode && !isDimmed}
       onClick={(e) => {
         if (!isSelectMode) return;
         e.cancelBubble = true;
         onSelect(element.id, e.evt.shiftKey);
+      }}
+      onDblClick={(e) => {
+        if (!isSelectMode) return;
+        e.cancelBubble = true;
+        onDoubleClick?.(element.id);
       }}
       onDragStart={() => {
         onDragStart(element.id);

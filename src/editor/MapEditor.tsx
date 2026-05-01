@@ -625,10 +625,17 @@ export function MapEditor({
 
   const handleElementContextMenu = useCallback(
     (elementId: string, screenX: number, screenY: number) => {
-      selectOne(elementId);
+      const element = data.elements.find((el) => el.id === elementId);
+      const groupId = element?.properties.groupId;
+      if (groupId && !activeGroupId) {
+        // Right-clicking a group member: select the whole group
+        selectMany(data.elements.filter((el) => el.properties.groupId === groupId).map((el) => el.id));
+      } else if (!selectedIds.has(elementId)) {
+        selectOne(elementId);
+      }
       setContextMenu({ elementId, x: screenX, y: screenY });
     },
-    [selectOne],
+    [data.elements, activeGroupId, selectedIds, selectMany, selectOne],
   );
 
   const contextMenuItems: ContextMenuItem[] = (() => {
@@ -660,6 +667,31 @@ export function MapEditor({
     );
 
     items.push({ type: "divider" as const });
+
+    // Group / Ungroup / Enter Group
+    const clickedGroupId = element.properties.groupId;
+    if (clickedGroupId) {
+      if (!activeGroupId) {
+        items.push({
+          label: "Enter Group",
+          onClick: () => { setActiveGroupId(clickedGroupId); selectOne(contextMenu.elementId); setContextMenu(null); },
+        });
+      }
+      items.push({
+        label: "Ungroup",
+        onClick: () => { dissolveGroup(clickedGroupId); setActiveGroupId(null); setContextMenu(null); },
+      });
+      items.push({ type: "divider" as const });
+    } else if (
+      selectedIds.size >= 2 &&
+      [...selectedIds].every((id) => !data.elements.find((el) => el.id === id)?.properties.groupId)
+    ) {
+      items.push({
+        label: "Group",
+        onClick: () => { createGroup([...selectedIds]); setContextMenu(null); },
+      });
+      items.push({ type: "divider" as const });
+    }
 
     for (const action of config.contextMenu) {
       switch (action) {

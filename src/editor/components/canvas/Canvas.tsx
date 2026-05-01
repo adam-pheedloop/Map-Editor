@@ -12,6 +12,7 @@ import { BackgroundImage } from "./BackgroundImage";
 import { AlignmentGuides } from "./AlignmentGuides";
 import { SelectionRect } from "./SelectionRect";
 import { MultiSelectBounds } from "./MultiSelectBounds";
+import { GroupTransformer } from "./GroupTransformer";
 import { GridLayer } from "./GridLayer";
 import { WalkableGridOverlay } from "./WalkableGridOverlay";
 import { CalibrationPreview } from "./CalibrationPreview";
@@ -166,7 +167,7 @@ export function Canvas({
   overlappingElementIds,
   activeGroupId,
   onDoubleClick,
-  onGroupTransformEnd: _onGroupTransformEnd,
+  onGroupTransformEnd,
 }: CanvasProps) {
   const isSelectMode = activeTool === null;
 
@@ -274,6 +275,26 @@ export function Canvas({
     selectedElement?.geometry.shape === "polygon"
       ? PolygonVertexHandles
       : handleDef?.HandleComponent;
+
+  // Group selection: all selectedIds share the same groupId and we're not inside the group
+  const groupSelectionGroupId = (() => {
+    if (selectedIds.size < 2 || activeGroupId) return null;
+    const firstId = [...selectedIds][0];
+    const gid = data.elements.find((el) => el.id === firstId)?.properties.groupId;
+    if (!gid) return null;
+    return [...selectedIds].every(
+      (id) => data.elements.find((el) => el.id === id)?.properties.groupId === gid
+    ) ? gid : null;
+  })();
+
+  const groupMemberElements = groupSelectionGroupId
+    ? data.elements.filter((el) => el.properties.groupId === groupSelectionGroupId)
+    : null;
+
+  // Elements in the active group (for boundary overlay)
+  const activeGroupElements = activeGroupId
+    ? data.elements.filter((el) => el.properties.groupId === activeGroupId)
+    : null;
 
   // --- Mouse event handlers ---
 
@@ -705,19 +726,47 @@ export function Canvas({
 
         {/* Selection overlay: transformer, multi-select bounds, handles */}
         <Layer>
-          <SelectionTransformer
-            selectedIds={selectedIds}
-            stageRef={stageRef}
-            elements={data.elements}
-            onTransformEnd={onElementResize}
-            visible={showTransformControls}
-          />
-          {!isMultiDragging && (
-            <MultiSelectBounds
-              elements={data.elements}
-              selectedIds={selectedIds}
+          {groupSelectionGroupId && groupMemberElements && onGroupTransformEnd ? (
+            <GroupTransformer
+              groupId={groupSelectionGroupId}
+              memberElements={groupMemberElements}
+              onGroupTransformEnd={onGroupTransformEnd}
             />
+          ) : (
+            <>
+              <SelectionTransformer
+                selectedIds={selectedIds}
+                stageRef={stageRef}
+                elements={data.elements}
+                onTransformEnd={onElementResize}
+                visible={showTransformControls}
+              />
+              {!isMultiDragging && (
+                <MultiSelectBounds
+                  elements={data.elements}
+                  selectedIds={selectedIds}
+                />
+              )}
+            </>
           )}
+          {/* Boundary outline shown while inside an entered group */}
+          {activeGroupElements && activeGroupElements.length > 0 && (() => {
+            let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+            for (const el of activeGroupElements) {
+              const b = getElementBounds(el);
+              minX = Math.min(minX, b.left); minY = Math.min(minY, b.top);
+              maxX = Math.max(maxX, b.right); maxY = Math.max(maxY, b.bottom);
+            }
+            const pad = 6;
+            return (
+              <Rect
+                x={minX - pad} y={minY - pad}
+                width={maxX - minX + pad * 2} height={maxY - minY + pad * 2}
+                stroke="#007bff" strokeWidth={1} opacity={0.4}
+                dash={[6, 4]} listening={false}
+              />
+            );
+          })()}
           {HandleComponent && selectedElement && (
             <HandleComponent
               element={selectedElement}

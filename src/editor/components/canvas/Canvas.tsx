@@ -472,7 +472,17 @@ export function Canvas({
           return overlapArea / elArea >= OVERLAP_THRESHOLD;
         });
         if (enclosed.length > 0) {
-          onDragSelect(enclosed.map((el) => el.id));
+          // Expand selection to include all members of any partially captured group
+          const enclosedIds = new Set(enclosed.map((el) => el.id));
+          for (const el of enclosed) {
+            const gid = el.properties.groupId;
+            if (gid) {
+              for (const other of data.elements) {
+                if (other.properties.groupId === gid) enclosedIds.add(other.id);
+              }
+            }
+          }
+          onDragSelect([...enclosedIds]);
         }
       }
       dragSelectOrigin.current = null;

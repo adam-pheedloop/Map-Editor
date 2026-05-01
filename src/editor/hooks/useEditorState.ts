@@ -155,17 +155,27 @@ export function useEditorState(
   );
 
   const deleteElement = useCallback((id: string) => {
-    setData((prev) => ({
-      ...prev,
-      elements: prev.elements.filter((el) => el.id !== id),
-    }));
+    setData((prev) => {
+      const remaining = prev.elements.filter((el) => el.id !== id);
+      const remainingGroupIds = new Set(remaining.map((el) => el.properties.groupId).filter(Boolean) as string[]);
+      return {
+        ...prev,
+        elements: remaining,
+        groups: (prev.groups ?? []).filter((g) => remainingGroupIds.has(g.id)),
+      };
+    });
   }, [setData]);
 
   const deleteElements = useCallback((ids: Set<string>) => {
-    setData((prev) => ({
-      ...prev,
-      elements: prev.elements.filter((el) => !ids.has(el.id)),
-    }));
+    setData((prev) => {
+      const remaining = prev.elements.filter((el) => !ids.has(el.id));
+      const remainingGroupIds = new Set(remaining.map((el) => el.properties.groupId).filter(Boolean) as string[]);
+      return {
+        ...prev,
+        elements: remaining,
+        groups: (prev.groups ?? []).filter((g) => remainingGroupIds.has(g.id)),
+      };
+    });
   }, [setData]);
 
   const moveElements = useCallback(

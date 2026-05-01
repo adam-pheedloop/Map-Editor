@@ -118,6 +118,9 @@ interface CanvasProps {
   unlinkedElementIds?: Set<string>;
   showTransformControls?: boolean;
   overlappingElementIds?: Set<string>;
+  activeGroupId?: string | null;
+  onDoubleClick?: (id: string) => void;
+  onGroupTransformEnd?: (updates: Array<{ id: string; geometry: Partial<import("../../../types").Geometry> }>) => void;
 }
 
 export function Canvas({

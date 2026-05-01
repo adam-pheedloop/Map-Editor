@@ -87,6 +87,9 @@ export function MapEditor({
     deleteElement,
     deleteElements,
     moveElements,
+    batchUpdateGeometry,
+    createGroup,
+    dissolveGroup,
     updateElementType,
     setMapName,
     updateLegend,
@@ -142,6 +145,7 @@ export function MapEditor({
   const [activePathingTool, setActivePathingTool] =
     useState<PathingTool>("select");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [activeGroupId, setActiveGroupId] = useState<string | null>(null);
   const [defaults, setDefaults] = useState<DrawingDefaults>(INITIAL_DEFAULTS);
   const [showMapDebug, setShowMapDebug] = useState(false);
   const [showBgDialog, setShowBgDialog] = useState(false);
@@ -280,6 +284,11 @@ export function MapEditor({
     setSelectedIds(new Set(ids));
   }, []);
 
+  const getGroupMembers = useCallback(
+    (groupId: string) => data.elements.filter((el) => el.properties.groupId === groupId),
+    [data.elements],
+  );
+
   const handleLocateOverlapping = useCallback(() => {
     if (overlappingElementIds.size === 0) return;
     const els = data.elements.filter((el) => overlappingElementIds.has(el.id));
@@ -381,8 +390,12 @@ export function MapEditor({
   }, [selectedElements, copy, paste, addElements]);
 
   const handleDeselect = useCallback(() => {
+    if (activeGroupId) {
+      setActiveGroupId(null);
+      return;
+    }
     selectNone();
-  }, [selectNone]);
+  }, [activeGroupId, selectNone]);
 
   const handleDelete = useCallback(() => {
     if (hasSelection) {
@@ -708,18 +721,48 @@ export function MapEditor({
     [selectNone],
   );
 
-  // Canvas selection handler: supports shift+click
+  // Canvas selection handler: supports shift+click and group-aware routing
   const handleSelect = useCallback(
     (id: string | null, shiftKey?: boolean) => {
       if (id === null) {
+        setActiveGroupId(null);
         selectNone();
-      } else if (shiftKey) {
-        toggleSelect(id);
-      } else {
+        return;
+      }
+      // Inside an entered group: behave like normal individual selection
+      if (activeGroupId) {
+        if (shiftKey) toggleSelect(id);
+        else selectOne(id);
+        return;
+      }
+      // Normal mode: if element belongs to a group, select all members
+      const element = data.elements.find((el) => el.id === id);
+      const groupId = element?.properties.groupId;
+      if (groupId && !shiftKey) {
+        selectMany(getGroupMembers(groupId).map((el) => el.id));
+        return;
+      }
+      if (shiftKey) toggleSelect(id);
+      else selectOne(id);
+    },
+    [activeGroupId, data.elements, selectNone, selectOne, toggleSelect, selectMany, getGroupMembers],
+  );
+
+  const handleDoubleClick = useCallback(
+    (id: string) => {
+      const element = data.elements.find((el) => el.id === id);
+      const groupId = element?.properties.groupId;
+      if (!groupId) return;
+      // Enter the group if the clicked element is part of the currently selected group
+      const allSelectedInGroup = [...selectedIds].every(
+        (sid) => data.elements.find((el) => el.id === sid)?.properties.groupId === groupId,
+      );
+      if (allSelectedInGroup) {
+        setActiveGroupId(groupId);
         selectOne(id);
       }
     },
-    [selectNone, toggleSelect, selectOne],
+    [data.elements, selectedIds, selectOne],
   );
 
   // Drag-select complete: select all elements in the rectangle
@@ -729,6 +772,44 @@ export function MapEditor({
     },
     [selectMany],
   );
+
+  const handleGroupTransformEnd = useCallback(
+    (updates: Array<{ id: string; geometry: Partial<import("../types").Geometry> }>) => {
+      batchUpdateGeometry(updates);
+    },
+    [batchUpdateGeometry],
+  );
+
+  // Ctrl+G / Ctrl+Shift+G group shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.target as HTMLElement).matches("input, textarea, [contenteditable]")) return;
+      if (!(e.metaKey || e.ctrlKey) || e.key !== "g") return;
+      e.preventDefault();
+      if (e.shiftKey) {
+        // Ungroup: all selected elements must share the same groupId
+        const ids = [...selectedIds];
+        const groupId = data.elements.find((el) => el.id === ids[0])?.properties.groupId;
+        if (
+          groupId &&
+          ids.every((id) => data.elements.find((el) => el.id === id)?.properties.groupId === groupId)
+        ) {
+          dissolveGroup(groupId);
+          setActiveGroupId(null);
+        }
+      } else {
+        // Group: 2+ elements selected, none already in a group
+        if (
+          selectedIds.size >= 2 &&
+          [...selectedIds].every((id) => !data.elements.find((el) => el.id === id)?.properties.groupId)
+        ) {
+          createGroup([...selectedIds]);
+        }
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [selectedIds, data.elements, createGroup, dissolveGroup]);
 
   // --- Auto-generation handlers ---
 
@@ -1323,8 +1404,11 @@ export function MapEditor({
                   onWheel={handleWheel}
                   onDragEnd={handleDragEnd}
                   onPositionChange={setPosition}
+                  activeGroupId={activeGroupId}
                   onSelect={handleSelect}
+                  onDoubleClick={handleDoubleClick}
                   onDragSelect={handleDragSelect}
+                  onGroupTransformEnd={handleGroupTransformEnd}
                   onElementMove={handleElementMove}
                   onMultiMove={handleMultiMove}
                   onElementResize={handleElementResize}

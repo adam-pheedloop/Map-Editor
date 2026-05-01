@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import {
   PiCursorFill,
   PiPaintBrush,
@@ -233,6 +234,9 @@ export function ToolSidebar({
   placementRecords,
   onAutoArrange,
 }: ToolSidebarProps) {
+  const iconRowRef = useRef<HTMLDivElement>(null);
+  const showIconPicker = activeTool === "icon" && !!onIconSelect;
+
   // Pathing mode overrides the normal sidebar
   if (isPathingMode && onPathingToolChange && activePathingTool) {
     return (
@@ -260,6 +264,7 @@ export function ToolSidebar({
   }
 
   return (
+    <>
     <div className="flex flex-col w-64 shrink-0 bg-white border-r border-gray-200 overflow-hidden">
       {/* Map name + mode switcher */}
       <SidebarHeader
@@ -289,21 +294,12 @@ export function ToolSidebar({
                 : tool;
 
             return (
-              <div key={tool.id} className="relative">
+              <div key={tool.id} ref={tool.id === "icon" ? iconRowRef : null}>
                 <ToolRow
                   tool={displayTool}
                   isActive={activeTool === tool.id}
                   onClick={() => onToolChange(tool.id)}
                 />
-                {tool.id === "icon" &&
-                  activeTool === "icon" &&
-                  onIconSelect && (
-                    <IconPicker
-                      selectedId={activeIconName}
-                      onSelect={(iconId) => onIconSelect(iconId)}
-                      onClose={() => onToolChange("select")}
-                    />
-                  )}
               </div>
             );
           })}
@@ -314,5 +310,15 @@ export function ToolSidebar({
         </div>
       )}
     </div>
+    {showIconPicker && iconRowRef.current && createPortal(
+      <IconPicker
+        anchorRect={iconRowRef.current.getBoundingClientRect()}
+        selectedId={activeIconName}
+        onSelect={(iconId) => onIconSelect!(iconId)}
+        onClose={() => onToolChange("select")}
+      />,
+      document.body
+    )}
+    </>
   );
 }

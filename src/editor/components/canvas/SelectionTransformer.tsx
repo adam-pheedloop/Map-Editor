@@ -50,6 +50,7 @@ export function SelectionTransformer({
     ? elements.find((el) => el.id === selectedId)
     : null;
   const isLine = selectedElement?.geometry.shape === "line";
+  const isArrow = selectedElement?.geometry.shape === "arrow";
   const isArc = selectedElement?.geometry.shape === "arc";
   const isPolygon = selectedElement?.geometry.shape === "polygon";
 
@@ -63,9 +64,8 @@ export function SelectionTransformer({
     const stage = stageRef.current;
     if (!tr || !stage) return;
 
-    // Only attach transformer for single selection (not lines)
-    // Multi-select uses manual drag handling without transformer
-    if (!isSingle || isLine || isArc || isPolygon) {
+    // Only attach transformer for single selection (not lines, arrows, arcs, polygons — these use custom handles)
+    if (!isSingle || isLine || isArrow || isArc || isPolygon) {
       tr.nodes([]);
       tr.getLayer()?.batchDraw();
       return;
@@ -76,7 +76,7 @@ export function SelectionTransformer({
       tr.nodes([node]);
       tr.getLayer()?.batchDraw();
     }
-  }, [selectedIds, stageRef, geoKey, isLine, isArc, isPolygon, isSingle, elements]);
+  }, [selectedIds, stageRef, geoKey, isLine, isArrow, isArc, isPolygon, isSingle, elements]);
 
   const handleTransformEnd = useCallback(() => {
     const tr = trRef.current;

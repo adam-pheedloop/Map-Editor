@@ -10,6 +10,11 @@ import type {
   AutoArrangeRecord,
 } from "./components/panels/PlacementPanel";
 import { getElementBounds } from "./utils/bounds";
+import {
+  alignLeft, alignRight, alignTop, alignBottom,
+  alignCenterH, alignCenterV,
+  distributeH, distributeV,
+} from "./utils/alignment";
 import type { DrawingDefaults } from "./components/panels/OptionsBar";
 import type { ToolContext } from "./tools/types";
 import { TOOL_MAP } from "./tools/registry";
@@ -456,6 +461,30 @@ export function MapEditor({
     !optionsBarGroupId &&
     [...selectedIds].every((id) => !data.elements.find((el) => el.id === id)?.properties.groupId);
 
+  // When editing inside a group, strip groupId so each member is its own alignment unit
+  const elementsForAlignment = useMemo(
+    () =>
+      activeGroupId
+        ? selectedElements.map((el) => ({
+            ...el,
+            properties: { ...el.properties, groupId: undefined },
+          }))
+        : selectedElements,
+    [activeGroupId, selectedElements],
+  );
+
+  // Number of independent alignment units in the selection (solo elements + distinct groups)
+  const alignmentUnitCount = useMemo(() => {
+    if (activeGroupId) return selectedElements.length;
+    const groupIds = new Set<string>();
+    let solo = 0;
+    for (const el of selectedElements) {
+      if (el.properties.groupId) groupIds.add(el.properties.groupId);
+      else solo++;
+    }
+    return solo + groupIds.size;
+  }, [activeGroupId, selectedElements]);
+
   const handleDefaultsChange = useCallback(
     (updates: Partial<DrawingDefaults>) => {
       setDefaults((prev) => ({ ...prev, ...updates }));
@@ -826,6 +855,15 @@ export function MapEditor({
     },
     [batchUpdateGeometry],
   );
+
+  const handleAlignLeft    = useCallback(() => { const u = alignLeft(elementsForAlignment);    if (u.length) batchUpdateGeometry(u); }, [elementsForAlignment, batchUpdateGeometry]);
+  const handleAlignRight   = useCallback(() => { const u = alignRight(elementsForAlignment);   if (u.length) batchUpdateGeometry(u); }, [elementsForAlignment, batchUpdateGeometry]);
+  const handleAlignTop     = useCallback(() => { const u = alignTop(elementsForAlignment);     if (u.length) batchUpdateGeometry(u); }, [elementsForAlignment, batchUpdateGeometry]);
+  const handleAlignBottom  = useCallback(() => { const u = alignBottom(elementsForAlignment);  if (u.length) batchUpdateGeometry(u); }, [elementsForAlignment, batchUpdateGeometry]);
+  const handleAlignCenterH = useCallback(() => { const u = alignCenterH(elementsForAlignment); if (u.length) batchUpdateGeometry(u); }, [elementsForAlignment, batchUpdateGeometry]);
+  const handleAlignCenterV = useCallback(() => { const u = alignCenterV(elementsForAlignment); if (u.length) batchUpdateGeometry(u); }, [elementsForAlignment, batchUpdateGeometry]);
+  const handleDistributeH  = useCallback(() => { const u = distributeH(elementsForAlignment);  if (u.length) batchUpdateGeometry(u); }, [elementsForAlignment, batchUpdateGeometry]);
+  const handleDistributeV  = useCallback(() => { const u = distributeV(elementsForAlignment);  if (u.length) batchUpdateGeometry(u); }, [elementsForAlignment, batchUpdateGeometry]);
 
   // Ctrl+G / Ctrl+Shift+G group shortcuts
   useEffect(() => {
@@ -1431,6 +1469,14 @@ export function MapEditor({
               onUngroup={optionsBarGroupId ? () => { dissolveGroup(optionsBarGroupId); setActiveGroupId(null); } : undefined}
               onEnterGroup={optionsBarGroupId ? () => { setActiveGroupId(optionsBarGroupId); selectOne([...selectedIds][0]); } : undefined}
               onExitGroup={activeGroupId ? () => setActiveGroupId(null) : undefined}
+              onAlignLeft={alignmentUnitCount >= 2 ? handleAlignLeft : undefined}
+              onAlignCenterH={alignmentUnitCount >= 2 ? handleAlignCenterH : undefined}
+              onAlignRight={alignmentUnitCount >= 2 ? handleAlignRight : undefined}
+              onAlignTop={alignmentUnitCount >= 2 ? handleAlignTop : undefined}
+              onAlignCenterV={alignmentUnitCount >= 2 ? handleAlignCenterV : undefined}
+              onAlignBottom={alignmentUnitCount >= 2 ? handleAlignBottom : undefined}
+              onDistributeH={alignmentUnitCount >= 3 ? handleDistributeH : undefined}
+              onDistributeV={alignmentUnitCount >= 3 ? handleDistributeV : undefined}
             />
           )}
           <div className="flex flex-1 overflow-hidden">

@@ -441,6 +441,21 @@ export function MapEditor({
         }
       : defaults;
 
+  // Group action state for options bar
+  const optionsBarGroupId = (() => {
+    if (selectedIds.size < 2 || activeGroupId) return null;
+    const first = data.elements.find((el) => el.id === [...selectedIds][0]);
+    const gid = first?.properties.groupId;
+    if (!gid) return null;
+    return [...selectedIds].every(
+      (id) => data.elements.find((el) => el.id === id)?.properties.groupId === gid,
+    ) ? gid : null;
+  })();
+  const canGroupSelection =
+    isMultiSelect &&
+    !optionsBarGroupId &&
+    [...selectedIds].every((id) => !data.elements.find((el) => el.id === id)?.properties.groupId);
+
   const handleDefaultsChange = useCallback(
     (updates: Partial<DrawingDefaults>) => {
       setDefaults((prev) => ({ ...prev, ...updates }));
@@ -1412,6 +1427,10 @@ export function MapEditor({
                       : { optionsBar: [], propertiesPanel: [], contextMenu: [] }
               }
               onDefaultsChange={handleDefaultsChange}
+              onGroup={canGroupSelection ? () => createGroup([...selectedIds]) : undefined}
+              onUngroup={optionsBarGroupId ? () => { dissolveGroup(optionsBarGroupId); setActiveGroupId(null); } : undefined}
+              onEnterGroup={optionsBarGroupId ? () => { setActiveGroupId(optionsBarGroupId); selectOne([...selectedIds][0]); } : undefined}
+              onExitGroup={activeGroupId ? () => setActiveGroupId(null) : undefined}
             />
           )}
           <div className="flex flex-1 overflow-hidden">

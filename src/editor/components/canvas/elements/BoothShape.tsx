@@ -45,7 +45,6 @@ export function BoothShape({ geo, color, strokeColor, strokeWidth, properties, i
           stroke={shapeStroke}
           strokeWidth={strokeWidth}
           dash={shapeDash}
-          cornerRadius={2}
           opacity={isLinked ? 0.9 : 0.5}
         />
       )}

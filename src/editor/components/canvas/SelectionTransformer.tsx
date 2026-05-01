@@ -15,6 +15,7 @@ interface SelectionTransformerProps {
     height: number,
     rotation: number
   ) => void;
+  visible?: boolean;
 }
 
 export function SelectionTransformer({
@@ -22,6 +23,7 @@ export function SelectionTransformer({
   stageRef,
   elements,
   onTransformEnd,
+  visible = true,
 }: SelectionTransformerProps) {
   const trRef = useRef<Konva.Transformer>(null);
   const [shiftHeld, setShiftHeld] = useState(false);
@@ -136,6 +138,8 @@ export function SelectionTransformer({
     const rotation = node.rotation();
     onTransformEnd(selectedId, node.x(), node.y(), newWidth, newHeight, rotation);
   }, [isSingle, selectedId, onTransformEnd]);
+
+  if (!visible) return null;
 
   return (
     <Transformer

@@ -43,7 +43,6 @@ export function MeetingRoomShape({ geo, color, strokeColor, strokeWidth, propert
           stroke={shapeStroke}
           strokeWidth={strokeWidth}
           dash={shapeDash}
-          cornerRadius={2}
           opacity={isLinked ? 0.9 : 0.5}
         />
       )}

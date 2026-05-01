@@ -1,8 +1,14 @@
 import { useRef, useState, useCallback, useMemo, useEffect } from "react";
 import type { ActiveTool, EditorMode, PathingTool } from "./types";
 import { usePlacementRecords } from "./hooks/usePlacementRecords";
-import { PLACEMENT_DRAG_TYPE, PLACEMENT_SHAPE_ELLIPSE_TYPE } from "./components/panels/PlacementPanel";
-import type { PlacementRecordRef, AutoArrangeRecord } from "./components/panels/PlacementPanel";
+import {
+  PLACEMENT_DRAG_TYPE,
+  PLACEMENT_SHAPE_ELLIPSE_TYPE,
+} from "./components/panels/PlacementPanel";
+import type {
+  PlacementRecordRef,
+  AutoArrangeRecord,
+} from "./components/panels/PlacementPanel";
 import { getElementBounds } from "./utils/bounds";
 import type { DrawingDefaults } from "./components/panels/OptionsBar";
 import type { ToolContext } from "./tools/types";
@@ -21,7 +27,10 @@ import { PathingOptionsBar } from "./components/panels/PathingOptionsBar";
 import { StatusBar } from "./components/StatusBar";
 import { PropertiesPanel } from "./components/panels/PropertiesPanel";
 import { getToolUIConfig } from "./tools/registry";
-import { ContextMenu, type ContextMenuItem } from "./components/canvas/ContextMenu";
+import {
+  ContextMenu,
+  type ContextMenuItem,
+} from "./components/canvas/ContextMenu";
 import { modKey } from "./components/TopBar";
 import { MapDebugDialog } from "./components/debug";
 import { BackgroundImageDialog } from "./components/panels/BackgroundImageDialog";
@@ -34,8 +43,19 @@ import { LegendDialog } from "./components/panels/LegendDialog";
 import { LegendCanvasOverlay } from "./components/canvas/LegendCanvasOverlay";
 import { LayerPanel } from "./components/panels/LayerPanel";
 import { Rulers } from "./components/Rulers";
-import type { FloorPlanData, FloorPlanElement, ElementProperties, Geometry, LayerId, LayerDefinition } from "../types";
-import { DEFAULT_LAYERS, ELEMENT_TYPE_TO_LAYER, DEFAULT_TYPE_STYLES } from "../types";
+import type {
+  FloorPlanData,
+  FloorPlanElement,
+  ElementProperties,
+  Geometry,
+  LayerId,
+  LayerDefinition,
+} from "../types";
+import {
+  DEFAULT_LAYERS,
+  ELEMENT_TYPE_TO_LAYER,
+  DEFAULT_TYPE_STYLES,
+} from "../types";
 
 const INITIAL_DEFAULTS: DrawingDefaults = {
   fill: "#94a3b8",
@@ -49,7 +69,11 @@ interface MapEditorProps {
   persist?: boolean;
 }
 
-export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorProps) {
+export function MapEditor({
+  initialData,
+  debug: debugProp,
+  persist,
+}: MapEditorProps) {
   const debug = debugProp || import.meta.env.DEV;
 
   const {
@@ -86,7 +110,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   } = useEditorState(initialData, { persist });
   // Layer state (editor-only, not persisted in FloorPlanData)
   const [layers, setLayers] = useState<LayerDefinition[]>(() =>
-    DEFAULT_LAYERS.map((l) => ({ ...l }))
+    DEFAULT_LAYERS.map((l) => ({ ...l })),
   );
   const [activeLayerId, _setActiveLayerId] = useState<LayerId>("content");
   const [activeTool, setActiveTool] = useState<ActiveTool>("select");
@@ -98,7 +122,8 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     for (const el of data.elements) {
       if (el.type === "booth") {
         const slug = el.properties.boothSlug;
-        if (!slug || !placementRecords.knownBoothSlugs.has(slug)) ids.add(el.id);
+        if (!slug || !placementRecords.knownBoothSlugs.has(slug))
+          ids.add(el.id);
       } else if (el.type === "session_area") {
         const sid = el.properties.sessionId;
         if (!sid || !placementRecords.knownSessionIds.has(sid)) ids.add(el.id);
@@ -108,8 +133,14 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
       }
     }
     return ids;
-  }, [data.elements, placementRecords.knownBoothSlugs, placementRecords.knownSessionIds, placementRecords.knownRoomIds]);
-  const [activePathingTool, setActivePathingTool] = useState<PathingTool>("select");
+  }, [
+    data.elements,
+    placementRecords.knownBoothSlugs,
+    placementRecords.knownSessionIds,
+    placementRecords.knownRoomIds,
+  ]);
+  const [activePathingTool, setActivePathingTool] =
+    useState<PathingTool>("select");
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [defaults, setDefaults] = useState<DrawingDefaults>(INITIAL_DEFAULTS);
   const [showMapDebug, setShowMapDebug] = useState(false);
@@ -117,18 +148,21 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   const [showHelp, setShowHelp] = useState(false);
   const [activeIconName, setActiveIconName] = useState<string | null>(null);
 
-  const setActiveLayerId = useCallback((id: LayerId) => {
-    _setActiveLayerId(id);
-    setSelectedIds(new Set());
-    if (id === "pathing") {
-      initWalkableGrid();
-      setActivePathingTool("select");
-    }
-  }, [initWalkableGrid]);
+  const setActiveLayerId = useCallback(
+    (id: LayerId) => {
+      _setActiveLayerId(id);
+      setSelectedIds(new Set());
+      if (id === "pathing") {
+        initWalkableGrid();
+        setActivePathingTool("select");
+      }
+    },
+    [initWalkableGrid],
+  );
 
   const toggleLayerVisibility = useCallback((id: LayerId) => {
     setLayers((prev) =>
-      prev.map((l) => (l.id === id ? { ...l, visible: !l.visible } : l))
+      prev.map((l) => (l.id === id ? { ...l, visible: !l.visible } : l)),
     );
   }, []);
   const [gridSettings, setGridSettings] = useState({
@@ -139,6 +173,33 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     gridOpacity: 0.5,
   });
   const [snapToObjects, setSnapToObjects] = useState(true);
+  const [showTransformControls, setShowTransformControls] = useState(true);
+  const [overlappingElementIds, setOverlappingElementIds] = useState<
+    Set<string>
+  >(new Set());
+
+  useEffect(() => {
+    const contentEls = data.elements.filter(
+      (el) => (el.layer ?? ELEMENT_TYPE_TO_LAYER[el.type]) === "content",
+    );
+    const ids = new Set<string>();
+    for (let i = 0; i < contentEls.length; i++) {
+      for (let j = i + 1; j < contentEls.length; j++) {
+        const a = getElementBounds(contentEls[i]);
+        const b = getElementBounds(contentEls[j]);
+        if (
+          a.left < b.right &&
+          a.right > b.left &&
+          a.top < b.bottom &&
+          a.bottom > b.top
+        ) {
+          ids.add(contentEls[i].id);
+          ids.add(contentEls[j].id);
+        }
+      }
+    }
+    setOverlappingElementIds(ids);
+  }, [data.elements]);
   const [walkableGridOpacity, setWalkableGridOpacity] = useState(0.3);
   const [showRulers, setShowRulers] = useState(false);
   const [showGridDialog, setShowGridDialog] = useState(false);
@@ -153,14 +214,18 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   } | null>(null);
 
   // Drag-to-place state — shape is tracked separately to avoid re-renders on every mousemove
-  const [dragOverCanvas, setDragOverCanvas] = useState<{ shape: "rect" | "ellipse" } | null>(null);
+  const [dragOverCanvas, setDragOverCanvas] = useState<{
+    shape: "rect" | "ellipse";
+  } | null>(null);
   const ghostDivRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const {
     stageRef,
     scale,
+    setScale,
     position,
+    setPosition,
     stageSize,
     handleWheel,
     handleDragEnd,
@@ -170,9 +235,10 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   // Derived selection helpers
   const selectedElements = useMemo(
     () => data.elements.filter((el) => selectedIds.has(el.id)),
-    [data.elements, selectedIds]
+    [data.elements, selectedIds],
   );
-  const selectedElement = selectedElements.length === 1 ? selectedElements[0] : null;
+  const selectedElement =
+    selectedElements.length === 1 ? selectedElements[0] : null;
   const hasSelection = selectedIds.size > 0;
   const isMultiSelect = selectedIds.size > 1;
 
@@ -198,16 +264,49 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
   }, []);
 
   const selectAll = useCallback(() => {
-    setSelectedIds(new Set(
-      data.elements
-        .filter((el) => (el.layer ?? ELEMENT_TYPE_TO_LAYER[el.type]) === activeLayerId)
-        .map((el) => el.id)
-    ));
+    setSelectedIds(
+      new Set(
+        data.elements
+          .filter(
+            (el) =>
+              (el.layer ?? ELEMENT_TYPE_TO_LAYER[el.type]) === activeLayerId,
+          )
+          .map((el) => el.id),
+      ),
+    );
   }, [data.elements, activeLayerId]);
 
   const selectMany = useCallback((ids: string[]) => {
     setSelectedIds(new Set(ids));
   }, []);
+
+  const handleLocateOverlapping = useCallback(() => {
+    if (overlappingElementIds.size === 0) return;
+    const els = data.elements.filter((el) => overlappingElementIds.has(el.id));
+    selectMany(els.map((el) => el.id));
+
+    // Compute bounding box of all overlapping elements
+    let left = Infinity, right = -Infinity, top = Infinity, bottom = -Infinity;
+    for (const el of els) {
+      const b = getElementBounds(el);
+      if (b.left < left) left = b.left;
+      if (b.right > right) right = b.right;
+      if (b.top < top) top = b.top;
+      if (b.bottom > bottom) bottom = b.bottom;
+    }
+
+    const padding = 80;
+    const newScale = Math.min(
+      (stageSize.width - padding * 2) / (right - left),
+      (stageSize.height - padding * 2) / (bottom - top),
+      5
+    );
+    setScale(newScale);
+    setPosition({
+      x: stageSize.width / 2 - ((left + right) / 2) * newScale,
+      y: stageSize.height / 2 - ((top + bottom) / 2) * newScale,
+    });
+  }, [overlappingElementIds, data.elements, selectMany, stageSize, setScale, setPosition]);
 
   // Clipboard
   const { copy, paste, hasBuffer } = useClipboard();
@@ -353,27 +452,33 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
         }
       }
     },
-    [selectedIds, data.elements, updateProperties]
+    [selectedIds, data.elements, updateProperties],
   );
 
   // --- Tool registry integration ---
   // Resolve active tool string to ToolDefinition (null = select mode)
-  const resolvedTool = activeTool === "select" ? null : TOOL_MAP.get(activeTool) ?? null;
+  const resolvedTool =
+    activeTool === "select" ? null : (TOOL_MAP.get(activeTool) ?? null);
 
   // Unified tool completion handler (used once tools are migrated to registry)
   const handleToolComplete = useCallback(
     (result: import("./tools/types").ToolResult) => {
       if (result.type === "element") {
         const el = result.element;
-        const typeStyle = data.typeStyles?.[el.type] ?? DEFAULT_TYPE_STYLES[el.type] ?? {};
-        const merged = { ...el, layer: activeLayerId, properties: { ...el.properties, ...typeStyle } };
+        const typeStyle =
+          data.typeStyles?.[el.type] ?? DEFAULT_TYPE_STYLES[el.type] ?? {};
+        const merged = {
+          ...el,
+          layer: activeLayerId,
+          properties: { ...el.properties, ...typeStyle },
+        };
         addElement(merged);
         selectOne(merged.id);
         setActiveTool("select");
       }
       // "measurement" and "none" — no action needed
     },
-    [addElement, selectOne, data.typeStyles, activeLayerId]
+    [addElement, selectOne, data.typeStyles, activeLayerId],
   );
 
   // Generic geometry update handler (replaces per-shape callbacks for handles)
@@ -381,7 +486,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     (id: string, updates: Partial<import("../types").Geometry>) => {
       updateElement(id, updates);
     },
-    [updateElement]
+    [updateElement],
   );
 
   // Tool context passed to Canvas → ToolHost
@@ -395,33 +500,54 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
       onComplete: handleToolComplete,
       activeIconName,
     }),
-    [stageRef, position, scale, data, defaults, handleToolComplete, activeIconName]
+    [
+      stageRef,
+      position,
+      scale,
+      data,
+      defaults,
+      handleToolComplete,
+      activeIconName,
+    ],
   );
 
   const handleElementMove = useCallback(
     (id: string, x: number, y: number) => {
       updateElement(id, { x, y });
     },
-    [updateElement]
+    [updateElement],
   );
 
   const handleMultiMove = useCallback(
     (updates: Array<{ id: string; x: number; y: number }>) => {
       moveElements(updates);
     },
-    [moveElements]
+    [moveElements],
   );
 
   const handleElementResize = useCallback(
-    (id: string, x: number, y: number, width: number, height: number, rotation: number) => {
+    (
+      id: string,
+      x: number,
+      y: number,
+      width: number,
+      height: number,
+      rotation: number,
+    ) => {
       const element = data.elements.find((el) => el.id === id);
       if (element?.geometry.shape === "ellipse") {
-        updateElement(id, { x, y, radiusX: width / 2, radiusY: height / 2, rotation });
+        updateElement(id, {
+          x,
+          y,
+          radiusX: width / 2,
+          radiusY: height / 2,
+          rotation,
+        });
       } else {
         updateElement(id, { x, y, width, height, rotation });
       }
     },
-    [data.elements, updateElement]
+    [data.elements, updateElement],
   );
 
   const handleCanvasResize = useCallback(
@@ -440,10 +566,11 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
             if ("height" in geo) updates.height = geo.height * scaleY;
             if ("radiusX" in geo) updates.radiusX = geo.radiusX * scaleX;
             if ("radiusY" in geo) updates.radiusY = geo.radiusY * scaleY;
-            if ("radius" in geo) updates.radius = geo.radius * Math.min(scaleX, scaleY);
+            if ("radius" in geo)
+              updates.radius = geo.radius * Math.min(scaleX, scaleY);
             if ("points" in geo && Array.isArray(geo.points)) {
               updates.points = geo.points.map((v: number, i: number) =>
-                i % 2 === 0 ? v * scaleX : v * scaleY
+                i % 2 === 0 ? v * scaleX : v * scaleY,
               );
             }
             updateElement(el.id, updates);
@@ -452,20 +579,35 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
       }
       updateDimensions({ width: newWidth, height: newHeight });
     },
-    [data.dimensions, data.elements, updateElement, updateDimensions]
+    [data.dimensions, data.elements, updateElement, updateDimensions],
   );
 
   const handleBackgroundImage = useCallback(
-    (dataUrl: string, imageWidth: number, imageHeight: number, mode: "resize-canvas" | "fit-image") => {
+    (
+      dataUrl: string,
+      imageWidth: number,
+      imageHeight: number,
+      mode: "resize-canvas" | "fit-image",
+    ) => {
       if (mode === "resize-canvas") {
         updateDimensions({ width: imageWidth, height: imageHeight });
-        setBackgroundImage({ url: dataUrl, width: imageWidth, height: imageHeight, opacity: 0.3 });
+        setBackgroundImage({
+          url: dataUrl,
+          width: imageWidth,
+          height: imageHeight,
+          opacity: 0.3,
+        });
       } else {
-        setBackgroundImage({ url: dataUrl, width: data.dimensions.width, height: data.dimensions.height, opacity: 0.3 });
+        setBackgroundImage({
+          url: dataUrl,
+          width: data.dimensions.width,
+          height: data.dimensions.height,
+          opacity: 0.3,
+        });
       }
       setShowBgDialog(false);
     },
-    [data.dimensions, setBackgroundImage, updateDimensions]
+    [data.dimensions, setBackgroundImage, updateDimensions],
   );
 
   const handleElementContextMenu = useCallback(
@@ -473,7 +615,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
       selectOne(elementId);
       setContextMenu({ elementId, x: screenX, y: screenY });
     },
-    [selectOne]
+    [selectOne],
   );
 
   const contextMenuItems: ContextMenuItem[] = (() => {
@@ -486,10 +628,22 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
 
     // Z-ordering actions
     items.push(
-      { label: "Bring to Front", onClick: () => reorderElement(contextMenu.elementId, "front") },
-      { label: "Bring Forward", onClick: () => reorderElement(contextMenu.elementId, "forward") },
-      { label: "Send Backward", onClick: () => reorderElement(contextMenu.elementId, "backward") },
-      { label: "Send to Back", onClick: () => reorderElement(contextMenu.elementId, "back") },
+      {
+        label: "Bring to Front",
+        onClick: () => reorderElement(contextMenu.elementId, "front"),
+      },
+      {
+        label: "Bring Forward",
+        onClick: () => reorderElement(contextMenu.elementId, "forward"),
+      },
+      {
+        label: "Send Backward",
+        onClick: () => reorderElement(contextMenu.elementId, "backward"),
+      },
+      {
+        label: "Send to Back",
+        onClick: () => reorderElement(contextMenu.elementId, "back"),
+      },
     );
 
     items.push({ type: "divider" as const });
@@ -499,19 +653,28 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
         case "convertToBooth":
           items.push({
             label: "Convert to Booth",
-            onClick: () => updateElementType(contextMenu.elementId, "booth", { color: "#3498DB" }),
+            onClick: () =>
+              updateElementType(contextMenu.elementId, "booth", {
+                color: "#3498DB",
+              }),
           });
           break;
         case "convertToSessionArea":
           items.push({
             label: "Convert to Session Location",
-            onClick: () => updateElementType(contextMenu.elementId, "session_area", { color: "#27AE60" }),
+            onClick: () =>
+              updateElementType(contextMenu.elementId, "session_area", {
+                color: "#27AE60",
+              }),
           });
           break;
         case "convertToMeetingRoom":
           items.push({
             label: "Convert to Meeting Room",
-            onClick: () => updateElementType(contextMenu.elementId, "meeting_room", { color: "#F39C12" }),
+            onClick: () =>
+              updateElementType(contextMenu.elementId, "meeting_room", {
+                color: "#F39C12",
+              }),
           });
           break;
         case "convertToShape":
@@ -535,12 +698,15 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     return items;
   })();
 
-  const handleToolChange = useCallback((tool: ActiveTool) => {
-    setActiveTool(tool);
-    if (tool !== "select") {
-      selectNone();
-    }
-  }, [selectNone]);
+  const handleToolChange = useCallback(
+    (tool: ActiveTool) => {
+      setActiveTool(tool);
+      if (tool !== "select") {
+        selectNone();
+      }
+    },
+    [selectNone],
+  );
 
   // Canvas selection handler: supports shift+click
   const handleSelect = useCallback(
@@ -553,7 +719,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
         selectOne(id);
       }
     },
-    [selectNone, toggleSelect, selectOne]
+    [selectNone, toggleSelect, selectOne],
   );
 
   // Drag-select complete: select all elements in the rectangle
@@ -561,7 +727,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     (ids: string[]) => {
       selectMany(ids);
     },
-    [selectMany]
+    [selectMany],
   );
 
   // --- Auto-generation handlers ---
@@ -572,14 +738,23 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     const newCells = grid.cells.map((r) => [...r]);
     for (const el of data.elements) {
       const geo = el.geometry;
-      if (!("x" in geo && "y" in geo && "width" in geo && "height" in geo)) continue;
+      if (!("x" in geo && "y" in geo && "width" in geo && "height" in geo))
+        continue;
       const g = geo as { x: number; y: number; width: number; height: number };
       const startCol = Math.floor(g.x / grid.cellSize);
       const startRow = Math.floor(g.y / grid.cellSize);
       const endCol = Math.ceil((g.x + g.width) / grid.cellSize) - 1;
       const endRow = Math.ceil((g.y + g.height) / grid.cellSize) - 1;
-      for (let row = Math.max(0, startRow); row <= Math.min(grid.rows - 1, endRow); row++) {
-        for (let col = Math.max(0, startCol); col <= Math.min(grid.cols - 1, endCol); col++) {
+      for (
+        let row = Math.max(0, startRow);
+        row <= Math.min(grid.rows - 1, endRow);
+        row++
+      ) {
+        for (
+          let col = Math.max(0, startCol);
+          col <= Math.min(grid.cols - 1, endCol);
+          col++
+        ) {
           newCells[row][col] = 0;
         }
       }
@@ -591,17 +766,28 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     const grid = data.walkableLayer;
     if (!grid) return;
     // Start with all walkable, then mark element footprints as impassable
-    const newCells = Array.from({ length: grid.rows }, () => new Array(grid.cols).fill(1));
+    const newCells = Array.from({ length: grid.rows }, () =>
+      new Array(grid.cols).fill(1),
+    );
     for (const el of data.elements) {
       const geo = el.geometry;
-      if (!("x" in geo && "y" in geo && "width" in geo && "height" in geo)) continue;
+      if (!("x" in geo && "y" in geo && "width" in geo && "height" in geo))
+        continue;
       const g = geo as { x: number; y: number; width: number; height: number };
       const startCol = Math.floor(g.x / grid.cellSize);
       const startRow = Math.floor(g.y / grid.cellSize);
       const endCol = Math.ceil((g.x + g.width) / grid.cellSize) - 1;
       const endRow = Math.ceil((g.y + g.height) / grid.cellSize) - 1;
-      for (let row = Math.max(0, startRow); row <= Math.min(grid.rows - 1, endRow); row++) {
-        for (let col = Math.max(0, startCol); col <= Math.min(grid.cols - 1, endCol); col++) {
+      for (
+        let row = Math.max(0, startRow);
+        row <= Math.min(grid.rows - 1, endRow);
+        row++
+      ) {
+        for (
+          let col = Math.max(0, startCol);
+          col <= Math.min(grid.cols - 1, endCol);
+          col++
+        ) {
           newCells[row][col] = 0;
         }
       }
@@ -609,15 +795,31 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     setWalkableGrid({ ...grid, cells: newCells });
   }, [data.walkableLayer, data.elements, setWalkableGrid]);
 
-  const handleCellSizeChange = useCallback((size: number) => {
-    if (data.walkableLayer && data.walkableLayer.cells.some((r) => r.some((c) => c === 1))) {
-      if (!window.confirm("Changing grid resolution will clear your current walkable areas. Continue?")) return;
-    }
-    setWalkableGridResolution(size);
-  }, [data.walkableLayer, setWalkableGridResolution]);
+  const handleCellSizeChange = useCallback(
+    (size: number) => {
+      if (
+        data.walkableLayer &&
+        data.walkableLayer.cells.some((r) => r.some((c) => c === 1))
+      ) {
+        if (
+          !window.confirm(
+            "Changing grid resolution will clear your current walkable areas. Continue?",
+          )
+        )
+          return;
+      }
+      setWalkableGridResolution(size);
+    },
+    [data.walkableLayer, setWalkableGridResolution],
+  );
 
   const handleClearGrid = useCallback(() => {
-    if (!window.confirm("Clear all walkable areas? This cannot be undone except via undo.")) return;
+    if (
+      !window.confirm(
+        "Clear all walkable areas? This cannot be undone except via undo.",
+      )
+    )
+      return;
     clearWalkableGrid();
   }, [clearWalkableGrid]);
 
@@ -630,80 +832,132 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
     (cx: number, cy: number): FloorPlanElement | null => {
       const candidates = data.elements.filter((el) => {
         const s = el.geometry.shape;
-        return (s === "rect" || s === "polygon" || s === "ellipse" || s === "circle")
-          && (el.layer ?? ELEMENT_TYPE_TO_LAYER[el.type]) === activeLayerId;
+        return (
+          (s === "rect" ||
+            s === "polygon" ||
+            s === "ellipse" ||
+            s === "circle") &&
+          (el.layer ?? ELEMENT_TYPE_TO_LAYER[el.type]) === activeLayerId
+        );
       });
       return (
         [...candidates]
           .sort((a, b) => b.properties.zIndex - a.properties.zIndex)
           .find((el) => {
             const b = getElementBounds(el);
-            return cx >= b.left && cx <= b.right && cy >= b.top && cy <= b.bottom;
+            return (
+              cx >= b.left && cx <= b.right && cy >= b.top && cy <= b.bottom
+            );
           }) ?? null
       );
     },
-    [data.elements, activeLayerId]
+    [data.elements, activeLayerId],
   );
 
-  const handleCanvasDragEnter = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    if (!e.dataTransfer.types.includes(PLACEMENT_DRAG_TYPE)) return;
-    e.preventDefault();
-    const shape = e.dataTransfer.types.includes(PLACEMENT_SHAPE_ELLIPSE_TYPE) ? "ellipse" : "rect";
-    setDragOverCanvas({ shape });
-  }, []);
+  const handleCanvasDragEnter = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      if (!e.dataTransfer.types.includes(PLACEMENT_DRAG_TYPE)) return;
+      e.preventDefault();
+      const shape = e.dataTransfer.types.includes(PLACEMENT_SHAPE_ELLIPSE_TYPE)
+        ? "ellipse"
+        : "rect";
+      setDragOverCanvas({ shape });
+    },
+    [],
+  );
 
   /** Update ghost position imperatively to avoid re-rendering the whole tree on every mousemove. */
-  const handleCanvasDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    if (!e.dataTransfer.types.includes(PLACEMENT_DRAG_TYPE)) return;
-    e.preventDefault();
-    e.dataTransfer.dropEffect = "copy";
-    if (!ghostDivRef.current) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    ghostDivRef.current.style.left = `${e.clientX - rect.left - 60}px`;
-    ghostDivRef.current.style.top  = `${e.clientY - rect.top  - 40}px`;
-  }, []);
+  const handleCanvasDragOver = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      if (!e.dataTransfer.types.includes(PLACEMENT_DRAG_TYPE)) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+      if (!ghostDivRef.current) return;
+      const rect = e.currentTarget.getBoundingClientRect();
+      ghostDivRef.current.style.left = `${e.clientX - rect.left - 60}px`;
+      ghostDivRef.current.style.top = `${e.clientY - rect.top - 40}px`;
+    },
+    [],
+  );
 
-  const handleCanvasDragLeave = useCallback((e: React.DragEvent<HTMLDivElement>) => {
-    if (!e.currentTarget.contains(e.relatedTarget as Node)) {
-      setDragOverCanvas(null);
-    }
-  }, []);
+  const handleCanvasDragLeave = useCallback(
+    (e: React.DragEvent<HTMLDivElement>) => {
+      if (!e.currentTarget.contains(e.relatedTarget as Node)) {
+        setDragOverCanvas(null);
+      }
+    },
+    [],
+  );
 
   const handlePlacementDrop = useCallback(
     (e: React.DragEvent<HTMLDivElement>) => {
       e.preventDefault();
       setDragOverCanvas(null);
 
-      const raw = e.dataTransfer.getData(PLACEMENT_DRAG_TYPE) || e.dataTransfer.getData("text/plain");
+      const raw =
+        e.dataTransfer.getData(PLACEMENT_DRAG_TYPE) ||
+        e.dataTransfer.getData("text/plain");
       if (!raw) return;
       let ref: PlacementRecordRef;
-      try { ref = JSON.parse(raw) as PlacementRecordRef; } catch { return; }
+      try {
+        ref = JSON.parse(raw) as PlacementRecordRef;
+      } catch {
+        return;
+      }
 
       const containerRect = e.currentTarget.getBoundingClientRect();
       const cx = (e.clientX - containerRect.left - position.x) / scale;
-      const cy = (e.clientY - containerRect.top  - position.y) / scale;
+      const cy = (e.clientY - containerRect.top - position.y) / scale;
 
       // Resolve display name/code from the record pool
       const displayProps: Partial<ElementProperties> = (() => {
         if (ref.type === "booth") {
-          const found = placementRecords.booths.find((r) => r.record.slug === ref.id);
+          const found = placementRecords.booths.find(
+            (r) => r.record.slug === ref.id,
+          );
           return found ? { name: found.record.code } : {};
         }
         if (ref.type === "session_area") {
-          const found = placementRecords.sessions.find((r) => String(r.record.id) === ref.id);
+          const found = placementRecords.sessions.find(
+            (r) => String(r.record.id) === ref.id,
+          );
           return found ? { name: found.record.title } : {};
         }
         // meeting_room
-        const found = placementRecords.meetingRooms.find((r) => String(r.record.id) === ref.id);
-        return found ? { name: found.record.name, ...(found.record.capacity != null ? { capacity: found.record.capacity } : {}) } : {};
+        const found = placementRecords.meetingRooms.find(
+          (r) => String(r.record.id) === ref.id,
+        );
+        return found
+          ? {
+              name: found.record.name,
+              ...(found.record.capacity != null
+                ? { capacity: found.record.capacity }
+                : {}),
+            }
+          : {};
       })();
 
       const linkingProps: Partial<ElementProperties> =
         ref.type === "booth"
-          ? { boothSlug: ref.id,  sessionId: undefined, meetingRoomId: undefined, ...displayProps }
+          ? {
+              boothSlug: ref.id,
+              sessionId: undefined,
+              meetingRoomId: undefined,
+              ...displayProps,
+            }
           : ref.type === "session_area"
-          ? { sessionId: ref.id,  boothSlug: undefined, meetingRoomId: undefined, ...displayProps }
-          : { meetingRoomId: ref.id, boothSlug: undefined, sessionId: undefined, ...displayProps };
+            ? {
+                sessionId: ref.id,
+                boothSlug: undefined,
+                meetingRoomId: undefined,
+                ...displayProps,
+              }
+            : {
+                meetingRoomId: ref.id,
+                boothSlug: undefined,
+                sessionId: undefined,
+                ...displayProps,
+              };
 
       const hit = hitTestAssignable(cx, cy);
 
@@ -713,23 +967,33 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
         selectOne(hit.id);
       } else {
         // Create a new element centred on the drop point
-        const typeStyle = data.typeStyles?.[ref.type] ?? DEFAULT_TYPE_STYLES[ref.type] ?? {};
+        const typeStyle =
+          data.typeStyles?.[ref.type] ?? DEFAULT_TYPE_STYLES[ref.type] ?? {};
         const w = typeStyle.defaultWidth ?? 120;
         const h = typeStyle.defaultHeight ?? 80;
         const r = Math.min(w, h) / 2;
         const geometry: Geometry =
           ref.defaultShape === "ellipse"
             ? { shape: "ellipse", x: cx - r, y: cy - r, radiusX: r, radiusY: r }
-            : { shape: "rect",   x: cx - w / 2, y: cy - h / 2, width: w, height: h };
+            : {
+                shape: "rect",
+                x: cx - w / 2,
+                y: cy - h / 2,
+                width: w,
+                height: h,
+              };
 
-        const maxZ = data.elements.reduce((m, el) => Math.max(m, el.properties.zIndex), 0);
+        const maxZ = data.elements.reduce(
+          (m, el) => Math.max(m, el.properties.zIndex),
+          0,
+        );
         const newEl: FloorPlanElement = {
           id: crypto.randomUUID(),
           type: ref.type,
           layer: activeLayerId,
           geometry,
           properties: {
-            color:       typeStyle.color       ?? "#94a3b8",
+            color: typeStyle.color ?? "#94a3b8",
             strokeColor: typeStyle.strokeColor ?? "#888888",
             strokeWidth: typeStyle.strokeWidth ?? 1,
             zIndex: maxZ + 1,
@@ -740,14 +1004,28 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
         selectOne(newEl.id);
       }
     },
-    [position, scale, data, activeLayerId, placementRecords, hitTestAssignable, updateElementType, addElement, selectOne]
+    [
+      position,
+      scale,
+      data,
+      activeLayerId,
+      placementRecords,
+      hitTestAssignable,
+      updateElementType,
+      addElement,
+      selectOne,
+    ],
   );
 
   const handleAutoArrange = useCallback(
-    (type: "booth" | "session_area" | "meeting_room", records: AutoArrangeRecord[]) => {
+    (
+      type: "booth" | "session_area" | "meeting_room",
+      records: AutoArrangeRecord[],
+    ) => {
       if (records.length === 0) return;
 
-      const typeStyle = data.typeStyles?.[type] ?? DEFAULT_TYPE_STYLES[type] ?? {};
+      const typeStyle =
+        data.typeStyles?.[type] ?? DEFAULT_TYPE_STYLES[type] ?? {};
       const w = typeStyle.defaultWidth ?? 120;
       const h = typeStyle.defaultHeight ?? 80;
       const gap = 10;
@@ -768,7 +1046,10 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
         startY = Math.max(50, minTop);
       }
 
-      const maxZ = data.elements.reduce((m, el) => Math.max(m, el.properties.zIndex), 0);
+      const maxZ = data.elements.reduce(
+        (m, el) => Math.max(m, el.properties.zIndex),
+        0,
+      );
 
       const newElements: FloorPlanElement[] = records.map((rec, i) => {
         const col = i % cols;
@@ -777,8 +1058,8 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           type === "booth"
             ? { boothSlug: rec.recordId }
             : type === "session_area"
-            ? { sessionId: rec.recordId }
-            : { meetingRoomId: rec.recordId };
+              ? { sessionId: rec.recordId }
+              : { meetingRoomId: rec.recordId };
 
         return {
           id: crypto.randomUUID(),
@@ -857,7 +1138,10 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                     if (imported.version && imported.elements) {
                       // Replace current data by adding/removing elements
                       // Simple approach: reload the page with new data in storage
-                      localStorage.setItem("map-editor:floorplan", JSON.stringify(imported));
+                      localStorage.setItem(
+                        "map-editor:floorplan",
+                        JSON.stringify(imported),
+                      );
                       window.location.reload();
                     }
                   } catch {
@@ -869,25 +1153,52 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
               input.click();
             },
           },
-          ...(debug ? [
-            { type: "divider" as const },
-            {
-              label: "Reset Demo",
-              danger: true,
-              onClick: () => {
-                localStorage.removeItem("map-editor:floorplan");
-                window.location.reload();
-              },
-            },
-          ] : []),
+          ...(debug
+            ? [
+                { type: "divider" as const },
+                {
+                  label: "Reset Demo",
+                  danger: true,
+                  onClick: () => {
+                    localStorage.removeItem("map-editor:floorplan");
+                    window.location.reload();
+                  },
+                },
+              ]
+            : []),
         ]}
         editMenuItems={[
-          { label: "Undo", shortcut: `${modKey}Z`, disabled: !canUndo, onClick: undo },
-          { label: "Redo", shortcut: `${modKey}⇧Z`, disabled: !canRedo, onClick: redo },
+          {
+            label: "Undo",
+            shortcut: `${modKey}Z`,
+            disabled: !canUndo,
+            onClick: undo,
+          },
+          {
+            label: "Redo",
+            shortcut: `${modKey}⇧Z`,
+            disabled: !canRedo,
+            onClick: redo,
+          },
           { type: "divider" as const },
-          { label: "Copy", shortcut: `${modKey}C`, disabled: !hasSelection, onClick: handleCopy },
-          { label: "Paste", shortcut: `${modKey}V`, disabled: !hasBuffer, onClick: handlePaste },
-          { label: "Duplicate", shortcut: `${modKey}D`, disabled: !hasSelection, onClick: handleDuplicate },
+          {
+            label: "Copy",
+            shortcut: `${modKey}C`,
+            disabled: !hasSelection,
+            onClick: handleCopy,
+          },
+          {
+            label: "Paste",
+            shortcut: `${modKey}V`,
+            disabled: !hasBuffer,
+            onClick: handlePaste,
+          },
+          {
+            label: "Duplicate",
+            shortcut: `${modKey}D`,
+            disabled: !hasSelection,
+            onClick: handleDuplicate,
+          },
         ]}
         viewMenuItems={[
           {
@@ -896,15 +1207,21 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           },
           {
             label: `${gridSettings.showGrid ? "✓ " : "   "}Show Grid`,
-            onClick: () => setGridSettings((s) => ({ ...s, showGrid: !s.showGrid })),
+            onClick: () =>
+              setGridSettings((s) => ({ ...s, showGrid: !s.showGrid })),
           },
           {
             label: `${gridSettings.snapToGrid ? "✓ " : "   "}Snap to Grid`,
-            onClick: () => setGridSettings((s) => ({ ...s, snapToGrid: !s.snapToGrid })),
+            onClick: () =>
+              setGridSettings((s) => ({ ...s, snapToGrid: !s.snapToGrid })),
           },
           {
             label: `${snapToObjects ? "✓ " : "   "}Snap to Objects`,
             onClick: () => setSnapToObjects((s) => !s),
+          },
+          {
+            label: `${showTransformControls ? "✓ " : "   "}Show Transform Controls`,
+            onClick: () => setShowTransformControls((s) => !s),
           },
         ]}
         toolsMenuItems={[
@@ -957,13 +1274,29 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           ) : (
             <OptionsBar
               defaults={activeDefaults}
-              config={isMultiSelect
-                ? { optionsBar: ["fill", "stroke", "strokeWidth"] as import("./components/canvas/elements/types").OptionsBarField[], propertiesPanel: [], contextMenu: [] }
-                : selectedElement
-                  ? getToolUIConfig(selectedElement.geometry.shape, selectedElement.type)
-                  : resolvedTool
-                    ? { optionsBar: resolvedTool.optionsBar, propertiesPanel: resolvedTool.propertiesPanel, contextMenu: resolvedTool.contextMenu }
-                    : { optionsBar: [], propertiesPanel: [], contextMenu: [] }
+              config={
+                isMultiSelect
+                  ? {
+                      optionsBar: [
+                        "fill",
+                        "stroke",
+                        "strokeWidth",
+                      ] as import("./components/canvas/elements/types").OptionsBarField[],
+                      propertiesPanel: [],
+                      contextMenu: [],
+                    }
+                  : selectedElement
+                    ? getToolUIConfig(
+                        selectedElement.geometry.shape,
+                        selectedElement.type,
+                      )
+                    : resolvedTool
+                      ? {
+                          optionsBar: resolvedTool.optionsBar,
+                          propertiesPanel: resolvedTool.propertiesPanel,
+                          contextMenu: resolvedTool.contextMenu,
+                        }
+                      : { optionsBar: [], propertiesPanel: [], contextMenu: [] }
               }
               onDefaultsChange={handleDefaultsChange}
             />
@@ -989,6 +1322,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   containerRef={containerRef}
                   onWheel={handleWheel}
                   onDragEnd={handleDragEnd}
+                  onPositionChange={setPosition}
                   onSelect={handleSelect}
                   onDragSelect={handleDragSelect}
                   onElementMove={handleElementMove}
@@ -1000,9 +1334,13 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   snapToObjects={snapToObjects}
                   layers={layers}
                   activeLayerId={activeLayerId}
-                  isPathingMode={isPathingMode && activePathingTool !== "select"}
+                  isPathingMode={
+                    isPathingMode && activePathingTool !== "select"
+                  }
                   walkableGridOpacity={walkableGridOpacity}
-                  walkableHoverCell={isPathingMode ? pathingTool.hoverCell : null}
+                  walkableHoverCell={
+                    isPathingMode ? pathingTool.hoverCell : null
+                  }
                   onPathingMouseDown={pathingTool.handleMouseDown}
                   onPathingMouseMove={pathingTool.handleMouseMove}
                   onPathingMouseUp={pathingTool.handleMouseUp}
@@ -1015,6 +1353,8 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   onCalibrationClick={calibration.handleMouseDown}
                   onCalibrationMouseMove={calibration.handleMouseMove}
                   unlinkedElementIds={unlinkedElementIds}
+                  showTransformControls={showTransformControls}
+                  overlappingElementIds={overlappingElementIds}
                 />
                 <Rulers
                   visible={showRulers}
@@ -1032,6 +1372,16 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                 />
                 <LegendCanvasOverlay legend={data.legend} />
 
+                {/* Overlap warning banner */}
+                {overlappingElementIds.size > 0 && (
+                  <button
+                    onClick={handleLocateOverlapping}
+                    className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-red-50 border border-red-300 text-red-700 text-sm px-3 py-1.5 rounded-full shadow-sm z-10 whitespace-nowrap hover:bg-red-100 cursor-pointer"
+                  >
+                    {overlappingElementIds.size} element{overlappingElementIds.size !== 1 ? "s" : ""} overlapping — click to locate
+                  </button>
+                )}
+
                 {/* Drag-to-place ghost preview */}
                 {dragOverCanvas && (
                   <div
@@ -1039,8 +1389,18 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                     className="pointer-events-none absolute z-50 opacity-50 border-2 border-white"
                     style={
                       dragOverCanvas.shape === "ellipse"
-                        ? { width: 120, height: 120, borderRadius: "9999px", backgroundColor: "#8b5cf6" }
-                        : { width: 120, height: 80,  borderRadius: "4px",    backgroundColor: "#3b82f6" }
+                        ? {
+                            width: 120,
+                            height: 120,
+                            borderRadius: "9999px",
+                            backgroundColor: "#8b5cf6",
+                          }
+                        : {
+                            width: 120,
+                            height: 80,
+                            borderRadius: "0px",
+                            backgroundColor: "#3b82f6",
+                          }
                     }
                   />
                 )}
@@ -1049,7 +1409,10 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                 scale={scale}
                 onZoomReset={zoomReset}
                 unit={data.dimensions.unit}
-                isCalibrated={data.dimensions.unit !== "px" && data.dimensions.pixelsPerUnit > 0}
+                isCalibrated={
+                  data.dimensions.unit !== "px" &&
+                  data.dimensions.pixelsPerUnit > 0
+                }
                 onUnitChange={setDisplayUnit}
               />
             </div>
@@ -1057,7 +1420,11 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
               element={selectedElement}
               selectedElements={selectedElements}
               selectedCount={selectedIds.size}
-              isSelectedUnlinked={selectedElement ? unlinkedElementIds.has(selectedElement.id) : false}
+              isSelectedUnlinked={
+                selectedElement
+                  ? unlinkedElementIds.has(selectedElement.id)
+                  : false
+              }
               dimensions={data.dimensions}
               backgroundImage={data.backgroundImage}
               backgroundColor={data.backgroundColor}
@@ -1071,10 +1438,12 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
                   updateProperties(id, updates);
                 }
               }}
-              onPreviewProperties={(id, updates) => previewProperties(id, updates)}
+              onPreviewProperties={(id, updates) =>
+                previewProperties(id, updates)
+              }
               onBatchUpdateProperties={(updates) => {
                 batchUpdateProperties(
-                  [...selectedIds].map((id) => ({ id, properties: updates }))
+                  [...selectedIds].map((id) => ({ id, properties: updates })),
                 );
               }}
               onUpdateGeometry={updateElement}
@@ -1126,9 +1495,7 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           onClose={() => setShowResizeDialog(false)}
         />
       )}
-      {showHelp && (
-        <HelpDialog onClose={() => setShowHelp(false)} />
-      )}
+      {showHelp && <HelpDialog onClose={() => setShowHelp(false)} />}
       {showTypeDefaultsDialog && (
         <TypeDefaultsDialog
           typeStyles={data.typeStyles ?? {}}
@@ -1143,14 +1510,15 @@ export function MapEditor({ initialData, debug: debugProp, persist }: MapEditorP
           onClose={() => setShowLegendDialog(false)}
         />
       )}
-      {calibration.state.step === "confirming" && calibration.pixelDistance != null && (
-        <CalibrationDialog
-          pixelDistance={calibration.pixelDistance}
-          existingUnit={data.dimensions.unit}
-          onConfirm={calibration.handleConfirm}
-          onClose={handleCancelCalibration}
-        />
-      )}
+      {calibration.state.step === "confirming" &&
+        calibration.pixelDistance != null && (
+          <CalibrationDialog
+            pixelDistance={calibration.pixelDistance}
+            existingUnit={data.dimensions.unit}
+            onConfirm={calibration.handleConfirm}
+            onClose={handleCancelCalibration}
+          />
+        )}
       {contextMenu && contextMenuItems.length > 0 && (
         <ContextMenu
           x={contextMenu.x}

@@ -75,6 +75,7 @@ interface CanvasProps {
   containerRef: React.RefObject<HTMLDivElement | null>;
   onWheel: (e: Konva.KonvaEventObject<WheelEvent>) => void;
   onDragEnd: (e: Konva.KonvaEventObject<DragEvent>) => void;
+  onPositionChange: (pos: { x: number; y: number }) => void;
   onSelect: (id: string | null, shiftKey?: boolean) => void;
   onDragSelect: (ids: string[]) => void;
   onElementMove: (id: string, x: number, y: number) => void;
@@ -115,6 +116,8 @@ interface CanvasProps {
   onCalibrationClick?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
   onCalibrationMouseMove?: (e: Konva.KonvaEventObject<MouseEvent>) => void;
   unlinkedElementIds?: Set<string>;
+  showTransformControls?: boolean;
+  overlappingElementIds?: Set<string>;
 }
 
 export function Canvas({
@@ -129,6 +132,7 @@ export function Canvas({
   containerRef,
   onWheel,
   onDragEnd,
+  onPositionChange,
   onSelect,
   onDragSelect,
   onElementMove,
@@ -155,6 +159,8 @@ export function Canvas({
   onCalibrationClick,
   onCalibrationMouseMove,
   unlinkedElementIds,
+  showTransformControls = true,
+  overlappingElementIds,
 }: CanvasProps) {
   const isSelectMode = activeTool === null;
 
@@ -179,6 +185,29 @@ export function Canvas({
   }, []);
 
   const isPanMode = spaceHeld;
+
+  // Hover state (select mode only)
+  const [hoveredElementId, setHoveredElementId] = useState<string | null>(null);
+
+  // Middle-click pan state
+  const [isMiddlePanning, setIsMiddlePanning] = useState(false);
+  const isMiddlePanningRef = useRef(false);
+  const middlePanStartRef = useRef<{ clientX: number; clientY: number; stageX: number; stageY: number } | null>(null);
+
+  // Release middle-click pan if mouse-up happens outside the Stage
+  useEffect(() => {
+    if (!isMiddlePanning) return;
+    const onGlobalMouseUp = (e: MouseEvent) => {
+      if (e.button !== 1) return;
+      const stage = stageRef.current;
+      if (stage) onPositionChange(stage.position());
+      isMiddlePanningRef.current = false;
+      setIsMiddlePanning(false);
+      middlePanStartRef.current = null;
+    };
+    window.addEventListener("mouseup", onGlobalMouseUp);
+    return () => window.removeEventListener("mouseup", onGlobalMouseUp);
+  }, [isMiddlePanning, stageRef, onPositionChange]);
 
   // Drag-select rectangle state
   const [dragSelectRect, setDragSelectRect] = useState<{ x: number; y: number; width: number; height: number } | null>(null);
@@ -243,6 +272,22 @@ export function Canvas({
   // --- Mouse event handlers ---
 
   const handleMouseDown = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    // Middle-click pan — intercept before all other handlers
+    if (e.evt.button === 1) {
+      e.evt.preventDefault();
+      const stage = stageRef.current;
+      if (!stage) return;
+      isMiddlePanningRef.current = true;
+      setIsMiddlePanning(true);
+      middlePanStartRef.current = {
+        clientX: e.evt.clientX,
+        clientY: e.evt.clientY,
+        stageX: stage.x(),
+        stageY: stage.y(),
+      };
+      return;
+    }
+
     if (isPanMode) return;
 
     // Calibration mode: intercept before everything else
@@ -277,6 +322,15 @@ export function Canvas({
   };
 
   const handleMouseMove = (e: Konva.KonvaEventObject<MouseEvent>) => {
+    // Middle-click pan — move stage imperatively to avoid per-pixel re-renders
+    if (isMiddlePanningRef.current && middlePanStartRef.current) {
+      const stage = stageRef.current;
+      if (!stage) return;
+      const { clientX, clientY, stageX, stageY } = middlePanStartRef.current;
+      stage.position({ x: stageX + (e.evt.clientX - clientX), y: stageY + (e.evt.clientY - clientY) });
+      return;
+    }
+
     // Calibration mode
     if (isCalibrating && onCalibrationMouseMove) {
       onCalibrationMouseMove(e);
@@ -296,11 +350,16 @@ export function Canvas({
       const point = getCanvasPoint(stage, position, scale);
       if (!point) return;
       const o = dragSelectOrigin.current;
+      const snapV = (v: number) => Math.round(v / gridSettings.gridSpacing) * gridSettings.gridSpacing;
+      const px = gridSettings.snapToGrid ? snapV(point.x) : point.x;
+      const py = gridSettings.snapToGrid ? snapV(point.y) : point.y;
+      const ox = gridSettings.snapToGrid ? snapV(o.x) : o.x;
+      const oy = gridSettings.snapToGrid ? snapV(o.y) : o.y;
       setDragSelectRect({
-        x: Math.min(o.x, point.x),
-        y: Math.min(o.y, point.y),
-        width: Math.abs(point.x - o.x),
-        height: Math.abs(point.y - o.y),
+        x: Math.min(ox, px),
+        y: Math.min(oy, py),
+        width: Math.abs(px - ox),
+        height: Math.abs(py - oy),
       });
       return;
     }
@@ -310,6 +369,16 @@ export function Canvas({
   };
 
   const handleMouseUp = () => {
+    // Middle-click pan end — sync stage position back to React state
+    if (isMiddlePanningRef.current) {
+      const stage = stageRef.current;
+      if (stage) onPositionChange(stage.position());
+      isMiddlePanningRef.current = false;
+      setIsMiddlePanning(false);
+      middlePanStartRef.current = null;
+      return;
+    }
+
     // Pathing mode
     if (isPathingMode && onPathingMouseUp) {
       onPathingMouseUp();
@@ -325,9 +394,10 @@ export function Canvas({
           const elLayer = el.layer ?? ELEMENT_TYPE_TO_LAYER[el.type];
           if (elLayer !== activeLayerId) return false;
 
-          const b = getElementBounds(el);
+          const shape = el.geometry.shape;
 
-          if (el.geometry.shape === "line") {
+          // Line: accurate segment intersection
+          if (shape === "line") {
             const geo = el.geometry;
             const [x1, y1, x2, y2] = geo.points;
             return lineIntersectsRect(
@@ -336,6 +406,33 @@ export function Canvas({
             );
           }
 
+          // Arc: check both segments to/from the control point
+          if (shape === "arc") {
+            const geo = el.geometry;
+            const [x1, y1, cx, cy, x2, y2] = geo.points;
+            return (
+              lineIntersectsRect(geo.x+x1, geo.y+y1, geo.x+cx, geo.y+cy, rect.x, rect.y, rect.width, rect.height) ||
+              lineIntersectsRect(geo.x+cx, geo.y+cy, geo.x+x2, geo.y+y2, rect.x, rect.y, rect.width, rect.height)
+            );
+          }
+
+          // Polygon: check each edge for intersection with the selection rect
+          if (shape === "polygon") {
+            const geo = el.geometry;
+            const pts = geo.points;
+            for (let i = 0; i < pts.length; i += 2) {
+              const ni = (i + 2) % pts.length;
+              if (lineIntersectsRect(
+                geo.x + pts[i], geo.y + pts[i + 1],
+                geo.x + pts[ni], geo.y + pts[ni + 1],
+                rect.x, rect.y, rect.width, rect.height
+              )) return true;
+            }
+            return false;
+          }
+
+          // All other shapes: bounding-box overlap threshold
+          const b = getElementBounds(el);
           const elWidth = b.right - b.left;
           const elHeight = b.bottom - b.top;
           if (elWidth <= 0 || elHeight <= 0) return false;
@@ -499,7 +596,9 @@ export function Canvas({
   );
 
   // --- Cursor ---
-  const cursor = isPanMode
+  const cursor = isMiddlePanning
+    ? "grabbing"
+    : isPanMode
     ? "grab"
     : isCalibrating
       ? "crosshair"
@@ -507,7 +606,9 @@ export function Canvas({
         ? "crosshair"
         : activeTool
           ? activeTool.cursor
-          : "default";
+          : hoveredElementId && isSelectMode
+            ? "move"
+            : "default";
 
   return (
     <div
@@ -546,7 +647,7 @@ export function Canvas({
           {data.backgroundImage && layerVisibility.get("background") !== false && (
             <BackgroundImage config={data.backgroundImage} />
           )}
-          {gridSettings.showGrid && (
+          {gridSettings.showGrid && !isPathingMode && (
             <GridLayer
               width={data.dimensions.width}
               height={data.dimensions.height}
@@ -579,11 +680,15 @@ export function Canvas({
                   isSelectMode={isSelectMode && isActiveLayer}
                   isSelected={selectedIds.has(element.id)}
                   isLinked={!unlinkedElementIds?.has(element.id)}
+                  isHovered={isSelectMode && hoveredElementId === element.id}
+                  isOverlapping={overlappingElementIds?.has(element.id) ?? false}
                   onSelect={onSelect}
                   onDragStart={handleElementDragStart}
                   onDragMove={handleElementDragMove}
                   onDragEnd={handleElementDragEnd}
                   onContextMenu={onElementContextMenu}
+                  onMouseEnter={isSelectMode ? () => setHoveredElementId(element.id) : undefined}
+                  onMouseLeave={isSelectMode ? () => setHoveredElementId(null) : undefined}
                 />
               ))}
             </Layer>
@@ -597,6 +702,7 @@ export function Canvas({
             stageRef={stageRef}
             elements={data.elements}
             onTransformEnd={onElementResize}
+            visible={showTransformControls}
           />
           {!isMultiDragging && (
             <MultiSelectBounds

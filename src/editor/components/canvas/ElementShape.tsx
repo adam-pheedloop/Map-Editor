@@ -17,11 +17,15 @@ interface ElementShapeProps {
   isSelectMode: boolean;
   isSelected: boolean;
   isLinked: boolean;
+  isHovered?: boolean;
+  isOverlapping?: boolean;
   onSelect: (id: string, shiftKey?: boolean) => void;
   onDragStart: (id: string) => void;
   onDragMove: (id: string, x: number, y: number) => void;
   onDragEnd: (id: string, x: number, y: number) => void;
   onContextMenu: (elementId: string, screenX: number, screenY: number) => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }
 
 function getLabel(element: FloorPlanElement): string {
@@ -33,17 +37,27 @@ export function ElementShape({
   isSelectMode,
   isSelected: _isSelected,
   isLinked,
+  isHovered = false,
+  isOverlapping = false,
   onSelect,
   onDragStart,
   onDragMove,
   onDragEnd,
   onContextMenu,
+  onMouseEnter,
+  onMouseLeave,
 }: ElementShapeProps) {
   const geo = element.geometry;
   const label = getLabel(element);
   const color = element.properties.color;
-  const strokeColor = element.properties.strokeColor || "#888888";
-  const strokeWidth = element.properties.strokeWidth ?? (geo.shape === "line" || geo.shape === "arrow" ? 2 : 1);
+  const strokeColor = isOverlapping
+    ? "#dc2626"
+    : isHovered
+      ? "#007bff"
+      : (element.properties.strokeColor || "#888888");
+  const strokeWidth = (isOverlapping || isHovered)
+    ? Math.max((element.properties.strokeWidth ?? 1) * 1.5, 2)
+    : (element.properties.strokeWidth ?? (geo.shape === "line" || geo.shape === "arrow" ? 2 : 1));
 
   const x = "x" in geo ? geo.x : 0;
   const y = "y" in geo ? geo.y : 0;
@@ -76,6 +90,8 @@ export function ElementShape({
         e.cancelBubble = true;
         onContextMenu(element.id, e.evt.clientX, e.evt.clientY);
       }}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
     >
       {element.type === "booth" && (geo.shape === "rect" || geo.shape === "polygon" || geo.shape === "ellipse" || geo.shape === "circle") && (
         <BoothShape

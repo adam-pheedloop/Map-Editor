@@ -41,7 +41,16 @@ const shortcuts: { category: string; items: { keys: string; description: string 
       { keys: `${mod}+D`, description: "Duplicate" },
       { keys: `${mod}+A`, description: "Select all" },
       { keys: "Delete", description: "Delete selected" },
-      { keys: "Escape", description: "Deselect / cancel" },
+      { keys: "Escape", description: "Deselect / exit group / cancel" },
+    ],
+  },
+  {
+    category: "Groups",
+    items: [
+      { keys: `${mod}+G`, description: "Group selected elements" },
+      { keys: `${mod}+Shift+G`, description: "Ungroup" },
+      { keys: "Double-click", description: "Enter group (edit individual elements)" },
+      { keys: "Escape", description: "Exit group editing mode" },
     ],
   },
   {
@@ -61,6 +70,7 @@ const shortcuts: { category: string; items: { keys: string; description: string 
     category: "Selection",
     items: [
       { keys: "Click", description: "Select element" },
+      { keys: "Click (group member)", description: "Select entire group" },
       { keys: "Shift + Click", description: "Add/remove from selection" },
       { keys: "Drag (empty space)", description: "Drag-select rectangle" },
       { keys: "Right-click", description: "Context menu" },
@@ -138,6 +148,15 @@ export function HelpDialog({ onClose }: HelpDialogProps) {
               <li><strong>Polygon</strong> (P) — click to place vertices. Close by clicking near the first vertex, pressing Enter, or double-clicking. Minimum 3 vertices. Escape to cancel</li>
               <li>Select any arrow, arc, or polygon to see <strong>control handles</strong> for reshaping</li>
               <li>Hold <strong>Shift</strong> while drawing lines, arrows, or polygon edges to snap to 45° angles</li>
+            </ul>
+
+            <h3 className="text-xs font-semibold text-gray-800 mt-4 mb-2">Grouping</h3>
+            <ul className="text-xs text-gray-600 space-y-1.5">
+              <li>Select two or more elements and press <strong>{mod}+G</strong> (or use the options bar) to <strong>group</strong> them</li>
+              <li>Clicking any member of a group <strong>selects the whole group</strong> — move or resize all members together</li>
+              <li><strong>Double-click</strong> a group to enter editing mode and select individual elements inside it</li>
+              <li>Press <strong>Escape</strong> to exit group editing, or use the <strong>Exit Group</strong> button in the options bar</li>
+              <li>Press <strong>{mod}+Shift+G</strong> or use <strong>Ungroup</strong> in the options bar or right-click menu to dissolve a group</li>
             </ul>
 
             <h3 className="text-xs font-semibold text-gray-800 mt-4 mb-2">Layers</h3>

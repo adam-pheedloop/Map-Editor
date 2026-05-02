@@ -193,61 +193,77 @@
         "Viewer boothSlug linkage fix — exhibitors linked by boothSlug (stable PheedLoop DB identifier) not boothCode (display label); fixes broken exhibitor↔booth associations"
       ]
     },
-        {
+    {
       "id": 13,
-      "title": "Auto-Generate Booths",
-      "summary": "Quickly populate a floor plan with a grid of booths — configurable size, spacing, labeling pattern, with live preview.",
-      "status": "planned",
+      "title": "UX Polish & Canvas Improvements",
+      "summary": "Quality-of-life improvements: middle-click panning, hover states, selection accuracy, transform controls toggle, overlap validation, arrow rendering fix, icon picker polish, and viewer improvements.",
+      "status": "done",
       "tasks": [
-        "Grid-of-booths generator dialog",
-        "Configurable booth size & spacing",
-        "Labeling pattern options (numeric, alpha, custom)",
-        "Live canvas preview",
-        "Place generated booths as editable elements"
+        "Middle-click / Space+drag pan — fixes longstanding bug where dragging on empty canvas in multi-select mode started a selection rectangle instead of panning",
+        "Hover states on canvas elements — subtle highlight in Select mode, cursor switches to move",
+        "Area selection refinement — drag-select uses accurate per-geometry bounding boxes for all shape types",
+        "Transform controls toggle — View menu option to show/hide selection handles and bounding boxes",
+        "Overlap validation warning — banner at bottom of canvas when Content layer elements overlap; click to locate",
+        "Arrow and ArrowShape rendering fixes — arrowhead transform no longer breaks on resize",
+        "IconPicker — Escape key closes picker; anchor-based fixed positioning prevents viewport clipping (fixes known issue #8)",
+        "ViewerCanvas rendering and interaction improvements"
       ]
     },
     {
       "id": 14,
-      "title": "Points of Interest (POI)",
-      "summary": "Map-local, database-free points of interest for wayfinding and orientation. Registration desks, washrooms, help desks, medical centres, food courts, exits — anything an attendee might need to navigate to that has no PheedLoop DB record. POIs can be point-based (a pin with an icon) or shape-based (a drawn area). Fully supported as wayfinding destinations.",
-      "status": "planned",
+      "title": "Object Grouping & Alignment Tools",
+      "summary": "Figma-style persistent groups with proportional resize and group editing mode, plus alignment, distribution, and arrange-as-grid tools.",
+      "status": "done",
       "tasks": [
-        "POI element type ('poi') — map-local, no backend record, no linking",
-        "Two placement modes: point POI (single click — places an icon pin, like a washroom or exit sign) and area POI (click-drag rect or freeform polygon — for regions like a food court or registration area). Both share the same element type; geometry determines which was used.",
-        "POI tool in editor — click to place a point POI by default. Modifier key or toolbar sub-option switches to area drawing mode. Icon picker from a curated set of venue symbols (🚻 🩺 📋 🚪 ℹ️ ☕ etc.)",
-        "POI properties: name (required), icon, description (optional). No capacity, no ID field.",
-        "Point POI renders as icon + label (same as current icon element but searchable and wayfinding-aware). Area POI renders as a lightly filled shape with icon + label overlaid — visually distinct from booths and session areas (e.g. dashed border, lower opacity fill).",
-        "Viewer: POIs appear in sidebar/search alongside booths, sessions, meeting rooms. Searchable by name.",
-        "Wayfinding integration: both point and area POIs register as valid route destinations in the A* pathfinding system. Point POI snaps to its position; area POI routes to its nearest edge or centroid.",
-        "Sample POIs in Main_Exhibition_Hall.json (registration area as rect, washrooms as point pins, help desk as point, exits as points)"
+        "GroupDefinition data model — groups array on FloorPlanData, groupId on ElementProperties; backward-compatible",
+        "createGroup / dissolveGroup / batchUpdateGeometry mutations — single undo entry each",
+        "Group selection — clicking any member selects the entire group; dashed bounding box overlay",
+        "GroupTransformer — virtual rect + Konva Transformer; proportional scale of all member positions and sizes",
+        "Group editing mode — double-click enters, Escape exits; outside elements dim to 35% opacity",
+        "Options bar Group / Ungroup / Enter Group / Exit Group buttons",
+        "Context menu Group / Ungroup / Enter Group entries; Cmd+G / Cmd+Shift+G shortcuts",
+        "Correctness: orphan group cleanup on delete, paste strips groupId, drag-select expands to full groups",
+        "Alignment tools — 6 icon buttons (left/center/right, top/middle/bottom); group-aware; works inside group editing mode",
+        "Distribute H/V — equal spacing within bounding box; shown for 3+ units",
+        "Arrange as Grid dialog — columns, computed rows, H/V gap; anchors to top-left of current selection"
       ]
     },
     {
       "id": 15,
       "title": "Backend Integration",
-      "summary": "Connect to the PheedLoop backend — save/load maps, link booths to real exhibitors, sessions to talks, and ship the viewer in-app.",
+      "summary": "Connect to the PheedLoop backend — save/load maps, wire Placement Mode to real records, ship the editor in raichu and the viewer in Charmander.",
       "status": "planned",
       "tasks": [
-        "Save / load floor plans via PheedLoop API",
-        "Link booths to real exhibitor records",
-        "Link session elements to talk records",
-        "Auth & permissions for map editing",
-        "Embed viewer in PheedLoop attendee app"
+        "Save / load floor plans via PheedLoop API (replace localStorage persistence)",
+        "Autosave with debounce and conflict detection",
+        "Placement Mode data feed — booths, sessions, meeting rooms from real backend records with placed/unplaced status",
+        "Properties panel assignment fallback — searchable record picker for unlinked elements",
+        "Viewer data fetching — replace sample data with API fetch; real exhibitor names, logos, session titles",
+        "Editor published as npm package for raichu consumption",
+        "Viewer hosted in Charmander or as standalone web app"
       ]
     },
     {
       "id": 16,
-      "title": "Multi-Floor & Multi-Area Maps",
-      "summary": "Support for events with multiple distinct maps — separate halls, floors, or buildings (e.g. Metro Toronto Convention Centre: North Hall, South Hall, 700-level). Maps are linked via transition markers (stairs, escalators, elevators, cross-hall connectors). Wayfinding spans map boundaries. Viewer lets attendees navigate across maps seamlessly. Post-MVP, requires backend integration.",
+      "title": "Booth Exhibitor Display in Viewer",
+      "summary": "Show exhibitor name (and optionally logo) on booth shapes in the viewer. Per-map Viewer Display settings in the editor. Depends on Phase 15.",
       "status": "planned",
       "tasks": [
-        "Multi-map data model: an event can have a collection of named FloorPlanData maps (Hall A, Floor 2, etc.) rather than a single map. Each map is independent but belongs to a shared venue context.",
-        "Transition marker element type — a POI-like element placed at a physical boundary between maps (stairwell, escalator, elevator, corridor link). Properties: type (stairs/escalator/elevator/walkway), destination map ID, destination entry point ID. Placed in pairs — one on each connected map.",
-        "Editor: UI to manage the map collection (add, rename, reorder maps). Transition markers visible in the editor and linked to their counterpart on the destination map.",
-        "Viewer: map switcher UI (floor/hall selector — tabs, dropdown, or minimap overview). Smooth transition when switching maps (fade or slide).",
-        "Viewer: transition markers rendered as interactive elements. Clicking a stairwell icon navigates to the connected map at the paired entry point.",
-        "Cross-map wayfinding: A* pathfinding extended to route across map boundaries. Route may pass through one or more transition points. Viewer displays a segmented route (e.g. 'Head to Stairwell B → Go to Floor 2 → Turn left to Booth 412'). Each segment is shown on its respective map.",
-        "Minimap / venue overview: optional bird's-eye view showing all maps in their physical relationship to one another (north/south halls side by side, floors stacked). Useful for large convention centres."
+        "viewerSettings data model — showBoothCode, showExhibitorName, showExhibitorLogo flags on FloorPlanData",
+        "Viewer Display section in PropertiesPanel when nothing selected (replaces empty state)",
+        "Assigned booths: exhibitor name as centered label at full opacity",
+        "Unassigned booths: reduced opacity (~0.65), booth code only",
+        "Exhibitor logo toggle wired in editor UI; Konva image rendering stubbed pending Phase 15 data"
+      ]
+    },
+    {
+      "id": 17,
+      "title": "Coordinate Display & Layer Auto-Select",
+      "summary": "Mouse coordinates in the status bar (real-world units when calibrated) and optional auto-layer-switch on click. Underdefined — needs product/design review before implementation.",
+      "status": "planned",
+      "tasks": [
+        "Coordinate display in status bar — real-world units when calibrated, pixels otherwise; updates on mouse move",
+        "Auto-select layer on click — opt-in toggle; switches active layer to match clicked element's layer"
       ]
     }
   ]

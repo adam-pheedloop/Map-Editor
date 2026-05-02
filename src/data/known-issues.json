@@ -7,7 +7,8 @@
       "severity": "minor",
       "area": "Editor — Grid / Walkable Layer",
       "description": "The visual snap/alignment grid and the walkable area grid clash when their cell sizes differ. The snap grid should auto-hide when the pathing layer is active.",
-      "status": "open"
+      "status": "fixed",
+      "fixedIn": "Phase 13"
     },
     {
       "id": 2,
@@ -15,7 +16,8 @@
       "severity": "minor",
       "area": "Editor — Arrow Tool",
       "description": "The chevron arrowhead style looks identical to triangle — both render as closed filled shapes. Chevron should be an open V shape with no fill.",
-      "status": "open"
+      "status": "fixed",
+      "fixedIn": "Phase 13"
     },
     {
       "id": 3,

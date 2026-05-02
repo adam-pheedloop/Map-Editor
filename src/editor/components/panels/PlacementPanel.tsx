@@ -100,7 +100,7 @@ function FilterBar({
           >
             <span
               className="inline-block w-2.5 h-2.5 bg-gray-300 shrink-0"
-              style={{ borderRadius: shape === "ellipse" ? "9999px" : "2px" }}
+              style={{ borderRadius: shape === "ellipse" ? "9999px" : "0px" }}
             />
             {shape === "ellipse" ? "Circle" : "Rectangle"}
             <PiCaretDown size={10} className="text-gray-400" />
@@ -117,12 +117,14 @@ function FilterBar({
                   }}
                   className={[
                     "w-full text-left flex items-center gap-1.5 px-2 py-1.5 text-xs hover:bg-gray-50 transition-colors",
-                    shape === s ? "text-primary-600 font-medium" : "text-gray-700",
+                    shape === s
+                      ? "text-primary-600 font-medium"
+                      : "text-gray-700",
                   ].join(" ")}
                 >
                   <span
                     className="inline-block w-2.5 h-2.5 bg-gray-300 shrink-0"
-                    style={{ borderRadius: s === "ellipse" ? "9999px" : "2px" }}
+                    style={{ borderRadius: s === "ellipse" ? "9999px" : "0px" }}
                   />
                   {s === "ellipse" ? "Circle" : "Rectangle"}
                 </button>
@@ -189,7 +191,11 @@ function FilterBar({
                     className="accent-primary-600"
                   />
                   <span className="text-gray-700">
-                    {f === "all" ? "All" : f === "placed" ? "Placed" : "Unplaced"}
+                    {f === "all"
+                      ? "All"
+                      : f === "placed"
+                        ? "Placed"
+                        : "Unplaced"}
                   </span>
                 </label>
               ))}
@@ -292,7 +298,7 @@ function Section({
           className="shrink-0 w-4 h-4"
           style={{
             backgroundColor: iconColor,
-            borderRadius: iconShape === "oval" ? "9999px" : "3px",
+            borderRadius: iconShape === "oval" ? "9999px" : "0px",
             opacity: 0.7,
           }}
         />
@@ -313,7 +319,11 @@ function Section({
               ? "text-amber-400 hover:text-amber-500 cursor-pointer"
               : "text-gray-200 cursor-default",
           ].join(" ")}
-          title={!stub && totalUnplaced > 0 ? `Auto-place ${totalUnplaced} unplaced` : "No unplaced items"}
+          title={
+            !stub && totalUnplaced > 0
+              ? `Auto-place ${totalUnplaced} unplaced`
+              : "No unplaced items"
+          }
           onClick={(e) => {
             e.stopPropagation();
             if (!stub && totalUnplaced > 0) onAutoArrange?.();
@@ -482,10 +492,16 @@ type SectionId = "booths" | "sessions" | "meetingRooms" | "tables";
 
 interface PlacementPanelProps {
   records: PlacementRecords;
-  onAutoArrange: (type: "booth" | "session_area" | "meeting_room", records: AutoArrangeRecord[]) => void;
+  onAutoArrange: (
+    type: "booth" | "session_area" | "meeting_room",
+    records: AutoArrangeRecord[],
+  ) => void;
 }
 
-export function PlacementPanel({ records, onAutoArrange }: PlacementPanelProps) {
+export function PlacementPanel({
+  records,
+  onAutoArrange,
+}: PlacementPanelProps) {
   const { booths, sessions, meetingRooms } = records;
 
   type SectionFilter = { query: string; status: StatusFilter };
@@ -521,9 +537,21 @@ export function PlacementPanel({ records, onAutoArrange }: PlacementPanelProps) 
     );
   };
 
-  const filteredBooths = applyFilter(booths, (r) => r.code, sectionFilters.booths);
-  const filteredSessions = applyFilter(sessions, (r) => r.title, sectionFilters.sessions);
-  const filteredRooms = applyFilter(meetingRooms, (r) => r.name, sectionFilters.meetingRooms);
+  const filteredBooths = applyFilter(
+    booths,
+    (r) => r.code,
+    sectionFilters.booths,
+  );
+  const filteredSessions = applyFilter(
+    sessions,
+    (r) => r.title,
+    sectionFilters.sessions,
+  );
+  const filteredRooms = applyFilter(
+    meetingRooms,
+    (r) => r.name,
+    sectionFilters.meetingRooms,
+  );
 
   const toggle = (id: SectionId) =>
     setOpenSection((prev) => (prev === id ? null : id));
@@ -553,7 +581,10 @@ export function PlacementPanel({ records, onAutoArrange }: PlacementPanelProps) 
               "booth",
               booths
                 .filter((r) => !r.isPlaced)
-                .map((r) => ({ recordId: r.record.slug, recordName: r.record.code })),
+                .map((r) => ({
+                  recordId: r.record.slug,
+                  recordName: r.record.code,
+                })),
             )
           }
         >
@@ -582,7 +613,10 @@ export function PlacementPanel({ records, onAutoArrange }: PlacementPanelProps) 
               "session_area",
               sessions
                 .filter((r) => !r.isPlaced)
-                .map((r) => ({ recordId: String(r.record.id), recordName: r.record.title })),
+                .map((r) => ({
+                  recordId: String(r.record.id),
+                  recordName: r.record.title,
+                })),
             )
           }
         >
@@ -605,13 +639,18 @@ export function PlacementPanel({ records, onAutoArrange }: PlacementPanelProps) 
           query={sectionFilters.meetingRooms.query}
           onQueryChange={(q) => updateFilter("meetingRooms", { query: q })}
           statusFilter={sectionFilters.meetingRooms.status}
-          onStatusFilterChange={(s) => updateFilter("meetingRooms", { status: s })}
+          onStatusFilterChange={(s) =>
+            updateFilter("meetingRooms", { status: s })
+          }
           onAutoArrange={() =>
             onAutoArrange(
               "meeting_room",
               meetingRooms
                 .filter((r) => !r.isPlaced)
-                .map((r) => ({ recordId: String(r.record.id), recordName: r.record.name })),
+                .map((r) => ({
+                  recordId: String(r.record.id),
+                  recordName: r.record.name,
+                })),
             )
           }
         >

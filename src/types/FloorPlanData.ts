@@ -117,6 +117,11 @@ export type Geometry =
   | ArrowGeometry
   | ArcGeometry;
 
+export interface GroupDefinition {
+  id: string;
+  name: string;
+}
+
 export interface ElementProperties {
   name?: string;
   color: string;
@@ -145,6 +150,8 @@ export interface ElementProperties {
   opacity?: number; // 0.0–1.0, default 1.0
   // Arrow-specific
   arrowHead?: { style: "triangle" | "chevron"; size: number };
+  // Grouping
+  groupId?: string;
   // Label customization
   labelPositionV?: "top" | "middle" | "bottom";
   labelPositionH?: "left" | "center" | "right";
@@ -282,6 +289,7 @@ export interface FloorPlanData {
   name: string;
   dimensions: Dimensions;
   elements: FloorPlanElement[];
+  groups?: GroupDefinition[];
   legend: Legend;
   typeStyles?: TypeStyles;
   viewerAppearance?: ViewerAppearance;

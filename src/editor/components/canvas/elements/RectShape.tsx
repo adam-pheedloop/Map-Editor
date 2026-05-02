@@ -25,7 +25,6 @@ export function RectShape({ geo, color, strokeColor, strokeWidth, label, propert
         fill={color}
         stroke={strokeColor}
         strokeWidth={strokeWidth}
-        cornerRadius={2}
         opacity={0.9}
       />
       {label && (

@@ -11,9 +11,10 @@ interface IconPickerProps {
   selectedId: string | null;
   onSelect: (iconId: string) => void;
   onClose: () => void;
+  anchorRect: DOMRect;
 }
 
-export function IconPicker({ selectedId, onSelect, onClose }: IconPickerProps) {
+export function IconPicker({ selectedId, onSelect, onClose, anchorRect }: IconPickerProps) {
   const [query, setQuery] = useState("");
   const ref = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -28,8 +29,15 @@ export function IconPicker({ selectedId, onSelect, onClose }: IconPickerProps) {
         onClose();
       }
     };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
     window.addEventListener("mousedown", handleClick);
-    return () => window.removeEventListener("mousedown", handleClick);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("mousedown", handleClick);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [onClose]);
 
   const filtered = query.trim() ? searchIcons(query) : null;
@@ -54,10 +62,13 @@ export function IconPicker({ selectedId, onSelect, onClose }: IconPickerProps) {
     );
   };
 
+  const top = Math.min(anchorRect.top, window.innerHeight - 416);
+
   return (
     <div
       ref={ref}
-      className="absolute left-full ml-2 top-0 bg-white border border-gray-200 rounded-lg shadow-lg z-[9999] w-[280px] max-h-[400px] flex flex-col"
+      className="bg-white border border-gray-200 rounded-lg shadow-lg z-[9999] w-[280px] max-h-[400px] flex flex-col"
+      style={{ position: "fixed", left: anchorRect.right + 8, top }}
     >
       <div className="flex items-center gap-2 px-3 py-2 border-b border-gray-200">
         <PiMagnifyingGlass size={14} className="text-gray-400 shrink-0" />

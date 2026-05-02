@@ -1,5 +1,5 @@
 import { useCallback, useEffect } from "react";
-import type { FloorPlanData, FloorPlanElement, ElementType, Geometry, ElementProperties, BackgroundImage, Dimensions, WalkableGrid, ScaleCalibration, Unit, ElementTypeDefaults, Legend, ViewerAppearance } from "../../types";
+import type { FloorPlanData, FloorPlanElement, ElementType, Geometry, ElementProperties, BackgroundImage, Dimensions, WalkableGrid, ScaleCalibration, Unit, ElementTypeDefaults, Legend, ViewerAppearance, GroupDefinition } from "../../types";
 import { ELEMENT_TYPE_TO_LAYER, DEFAULT_TYPE_STYLES, DEFAULT_VIEWER_APPEARANCE } from "../../types";
 import { createWalkableGrid } from "../utils/walkableGrid";
 import { derivePixelsPerUnit } from "../../utils/unitConversion";
@@ -155,17 +155,27 @@ export function useEditorState(
   );
 
   const deleteElement = useCallback((id: string) => {
-    setData((prev) => ({
-      ...prev,
-      elements: prev.elements.filter((el) => el.id !== id),
-    }));
+    setData((prev) => {
+      const remaining = prev.elements.filter((el) => el.id !== id);
+      const remainingGroupIds = new Set(remaining.map((el) => el.properties.groupId).filter(Boolean) as string[]);
+      return {
+        ...prev,
+        elements: remaining,
+        groups: (prev.groups ?? []).filter((g) => remainingGroupIds.has(g.id)),
+      };
+    });
   }, [setData]);
 
   const deleteElements = useCallback((ids: Set<string>) => {
-    setData((prev) => ({
-      ...prev,
-      elements: prev.elements.filter((el) => !ids.has(el.id)),
-    }));
+    setData((prev) => {
+      const remaining = prev.elements.filter((el) => !ids.has(el.id));
+      const remainingGroupIds = new Set(remaining.map((el) => el.properties.groupId).filter(Boolean) as string[]);
+      return {
+        ...prev,
+        elements: remaining,
+        groups: (prev.groups ?? []).filter((g) => remainingGroupIds.has(g.id)),
+      };
+    });
   }, [setData]);
 
   const moveElements = useCallback(
@@ -181,6 +191,57 @@ export function useEditorState(
           }),
         };
       });
+    },
+    [setData]
+  );
+
+  const batchUpdateGeometry = useCallback(
+    (updates: Array<{ id: string; geometry: Partial<Geometry> }>) => {
+      setData((prev) => {
+        const updateMap = new Map(updates.map((u) => [u.id, u.geometry]));
+        return {
+          ...prev,
+          elements: prev.elements.map((el) => {
+            const geom = updateMap.get(el.id);
+            if (!geom) return el;
+            return { ...el, geometry: { ...el.geometry, ...geom } as Geometry };
+          }),
+        };
+      });
+    },
+    [setData]
+  );
+
+  const createGroup = useCallback(
+    (memberIds: string[], name?: string) => {
+      const groupId = crypto.randomUUID();
+      setData((prev) => {
+        const idSet = new Set(memberIds);
+        return {
+          ...prev,
+          groups: [...(prev.groups ?? []), { id: groupId, name: name ?? "Group" } satisfies GroupDefinition],
+          elements: prev.elements.map((el) =>
+            idSet.has(el.id)
+              ? { ...el, properties: { ...el.properties, groupId } }
+              : el
+          ),
+        };
+      });
+    },
+    [setData]
+  );
+
+  const dissolveGroup = useCallback(
+    (groupId: string) => {
+      setData((prev) => ({
+        ...prev,
+        groups: (prev.groups ?? []).filter((g) => g.id !== groupId),
+        elements: prev.elements.map((el) =>
+          el.properties.groupId === groupId
+            ? { ...el, properties: { ...el.properties, groupId: undefined } }
+            : el
+        ),
+      }));
     },
     [setData]
   );
@@ -451,6 +512,9 @@ export function useEditorState(
     deleteElement,
     deleteElements,
     moveElements,
+    batchUpdateGeometry,
+    createGroup,
+    dissolveGroup,
     updateElementType,
     setBackgroundImage,
     reorderElement,

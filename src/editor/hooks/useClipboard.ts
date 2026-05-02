@@ -22,6 +22,8 @@ export function useClipboard() {
     return buffer.map((el) => {
       const newElement = structuredClone(el);
       newElement.id = uuidv4();
+      // Pasted elements are independent — don't inherit group membership
+      newElement.properties = { ...newElement.properties, groupId: undefined };
 
       // Offset position
       const geo = newElement.geometry;

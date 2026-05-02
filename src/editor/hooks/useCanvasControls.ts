@@ -18,7 +18,7 @@ export function useCanvasControls(containerRef: React.RefObject<HTMLDivElement |
 
     const observer = new ResizeObserver((entries) => {
       const { width, height } = entries[0].contentRect;
-      setStageSize({ width, height });
+      if (width > 0 && height > 0) setStageSize({ width, height });
     });
     observer.observe(container);
     return () => observer.disconnect();
@@ -77,7 +77,9 @@ export function useCanvasControls(containerRef: React.RefObject<HTMLDivElement |
   return {
     stageRef,
     scale,
+    setScale,
     position,
+    setPosition,
     stageSize,
     handleWheel,
     handleDragEnd,

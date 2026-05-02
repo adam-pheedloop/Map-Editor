@@ -23,6 +23,7 @@ interface OptionsBarProps {
   onAlignBottom?: () => void;
   onDistributeH?: () => void;
   onDistributeV?: () => void;
+  onArrangeAsGrid?: () => void;
 }
 
 export function OptionsBar({
@@ -41,13 +42,14 @@ export function OptionsBar({
   onAlignBottom,
   onDistributeH,
   onDistributeV,
+  onArrangeAsGrid,
 }: OptionsBarProps) {
   const fields = new Set<OptionsBarField>(config.optionsBar);
   const groupActions = [onGroup, onUngroup, onEnterGroup, onExitGroup].filter(Boolean);
   const alignActions = [
     onAlignLeft, onAlignCenterH, onAlignRight,
     onAlignTop, onAlignCenterV, onAlignBottom,
-    onDistributeH, onDistributeV,
+    onDistributeH, onDistributeV, onArrangeAsGrid,
   ].filter(Boolean);
 
   return (
@@ -151,6 +153,14 @@ export function OptionsBar({
               <IconButton size="sm" title="Distribute vertically" onClick={onDistributeV}>
                 <DistributeVIcon />
               </IconButton>
+            )}
+            {onArrangeAsGrid && (
+              <>
+                <div className="w-px h-3.5 bg-gray-200 shrink-0 mx-0.5" />
+                <Button variant="outline" color="neutral" size="sm" onClick={onArrangeAsGrid}>
+                  Grid
+                </Button>
+              </>
             )}
           </div>
         </>

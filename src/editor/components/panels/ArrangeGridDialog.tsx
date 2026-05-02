@@ -1,0 +1,63 @@
+import { useState } from "react";
+import { Button, Dialog, NumberInput, SectionLabel } from "../ui";
+
+interface ArrangeGridDialogProps {
+  elementCount: number;
+  onConfirm: (cols: number, gapX: number, gapY: number) => void;
+  onClose: () => void;
+}
+
+export function ArrangeGridDialog({ elementCount, onConfirm, onClose }: ArrangeGridDialogProps) {
+  const defaultCols = Math.ceil(Math.sqrt(elementCount));
+  const [cols, setCols] = useState(defaultCols);
+  const [gapX, setGapX] = useState(10);
+  const [gapY, setGapY] = useState(10);
+
+  const rows = Math.ceil(elementCount / Math.max(1, cols));
+
+  return (
+    <Dialog
+      title="Arrange as Grid"
+      onClose={onClose}
+      footer={
+        <>
+          <Button variant="outline" color="neutral" onClick={onClose}>Cancel</Button>
+          <Button variant="solid" color="primary" onClick={() => { onConfirm(cols, gapX, gapY); onClose(); }}>
+            Apply
+          </Button>
+        </>
+      }
+    >
+      <div className="flex flex-col gap-4 p-4">
+        <p className="text-xs text-gray-500">{elementCount} elements selected</p>
+
+        <div className="flex gap-4">
+          <div className="flex flex-col gap-1.5 flex-1">
+            <SectionLabel>Columns</SectionLabel>
+            <NumberInput
+              value={cols}
+              onChange={(v) => setCols(Math.max(1, Math.min(elementCount, Math.round(v))))}
+            />
+          </div>
+          <div className="flex flex-col gap-1.5 flex-1">
+            <SectionLabel>Rows (computed)</SectionLabel>
+            <div className="flex items-center h-[30px] px-2 text-xs text-gray-400 bg-gray-50 border border-gray-200 rounded">
+              {rows}
+            </div>
+          </div>
+        </div>
+
+        <div className="flex gap-4">
+          <div className="flex flex-col gap-1.5 flex-1">
+            <SectionLabel>Horizontal gap (px)</SectionLabel>
+            <NumberInput value={gapX} onChange={(v) => setGapX(Math.max(0, v))} />
+          </div>
+          <div className="flex flex-col gap-1.5 flex-1">
+            <SectionLabel>Vertical gap (px)</SectionLabel>
+            <NumberInput value={gapY} onChange={(v) => setGapY(Math.max(0, v))} />
+          </div>
+        </div>
+      </div>
+    </Dialog>
+  );
+}

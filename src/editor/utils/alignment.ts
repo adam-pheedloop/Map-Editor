@@ -116,6 +116,39 @@ export function distributeH(elements: FloorPlanElement[]): AlignmentUpdate[] {
   return updates;
 }
 
+export function arrangeAsGrid(
+  elements: FloorPlanElement[],
+  cols: number,
+  gapX: number,
+  gapY: number,
+): AlignmentUpdate[] {
+  const units = buildUnits(elements);
+  if (units.length < 2) return [];
+
+  // Sort top-to-bottom, left-to-right so the order feels natural
+  units.sort((a, b) => {
+    const dy = a.bounds.top - b.bounds.top;
+    if (Math.abs(dy) > 10) return dy;
+    return a.bounds.left - b.bounds.left;
+  });
+
+  const clampedCols = Math.max(1, Math.min(cols, units.length));
+  const maxW = Math.max(...units.map((u) => u.bounds.right - u.bounds.left));
+  const maxH = Math.max(...units.map((u) => u.bounds.bottom - u.bounds.top));
+  const originX = Math.min(...units.map((u) => u.bounds.left));
+  const originY = Math.min(...units.map((u) => u.bounds.top));
+
+  const updates: AlignmentUpdate[] = [];
+  units.forEach((unit, i) => {
+    const col = i % clampedCols;
+    const row = Math.floor(i / clampedCols);
+    const tx = originX + col * (maxW + gapX);
+    const ty = originY + row * (maxH + gapY);
+    updates.push(...applyDelta(unit, tx - unit.bounds.left, ty - unit.bounds.top));
+  });
+  return updates;
+}
+
 export function distributeV(elements: FloorPlanElement[]): AlignmentUpdate[] {
   const units = buildUnits(elements);
   if (units.length < 3) return [];

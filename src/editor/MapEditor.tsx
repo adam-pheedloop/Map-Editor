@@ -14,6 +14,7 @@ import {
   alignLeft, alignRight, alignTop, alignBottom,
   alignCenterH, alignCenterV,
   distributeH, distributeV,
+  arrangeAsGrid,
 } from "./utils/alignment";
 import type { DrawingDefaults } from "./components/panels/OptionsBar";
 import type { ToolContext } from "./tools/types";
@@ -45,6 +46,7 @@ import { CanvasResizeDialog } from "./components/panels/CanvasResizeDialog";
 import { CalibrationDialog } from "./components/panels/CalibrationDialog";
 import { TypeDefaultsDialog } from "./components/panels/TypeDefaultsDialog";
 import { LegendDialog } from "./components/panels/LegendDialog";
+import { ArrangeGridDialog } from "./components/panels/ArrangeGridDialog";
 import { LegendCanvasOverlay } from "./components/canvas/LegendCanvasOverlay";
 import { LayerPanel } from "./components/panels/LayerPanel";
 import { Rulers } from "./components/Rulers";
@@ -216,6 +218,7 @@ export function MapEditor({
   const [isCalibrating, setIsCalibrating] = useState(false);
   const [showTypeDefaultsDialog, setShowTypeDefaultsDialog] = useState(false);
   const [showLegendDialog, setShowLegendDialog] = useState(false);
+  const [showArrangeGridDialog, setShowArrangeGridDialog] = useState(false);
   const [contextMenu, setContextMenu] = useState<{
     elementId: string;
     x: number;
@@ -1477,6 +1480,7 @@ export function MapEditor({
               onAlignBottom={alignmentUnitCount >= 2 ? handleAlignBottom : undefined}
               onDistributeH={alignmentUnitCount >= 3 ? handleDistributeH : undefined}
               onDistributeV={alignmentUnitCount >= 3 ? handleDistributeV : undefined}
+              onArrangeAsGrid={alignmentUnitCount >= 2 ? () => setShowArrangeGridDialog(true) : undefined}
             />
           )}
           <div className="flex flex-1 overflow-hidden">
@@ -1682,6 +1686,16 @@ export function MapEditor({
           typeStyles={data.typeStyles ?? {}}
           onUpdateTypeStyles={updateTypeStyles}
           onClose={() => setShowTypeDefaultsDialog(false)}
+        />
+      )}
+      {showArrangeGridDialog && (
+        <ArrangeGridDialog
+          elementCount={alignmentUnitCount}
+          onConfirm={(cols, gapX, gapY) => {
+            const updates = arrangeAsGrid(elementsForAlignment, cols, gapX, gapY);
+            if (updates.length) batchUpdateGeometry(updates);
+          }}
+          onClose={() => setShowArrangeGridDialog(false)}
         />
       )}
       {showLegendDialog && (
